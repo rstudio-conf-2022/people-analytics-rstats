@@ -1,4 +1,7 @@
-R for People Analytics
+Your instructors will be practitioners and R experts from the People Analytics and Measurement (PAM) Team at McKinsey & Company, as well as other support faculty.  The program is designed and led by:
+Keith McNulty, who is an applied mathematician and a leading technical expert and author in the field of people analytics  
+Alex LoPilato, who is a quantitative psychologist with extensive experience in the measurement and analysis of surveys and other psychometric data
+Liz Romero, who is an applied statistician with extensive experience in the engineering and modeling of people-related data for People Analytics
 ================
 
 ### rstudio::conf 2022
