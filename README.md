@@ -25,7 +25,14 @@ can remove these instructions from the README.
 
 ## Overview
 
-ABSTRACT
+The course will cover some of the most commonly used methods of analysis and inference when working with data related to people, such as survey data and organizational network data. Among other things, you will learn about:
+Typical analyses conducted on people data
+Common people-related data types 
+Common hypothesis testing methods
+Common explanatory modeling methods
+How to use graphs to model network relationships 
+How to analyze and draw inferences about people networks
+You will learn by working through code and data examples with instructors and faculty, including a final data project where you will have a chance to put all your learning into practice.
 
 ## Learning objectives
 
