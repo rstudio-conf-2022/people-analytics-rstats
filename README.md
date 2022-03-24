@@ -40,7 +40,15 @@ LEARNING_OBJECTIVES
 
 ## Is this course for me?
 
-THREE_QUESTIONS
+This course will be valuable to you if: 
+ 
+- You currently work or intend to work in a people-related discipline 
+
+- You have a basic working knowledge of R and RStudio, 
+
+- You are interested in learning applied statistical methods that are commonly used to understand and draw conclusions about the skills, behaviors and attitudes of people and groups.  
+ 
+The course is ideal for someone who is likely to study quantitative social science disciplines to an advanced level, as well as those working in quantitative Human Resources roles in organizations.
 
 ## Prework
 
