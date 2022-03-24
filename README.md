@@ -36,7 +36,7 @@ You will learn by working through code and data examples with instructors and fa
 
 ## Learning objectives
 
-LEARNING_OBJECTIVES
+[ADD AN ITEMIZED LIST OF LEARNING OBJECTIVES.]
 
 ## Is this course for me?
 
