@@ -1,4 +1,4 @@
-WORKSHOP_TITLE
+R for People Analytics
 ================
 
 ### rstudio::conf 2022
