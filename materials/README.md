@@ -1,0 +1,1 @@
+Add materials for your workshop in this folder. You can then remove this README, and rename this folder if you prefer.
