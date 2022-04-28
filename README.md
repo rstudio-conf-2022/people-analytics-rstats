@@ -61,42 +61,42 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 
 ### Day 1
 
-| Time          | Activity         |
-| :------------ | :--------------- |
-| 09:00 - 10:30 | Preliminaries      |
-|               | - Working with people data in R   |
-|               | - Hypothesis testing   |
-| 10:30 - 11:00 | *Coffee break*   |
-| 11:00 - 12:30 | Explanatory Methods I        |
-|               | - Linear regression   |
-|               | - Binomial logistic regression |
-| 12:30 - 13:30 | *Lunch break*    |
-| 13:30 - 15:00 | Explanatory Methods II       |
-|               | - Multinomial regression   |
-|               | - Ordinal regression |
-| 15:00 - 15:30 | *Coffee break*   |
-| 15:30 - 17:00 | Advanced Explanatory Methods        |
-|               | - Mixed models                      |
-|               | - Survival analysis               |
+| Time          | Activity         | Led by       |
+| :------------ | :--------------- | :----------  |
+| 09:00 - 10:30 | Preliminaries      | Keith McNulty |
+|               | - Working with people data in R   | |
+|               | - Hypothesis testing   | |
+| 10:30 - 11:00 | *Coffee break*   | |
+| 11:00 - 12:30 | Explanatory Methods I | Keith McNulty |
+|               | - Linear regression   | |
+|               | - Binomial logistic regression | |
+| 12:30 - 13:30 | *Lunch break*    | |
+| 13:30 - 15:00 | Explanatory Methods II | Liz Romero |
+|               | - Multinomial regression | |
+|               | - Ordinal regression | |
+| 15:00 - 15:30 | *Coffee break*   | |
+| 15:30 - 17:00 | Advanced Explanatory Methods | Alex LoPilato |
+|               | - Mixed models                      | |
+|               | - Survival analysis               | |
 
 ### Day 2
 
-| Time          | Activity         |
-| :------------ | :--------------- |
-| 09:00 - 10:30 | Network Analysis I       |
-|               | - Basic graph theory |
-|               | - Working with graphs in R  |
-|               | - Visualizing graphs in R |
-| 10:30 - 11:00 | *Coffee break*   |
-| 11:00 - 12:30 | Network Analysis II       |
-|               | - Paths and distance  |
-|               | - Vertex importance and centrality |
-|               | - Community detection  |
-|               | - Assortativity and Similarity |
-| 12:30 - 13:30 | *Lunch break*    |
-| 13:30 - 15:00 | Hands-on Project I       |
-| 15:00 - 15:30 | *Coffee break*   |
-| 15:30 - 17:00 | Hands-on Project II        |
+| Time          | Activity         | Led by |
+| :------------ | :--------------- | :----- |
+| 09:00 - 10:30 | Network Analysis I       | Keith McNulty |
+|               | - Basic graph theory | |
+|               | - Working with graphs in R  | |
+|               | - Visualizing graphs in R | |
+| 10:30 - 11:00 | *Coffee break*   | |
+| 11:00 - 12:30 | Network Analysis II       | Liz Romero/Alex Lo Pilato |
+|               | - Paths and distance  | |
+|               | - Vertex importance and centrality | |
+|               | - Community detection  | |
+|               | - Assortativity and Similarity | |
+| 12:30 - 13:30 | *Lunch break*    | |
+| 13:30 - 15:00 | Hands-on Project I | |
+| 15:00 - 15:30 | *Coffee break*   | |
+| 15:30 - 17:00 | Hands-on Project II        | |
 
 ## Instructors
 
