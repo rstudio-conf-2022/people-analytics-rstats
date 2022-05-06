@@ -9,10 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In this document we will briefly practice working with different vector types.  Follow the instructions in the comments of each code chunk.
 
-## Creating and examining vectors
+## Exercise 1 - Creating and examining vectors
 
 ```{r}
-# EXERCISE 1
 # In a recent coding competition, Liz came first, Alex came second 
 # and Jiena came third.
 
@@ -22,25 +21,40 @@ name <- c("Alex", "Jiena", "Liz")
 # Check that this vector is a character vector of length 3
 
 
+```
+
+```{r}
 # Create a corresponding numeric vector with each person's position.
-
-
-# Check that your vector is a numeric vector of length three.
-
 
 
 ```
 
-## Converting vectors to factors and ordered factors 
+```{r}
+# Check that your vector is a numeric vector of length three.
+
+
+```
+
+
+## Exercise 2 - Converting vectors to factors and ordered factors 
 
 ```{r}
-# EXERCISE 2
 # Convert the 'name' character vector to a factor vector called 'name_factor'.
 # Check that the conversion succeeded.
 
 
+```
+
+```{r}
 # Convert your 'name' character vector to an ordered factor vector
 # in increasing position order. Check that the conversion succeeded. 
+
+
+```
+
+
+```{r}
+# EXTENSION: Use a function to display the vector in order of position (highest to lowest)?
 
 
 ```
