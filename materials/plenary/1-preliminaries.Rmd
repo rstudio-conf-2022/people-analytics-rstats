@@ -1,0 +1,356 @@
+---
+title: "Welcome to the People Analytics Workshop"
+author: "Keith McNulty"
+output:
+  xaringan::moon_reader:
+    css: "../../style.css"
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Good morning and welcome!
+
+What we hope you can say at the end of this 2-day workshop: 
+
+&#129489;&#8205;&#127891; You've learned a lot about some important methods for your work  
+&#127881; You've had fun  
+&#128075; You've met some interesting people who work on similar things to you
+
+
+---
+class: left, middle, rstudio-logo 
+
+# About this workshop
+
+---
+class: left, middle, rstudio-logo 
+
+## Introducing your faculty
+
+Here are six facts.  Each one is true for exactly one and only one of your instructors or TAs.  Can you guess who?
+
+1.  Once lived in Holland.
+2.  Has a sewing room at home.
+3.  Was a professional recorder player.
+4.  Has a dog called Pepper.
+5.  Had a baby in the last 3 months.
+6.  Recently moved from Georgia to Florida.
+
+---
+class: left, middle, rstudio-logo 
+
+## Introducing yourselves
+
+Find a person close to you who you haven't met and tell each other:
+
+1.  Who you are
+2.  Where you are from
+3.  What you do
+4.  What you hope to get from the next two days
+
+---
+class: left, middle, rstudio-logo 
+
+## What is people analytics?
+
+> "People analytics uses behavioral data to understand how people work and change how companies are managed."
+>
+> `r tufte::quote_footer('--- Wikipedia')`
+
+<p>
+
+> "People analytics is a data-driven approach to understanding people related phenomena."
+>
+> `r tufte::quote_footer('--- Keith')`
+
+---
+class: left, middle, rstudio-logo 
+
+## What is people analytics?
+
+A lot of what constitutes 'people analytics' is no different from other types of analytics.
+
+* Processing, cleaning and structuring data
+* Identifying patterns of interest
+* Reporting descriptive statistics
+
+But we will focus on quantitative techniques which are used more frequently in people analytics than in most other fields:
+
+* Explanatory modeling
+* Network analysis
+
+---
+class: left, middle, rstudio-logo 
+
+## Explanatory modeling: what is it?
+
+Explanatory modeling uses a sample of data to draw inferences about the potential causes of an outcome of interest.  It is also sometimes called *inferential modeling*.
+
+<b>Examples:</b>  
+
+* Does working schedule and/or pay rate influence likelihood to leave an organization?
+* Does academic performance in earlier years of a program influence academic performance in the final year?
+* Do certain demographic factors influence choice of career?
+
+---
+class: left, middle, rstudio-logo 
+
+## Explanatory modeling: what we will learn
+
+We will focus on regression analysis as a way to <i>explain<i> outcomes of interest using data.  You will learn:
+
+1.  How to choose an appropriate model type for the problem at hand.
+2.  How to prepare your data for your model.
+3.  How to execute the model.
+4.  How to view a variety of outputs from the model.
+5.  How to interpret those outputs against the problem at hand.
+
+---
+class: left, middle, rstudio-logo 
+
+## Network analysis: what is it?
+
+Network analysis uses graph theory to store, visualize and analyze data on relationships.  This can be used to answer questions about people, groups, organizational structures and many other things.
+
+<b>Examples:</b>  
+
+* Who are the important or influential actors in a group?
+* Are there 'hidden but important' subgroups?
+* What factors drive connection in an organization?
+
+---
+class: left, middle, rstudio-logo 
+
+## Network analysis: what we will learn
+
+We will focus on creating, visualizing and analyzing network structures to draw insights about a problem.  You will learn:
+
+1.  How to store data in graph structures
+2.  How to visualize those structures
+3.  How to understand relationships/connections within those structures
+4.  How to measure importance and influence in a network
+5.  How to identify community structures in networks and how to describe those structures.  
+
+---
+class: left, middle, rstudio-logo 
+
+## How we will learn
+
+
+---
+class: left, middle, rstudio-logo 
+
+## How to get help
+
+---
+class: left, middle, rstudio-logo 
+
+# Foundations:  Working with people data in R
+
+
+---
+class: left, middle, rstudio-logo 
+
+## Data types - numeric
+
+```{r}
+# numeric double
+my_double <- 42.3
+
+# use typeof() to find out the data type of a scalar value
+typeof(my_double)
+```
+
+```{r}
+# numeric integer
+my_integer <- 42L
+typeof(my_integer)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data types - character and logical
+
+```{r}
+# character is any string in quotes
+my_name <- "Keith"
+typeof(my_name)
+```
+
+```{r}
+# logical is TRUE or FALSE
+at_rstudio_conf <- TRUE
+typeof(at_rstudio_conf)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - numeric, character and logical vectors
+
+```{r}
+# vectors are 1-dimensional homogeneous structures (same data type)
+first_primes <- c(2, 3, 5, 7, 11)
+
+# use str() to get info about data structures
+str(first_primes)
+```
+
+```{r}
+# character vector
+faculty <- c("Alex", "Jiena", "Jordan", "Keith", "Liz", "Rachel")
+str(faculty)
+```
+
+```{r}
+# logical vector
+faculty_has_dog <- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+str(faculty_has_dog)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - categorical (factor) vectors
+
+```{r}
+# categorical or factor vectors store a limited set of categorical values
+faculty_factor <- as.factor(faculty)
+str(faculty_factor)
+```
+
+```{r}
+# if the categories have order, you can specify the order
+performance <- c("Low", "High", "Medium", "High", "Low")
+ordered_performance <- ordered(
+  performance, 
+  levels = c("Low", "Medium", "High")
+)
+str(ordered_performance)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - type coercion
+
+```{r}
+# what happens if we try to put heterogeneous data in a vector
+mixed_types_1 <- c(6.75, "Keith")
+str(mixed_types_1)
+```
+
+```{r}
+# some form of type coercion occurs
+mixed_types_2 <- c(TRUE, 6.3)
+str(mixed_types_2)
+```
+
+```{r}
+# if you add an unknown factor to a factor vector
+new_faculty <- c(faculty_factor, "George Clooney")
+str(new_faculty)
+```
+
+```{r}
+# use type conversion functions to control coercion
+new_faculty <- c(as.character(faculty_factor), "George Clooney")
+str(new_faculty)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Exercise - data type and type conversion
+
+For our first short exercise, we will do some practice on working with and converting data types.
+
+Go to ...
+
+
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - named lists
+
+Named lists are the most flexible structures in R.  They can contain any other structures inside them.
+
+```{r}
+my_list <- list(
+  great_tv = c("Ozark", "Mad Men", "Breaking Bad"),
+  first_primes = first_primes,
+  faculty_factor = faculty_factor
+)
+
+str(my_list)
+
+# access specific elements
+my_list$great_tv
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - dataframes
+
+Dataframes are named lists of vectors of the same length.  They are the most popular data structure in R - basically the R equivalent of a spreadsheet.
+
+```{r}
+(faculty_info <- data.frame(
+  faculty = faculty_factor,
+  has_dog = faculty_has_dog
+))
+
+str(faculty_info)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Loading and viewing dataframes
+
+All of the data sets we work with will be in online CSV files, so we can load them in from a URL using `read.csv()`.  
+
+```{r}
+url <- "https://peopleanalytics-regression-book.org/data/ugtests.csv"
+ugtests <- read.csv(url)
+str(ugtests)
+```
+
+Often data is big, so we will use `head()` to look at the first few rows:
+
+```{r}
+head(ugtests)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## The pipe operator
+
+The pipe operator `|>`  helps you write more readable code through avoiding deeply nested functions within functions, allowing you to see the order of operations more clearly. (**Tip:** Use `Cmd/Ctrl+Shift+M` for a shortcut to the pipe).
+
+```{r}
+# without pipe
+round(colMeans(subset(ugtests, subset = Yr2 < 75, select = "Yr1")), 2)
+```
+
+```{r}
+# with pipe (note neat coding style)
+ugtests |> 
+  subset(subset = Yr2 < 75, select = "Yr1") |> 
+  colMeans() |> 
+  round(2)
+```
