@@ -4,7 +4,6 @@ author: "Keith McNulty"
 output:
   xaringan::moon_reader:
     css: "../../style.css"
-    lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true

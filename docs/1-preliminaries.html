@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Welcome to the People Analytics Workshop</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Keith McNulty" />
+    <script src="1-preliminaries_files/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="../../style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Welcome to the People Analytics Workshop
+### Keith McNulty
+
+---
+
+
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Good morning and welcome!
+
+What we hope you can say at the end of this 2-day workshop: 
+
+&amp;#129489;&amp;#8205;&amp;#127891; You've learned a lot about some important methods for your work  
+&amp;#127881; You've had fun  
+&amp;#128075; You've met some interesting people who work on similar things to you
+
+
+---
+class: left, middle, rstudio-logo 
+
+# About this workshop
+
+---
+class: left, middle, rstudio-logo 
+
+## Introducing your faculty
+
+Here are six facts.  Each one is true for exactly one and only one of your instructors or TAs.  Can you guess who?
+
+1.  Once lived in Holland.
+2.  Has a sewing room at home.
+3.  Was a professional recorder player.
+4.  Has a dog called Pepper.
+5.  Had a baby in the last 3 months.
+6.  Recently moved from Georgia to Florida.
+
+---
+class: left, middle, rstudio-logo 
+
+## Introducing yourselves
+
+Find a person close to you who you haven't met and tell each other:
+
+1.  Who you are
+2.  Where you are from
+3.  What you do
+4.  What you hope to get from the next two days
+
+---
+class: left, middle, rstudio-logo 
+
+## What is people analytics?
+
+&gt; "People analytics uses behavioral data to understand how people work and change how companies are managed."
+&gt;
+&gt; &lt;footer&gt;--- Wikipedia&lt;/footer&gt;
+
+&lt;p&gt;
+
+&gt; "People analytics is a data-driven approach to understanding people related phenomena."
+&gt;
+&gt; &lt;footer&gt;--- Keith&lt;/footer&gt;
+
+---
+class: left, middle, rstudio-logo 
+
+## What is people analytics?
+
+A lot of what constitutes 'people analytics' is no different from other types of analytics.
+
+* Processing, cleaning and structuring data
+* Identifying patterns of interest
+* Reporting descriptive statistics
+
+But we will focus on quantitative techniques which are used more frequently in people analytics than in most other fields:
+
+* Explanatory modeling
+* Network analysis
+
+---
+class: left, middle, rstudio-logo 
+
+## Explanatory modeling: what is it?
+
+Explanatory modeling uses a sample of data to draw inferences about the potential causes of an outcome of interest.  It is also sometimes called *inferential modeling*.
+
+&lt;b&gt;Examples:&lt;/b&gt;  
+
+* Does working schedule and/or pay rate influence likelihood to leave an organization?
+* Does academic performance in earlier years of a program influence academic performance in the final year?
+* Do certain demographic factors influence choice of career?
+
+---
+class: left, middle, rstudio-logo 
+
+## Explanatory modeling: what we will learn
+
+We will focus on regression analysis as a way to &lt;i&gt;explain&lt;i&gt; outcomes of interest using data.  You will learn:
+
+1.  How to choose an appropriate model type for the problem at hand.
+2.  How to prepare your data for your model.
+3.  How to execute the model.
+4.  How to view a variety of outputs from the model.
+5.  How to interpret those outputs against the problem at hand.
+
+---
+class: left, middle, rstudio-logo 
+
+## Network analysis: what is it?
+
+Network analysis uses graph theory to store, visualize and analyze data on relationships.  This can be used to answer questions about people, groups, organizational structures and many other things.
+
+&lt;b&gt;Examples:&lt;/b&gt;  
+
+* Who are the important or influential actors in a group?
+* Are there 'hidden but important' subgroups?
+* What factors drive connection in an organization?
+
+---
+class: left, middle, rstudio-logo 
+
+## Network analysis: what we will learn
+
+We will focus on creating, visualizing and analyzing network structures to draw insights about a problem.  You will learn:
+
+1.  How to store data in graph structures
+2.  How to visualize those structures
+3.  How to understand relationships/connections within those structures
+4.  How to measure importance and influence in a network
+5.  How to identify community structures in networks and how to describe those structures.  
+
+---
+class: left, middle, rstudio-logo 
+
+## How we will learn
+
+
+---
+class: left, middle, rstudio-logo 
+
+## How to get help
+
+---
+class: left, middle, rstudio-logo 
+
+# Foundations:  Working with people data in R
+
+
+---
+class: left, middle, rstudio-logo 
+
+## Data types - numeric
+
+
+```r
+# numeric double
+my_double &lt;- 42.3
+
+# use typeof() to find out the data type of a scalar value
+typeof(my_double)
+```
+
+```
+## [1] "double"
+```
+
+
+```r
+# numeric integer
+my_integer &lt;- 42L
+typeof(my_integer)
+```
+
+```
+## [1] "integer"
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data types - character and logical
+
+
+```r
+# character is any string in quotes
+my_name &lt;- "Keith"
+typeof(my_name)
+```
+
+```
+## [1] "character"
+```
+
+
+```r
+# logical is TRUE or FALSE
+at_rstudio_conf &lt;- TRUE
+typeof(at_rstudio_conf)
+```
+
+```
+## [1] "logical"
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - numeric, character and logical vectors
+
+
+```r
+# vectors are 1-dimensional homogeneous structures (same data type)
+first_primes &lt;- c(2, 3, 5, 7, 11)
+
+# use str() to get info about data structures
+str(first_primes)
+```
+
+```
+##  num [1:5] 2 3 5 7 11
+```
+
+
+```r
+# character vector
+faculty &lt;- c("Alex", "Jiena", "Jordan", "Keith", "Liz", "Rachel")
+str(faculty)
+```
+
+```
+##  chr [1:6] "Alex" "Jiena" "Jordan" "Keith" "Liz" "Rachel"
+```
+
+
+```r
+# logical vector
+faculty_has_dog &lt;- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+str(faculty_has_dog)
+```
+
+```
+##  logi [1:6] FALSE FALSE FALSE TRUE TRUE TRUE
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - categorical (factor) vectors
+
+
+```r
+# categorical or factor vectors store a limited set of categorical values
+faculty_factor &lt;- as.factor(faculty)
+str(faculty_factor)
+```
+
+```
+##  Factor w/ 6 levels "Alex","Jiena",..: 1 2 3 4 5 6
+```
+
+
+```r
+# if the categories have order, you can specify the order
+performance &lt;- c("Low", "High", "Medium", "High", "Low")
+ordered_performance &lt;- ordered(
+  performance, 
+  levels = c("Low", "Medium", "High")
+)
+str(ordered_performance)
+```
+
+```
+##  Ord.factor w/ 3 levels "Low"&lt;"Medium"&lt;..: 1 3 2 3 1
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - type coercion
+
+
+```r
+# what happens if we try to put heterogeneous data in a vector
+mixed_types_1 &lt;- c(6.75, "Keith")
+str(mixed_types_1)
+```
+
+```
+##  chr [1:2] "6.75" "Keith"
+```
+
+
+```r
+# some form of type coercion occurs
+mixed_types_2 &lt;- c(TRUE, 6.3)
+str(mixed_types_2)
+```
+
+```
+##  num [1:2] 1 6.3
+```
+
+
+```r
+# if you add an unknown factor to a factor vector
+new_faculty &lt;- c(faculty_factor, "George Clooney")
+str(new_faculty)
+```
+
+```
+##  chr [1:7] "1" "2" "3" "4" "5" "6" "George Clooney"
+```
+
+
+```r
+# use type conversion functions to control coercion
+new_faculty &lt;- c(as.character(faculty_factor), "George Clooney")
+str(new_faculty)
+```
+
+```
+##  chr [1:7] "Alex" "Jiena" "Jordan" "Keith" "Liz" "Rachel" "George Clooney"
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Exercise - data type and type conversion
+
+For our first short exercise, we will do some practice on working with and converting data types.
+
+Go to ...
+
+
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - named lists
+
+Named lists are the most flexible structures in R.  They can contain any other structures inside them.
+
+
+```r
+my_list &lt;- list(
+  great_tv = c("Ozark", "Mad Men", "Breaking Bad"),
+  first_primes = first_primes,
+  faculty_factor = faculty_factor
+)
+
+str(my_list)
+```
+
+```
+## List of 3
+##  $ great_tv      : chr [1:3] "Ozark" "Mad Men" "Breaking Bad"
+##  $ first_primes  : num [1:5] 2 3 5 7 11
+##  $ faculty_factor: Factor w/ 6 levels "Alex","Jiena",..: 1 2 3 4 5 6
+```
+
+```r
+# access specific elements
+my_list$great_tv
+```
+
+```
+## [1] "Ozark"        "Mad Men"      "Breaking Bad"
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Data structures - dataframes
+
+Dataframes are named lists of vectors of the same length.  They are the most popular data structure in R - basically the R equivalent of a spreadsheet.
+
+
+```r
+(faculty_info &lt;- data.frame(
+  faculty = faculty_factor,
+  has_dog = faculty_has_dog
+))
+```
+
+```
+##   faculty has_dog
+## 1    Alex   FALSE
+## 2   Jiena   FALSE
+## 3  Jordan   FALSE
+## 4   Keith    TRUE
+## 5     Liz    TRUE
+## 6  Rachel    TRUE
+```
+
+```r
+str(faculty_info)
+```
+
+```
+## 'data.frame':	6 obs. of  2 variables:
+##  $ faculty: Factor w/ 6 levels "Alex","Jiena",..: 1 2 3 4 5 6
+##  $ has_dog: logi  FALSE FALSE FALSE TRUE TRUE TRUE
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Loading and viewing dataframes
+
+All of the data sets we work with will be in online CSV files, so we can load them in from a URL using `read.csv()`.  
+
+
+```r
+url &lt;- "https://peopleanalytics-regression-book.org/data/ugtests.csv"
+ugtests &lt;- read.csv(url)
+str(ugtests)
+```
+
+```
+## 'data.frame':	975 obs. of  4 variables:
+##  $ Yr1  : int  27 70 27 26 46 86 40 60 49 80 ...
+##  $ Yr2  : int  50 104 36 75 77 122 100 92 98 127 ...
+##  $ Yr3  : int  52 126 148 115 75 119 125 78 119 67 ...
+##  $ Final: int  93 207 175 125 114 159 153 84 147 80 ...
+```
+
+Often data is big, so we will use `head()` to look at the first few rows:
+
+
+```r
+head(ugtests)
+```
+
+```
+##   Yr1 Yr2 Yr3 Final
+## 1  27  50  52    93
+## 2  70 104 126   207
+## 3  27  36 148   175
+## 4  26  75 115   125
+## 5  46  77  75   114
+## 6  86 122 119   159
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## The pipe operator
+
+The pipe operator `|&gt;`  helps you write more readable code through avoiding deeply nested functions within functions, allowing you to see the order of operations more clearly. (**Tip:** Use `Cmd/Ctrl+Shift+M` for a shortcut to the pipe).
+
+
+```r
+# without pipe
+round(colMeans(subset(ugtests, subset = Yr2 &lt; 75, select = "Yr1")), 2)
+```
+
+```
+##   Yr1 
+## 51.75
+```
+
+
+```r
+# with pipe (note neat coding style)
+ugtests |&gt; 
+  subset(subset = Yr2 &lt; 75, select = "Yr1") |&gt; 
+  colMeans() |&gt; 
+  round(2)
+```
+
+```
+##   Yr1 
+## 51.75
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
