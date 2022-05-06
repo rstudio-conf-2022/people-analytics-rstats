@@ -3,7 +3,7 @@ title: "Welcome to the People Analytics Workshop"
 author: "Keith McNulty"
 output:
   xaringan::moon_reader:
-    css: "../style.css"
+    css: "style.css"
     nature:
       highlightStyle: github
       highlightLines: true
