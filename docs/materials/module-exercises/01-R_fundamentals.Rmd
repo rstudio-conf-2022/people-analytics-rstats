@@ -1,0 +1,140 @@
+---
+title: "1 Solutions - R Fundamentals"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will briefly practice working with different vector types.  Follow the instructions in the comments of each code chunk.
+
+## Exercise 1 - Creating and examining vectors
+
+```{r}
+# In a recent coding competition, Liz came first, Alex came second 
+# and Jiena came third.
+
+# here is a vector with their names
+name <- c("Alex", "Jiena", "Liz")
+
+# Check that this vector is a character vector of length 3
+
+
+```
+
+```{r}
+# Create a corresponding numeric vector with each person's position.
+
+
+```
+
+```{r}
+# Check that your vector is a numeric vector of length three.
+
+
+```
+
+
+## Exercise 2 - Converting vectors to factors and ordered factors 
+
+```{r}
+# Convert the 'name' character vector to a factor vector called 'name_factor'.
+# Check that the conversion succeeded.
+
+
+```
+
+```{r}
+# Convert your 'name' character vector to an ordered factor vector
+# in increasing position order. Check that the conversion succeeded. 
+
+
+```
+
+
+```{r}
+# EXTENSION: Use a function to display the vector in order of position (highest to lowest)?
+
+
+```
+
+## Exercise 3 - Loading and inspecting dataframes
+
+```{r}
+# Here is a URL for on online csv of data about charity donations
+url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
+
+# Download this into a dataframe with a name of your choice
+
+
+```
+
+```{r}
+# Inspect the dataframe to find out how many rows of data there are
+# and what the columns names and data types are
+
+
+```
+
+## Exercise 4 - Using functions, packages and the pipe operator
+
+```{r}
+# Load the dplyr package 
+
+
+# Seek help on the functions filter() and pull() from dplyr
+# What do these functions do and what are their arguments?
+
+
+```
+
+```{r}
+# Using the pipe operator, write code to calculate the average amount
+# donated by Rural Domestic individuals, rounded to the nearest dollar.
+# Remember that == (double equals) is used for precise equality
+
+
+
+```
+
+```{r}
+## EXTENSION: Write similar code to calculate the average amount donated 
+## by males the age range of 30-39 inclusive, rounded to the nearest dollar.
+
+
+
+```
+
+## Exercise 5 - Plotting and graphing
+
+```{r}
+# Using your charity dataset from the previous exercises, plot
+# total_donations (y-axis) against age (x-axis)
+
+
+```
+
+```{r}
+# Using an appropriate function, plot a histogram of total donations.
+
+
+
+```
+
+```{r}
+# EXTENSION: If you know ggplot2, use it to create a boxplot of
+# total donations grouped by gender.
+
+
+
+```
+
+
+## Exercise 6 - Documenting in R Markdown
+
+```{r}
+# Knit this document into a HTML file using the 'Knit' button
+# View your output
+
+```

@@ -106,7 +106,7 @@ class: left, middle, rstudio-logo
 
 ## Explanatory modeling: what we will learn
 
-We will focus on regression analysis as a way to <i>explain<i> outcomes of interest using data.  You will learn:
+We will focus on regression analysis as a way to <i>explain</i> outcomes of interest using data.  You will learn:
 
 1.  How to choose an appropriate model type for the problem at hand.
 2.  How to prepare your data for your model.
@@ -141,15 +141,36 @@ We will focus on creating, visualizing and analyzing network structures to draw 
 5.  How to identify community structures in networks and how to describe those structures.  
 
 ---
-class: left, middle, rstudio-logo 
+class: left, middle, rstudio-logo, reallybigfont 
 
 ## How we will learn
 
+&#128105;&#8205;&#127979;  Talks and instruction
+
+&#128104;&#127997;&#8205;&#128187; Frequent short coding exercises 
+
+&#129337; Project work 
+
+&#128562; A few other things
+
+
+
 
 ---
-class: left, middle, rstudio-logo 
+class: left, middle, rstudio-logo, reallybigfont 
 
 ## How to get help
+
+<table>
+  <tr>
+    <td class='box green'></td>
+    <td valign="middle">&#129395; I'm finished - all good!</td>
+  </tr>
+  <tr>
+    <td class='box red'></td>
+    <td valign="middle">&#128533; I could use some help!</td>
+  </tr>
+</table>
 
 ---
 class: left, middle, rstudio-logo 
@@ -275,9 +296,9 @@ class: left, middle, rstudio-logo
 
 For our first short exercise, we will do some practice on working with and converting data types.
 
-Go to ...
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 01 - R Fundamentals**.
 
-
+Let's work on **Exercises 1 and 2**.
 
 ---
 class: left, middle, rstudio-logo 
@@ -334,6 +355,39 @@ Often data is big, so we will use `head()` to look at the first few rows:
 head(ugtests)
 ```
 
+
+---
+class: left, middle, rstudio-logo 
+
+## Functions
+
+Functions perform useful operations on objects, returning a transformed object.  They usually exist because there is a task that needs to be performed repeatedly by a user or many users.  We've already seen some functions.
+
+Can you name some functions that we have already seen in previous pages?
+
+We will be using a lot of functions over the next 2 days.  Some of them will be built into base R, like `lm()` or `glm()`, and some will be from add-on packages like `polr()` or `eigen_centrality()`.  
+
+```{r}
+# example function - substr() extracts characters from a string
+substr("Keith", start = 2, stop = 4)
+```
+
+To display help on how to use the `substr` function, use `?substr` or `help(substr)` in the console.
+
+---
+class: left, middle, rstudio-logo 
+
+## Packages
+
+A set of functions that have been created for a specific purpose can be released as a package.  We will be using packages like `dplyr`, `MASS` and `igraph` over the next 2 days.  
+
+All packages have been pre-installed for you on RStudio Cloud, but installing packages is easy.  For example `install.packages("igraph")` would install the `igraph` package. 
+
+To use the functions in a package, you should load the installed package from your library.  For example, to load `dplyr` you would use `library(dplyr)`.
+
+Sometimes it makes sense to namespace functions in packages so that they are not confused with similarly named functions in other packages.  For example, to use the `filter()` function in `dplyr`, you can namespace using `dplyr::filter()`.
+
+
 ---
 class: left, middle, rstudio-logo 
 
@@ -342,14 +396,85 @@ class: left, middle, rstudio-logo
 The pipe operator `|>`  helps you write more readable code through avoiding deeply nested functions within functions, allowing you to see the order of operations more clearly. (**Tip:** Use `Cmd/Ctrl+Shift+M` for a shortcut to the pipe).
 
 ```{r}
+library(dplyr)
+
 # without pipe
-round(colMeans(subset(ugtests, subset = Yr2 < 75, select = "Yr1")), 2)
+round(mean(dplyr::pull(dplyr::filter(ugtests, Yr2 < 75), Yr1)), 2)
 ```
 
 ```{r}
 # with pipe (note neat coding style)
 ugtests |> 
-  subset(subset = Yr2 < 75, select = "Yr1") |> 
-  colMeans() |> 
+  dplyr::filter(Yr2 < 75) |> 
+  dplyr::pull(Yr1) |> 
+  mean() |> 
   round(2)
 ```
+
+---
+class: left, middle, rstudio-logo 
+
+## Exercise - Dataframes, functions, packages and the pipe operator
+
+For our next short exercise, we will do some practice on working with dataframes, functions, packages and the pipe operator.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and continue **Assignment 01 - R Fundamentals**.
+
+Let's work on **Exercises 3 and 4**.
+
+---
+class: left, middle, rstudio-logo 
+
+## Plotting and graphing in base R
+
+Plotting is a big part of any analytical work.  R has a very wide range of options for this.  
+
+Base R has functions like `plot()` for simple X-Y plots, and `boxplot()` or `hist()` for specific plot types.
+
+```{r, out.height="300", fig.align = "center"}
+plot(ugtests$Yr1, ugtests$Final)
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Plotting and graphing in `ggplot2`
+
+For those who know it, `ggplot2` is an incredibly powerful graphing package based on the Grammar of Graphics (Wilkinson, 2005).
+
+```{r, out.height = "300", fig.align = "center"}
+library(ggplot2)
+
+ggplot(ugtests, aes(x = Yr1, y = Final)) +
+  geom_point(color = "blue") + 
+  labs(x = "Year 1", y = "Final") + 
+  theme_minimal()
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Documenting work in R Markdown
+
+R Markdown allows you to integrate your work into a document with commentary, and is a great way to record the work you have done for future reference and reproducibility.
+
+The assignments in this workshop are all set up in R Markdown documents.  When you have finished them you can knit them into HTML documents which will remain available in your workspace after this workshop.  Feel free to add your own text commentary or notes to these documents to help remind you of important things. 
+
+When we get to our project work tomorrow, you should consider using R Markdown to record your method and code in one document.
+
+---
+class: left, middle, rstudio-logo 
+
+## Exercise - Plotting and recording your work
+
+For our next short exercise, we will do some practice on plotting and on recording work in R Markdown.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and continue **Assignment 01 - R Fundamentals**.
+
+Let's work on **Exercises 5 and 6**.
+
+---
+class: left, middle, rstudio-logo 
+
+# &#9989;  Done - let's have a break!
+

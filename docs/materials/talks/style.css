@@ -292,6 +292,11 @@ strong {
   font-size: 24px;
 }
 
+/* reallybigfont class */
+.reallybigfont {
+  font-size: 32px;
+}
+
 
 
 /* Color and font adjustments to text and headers */
@@ -348,3 +353,39 @@ midd-blockquote {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
 }
+
+/* boxes */
+
+.box {
+  float: left;
+  height: 100px;
+  width: 100px;
+  border: 1px solid black;
+  clear: both;
+}
+
+.red {
+  background-color: red;
+}
+
+.green {
+  background-color: green;
+}
+
+.blue {
+  background-color: blue;
+}
+
+/* table */
+
+table {
+  border-spacing: 30px;
+}
+
+th, td {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
