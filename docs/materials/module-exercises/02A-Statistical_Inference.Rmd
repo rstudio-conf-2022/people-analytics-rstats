@@ -1,5 +1,5 @@
 ---
-title: "1 - R Fundamentals"
+title: "2A - Statistical Inference"
 output: html_document
 ---
 
@@ -7,54 +7,45 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In this document we will briefly practice working with different vector types.  Follow the instructions in the comments of each code chunk.
+In this document we will briefly practice some foundational concepts of statistical inference and hypothesis testing.  Follow the instructions in the comments of each code chunk.
 
-## Exercise 1 - Creating and examining vectors
+## Exercise 1 - Mean and standard deviation of a sample
 
 ```{r}
-# In a recent coding competition, Liz came first, Alex came second 
-# and Jiena came third.
+# Download the charity donation dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
 
-# here is a vector with their names
-name <- c("Alex", "Jiena", "Liz")
-
-# Check that this vector is a character vector of length 3
 
 
 ```
 
 ```{r}
-# Create a corresponding numeric vector with each person's position.
+# Calculate the mean total donation for this sample
+
+# Calculate the standard deviation of the total donations for this sample
 
 
 ```
 
-```{r}
-# Check that your vector is a numeric vector of length three.
 
 
-```
 
-
-## Exercise 2 - Converting vectors to factors and ordered factors 
+## Exercise 2 - Standard error and confidence interval
 
 ```{r}
-# Convert the 'name' character vector to a factor vector called 'name_factor'.
-# Check that the conversion succeeded.
+# Calculate the standard error for the mean total donations of the population
 
-
-```
-
-```{r}
-# Convert your 'name' character vector to an ordered factor vector
-# in increasing position order. Check that the conversion succeeded. 
+# Determine the upper and lower bounds for the 95% confidence interval for the 
+# mean total donations for the population
 
 
 ```
 
 
 ```{r}
-# EXTENSION: Use a function to display the vector in order of position (highest to lowest)?
+# EXTENSION: Determine the upper and lower bounds for the 99% confidence interval 
+# for the mean total donations for the population
+# You may need to search online for an appropriate standard error multiple
 
 
 ```

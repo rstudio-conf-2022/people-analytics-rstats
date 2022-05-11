@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Statistical Inference and Linear Regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Keith McNulty" />
+    <script src="2-inference_and_linear_regression_files/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Statistical Inference and Linear Regression
+### Keith McNulty
+
+---
+
+
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&amp;#9989; Understand the concept of statistical inference
+  - Briefly review some important statistical concepts
+  - Review an example of a statistical hypothesis test
+
+&amp;#9989; Learn our first explanatory modeling method
+  - Review simple and multiple Linear Regression
+  - Learn some foundational concepts that apply to other model types
+
+---
+class: left, middle, rstudio-logo
+
+# Statistical Inference
+
+---
+class: left, middle, rstudio-logo
+
+## Samples and Populations
+
+In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a population, but we only have data on a sample subset of that population.
+
+What might be the sample and what might be the population in each of these problems?
+
+1.  A political election forecast
+2.  A market research survey for a grocery chain
+3.  An employer trying to understand if compensation levels may be a factor in employee retention
+
+No matter what we see in a sample, we can never be 100% certain that we would see the same in the population, but sometimes we can be certain enough to *infer* that we will see the same in the population.  The mathematics behind this process is known as *statistical inference*. 
+
+---
+class: left, middle, rstudio-logo
+
+## Let's look at an example
+
+Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a random variable, in that each persons age is independently drawn from the same overall distribution.
+
+
+```r
+url &lt;- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
+charity_data &lt;- read.csv(url)
+
+# select ages of ten people at random
+set.seed(123) # &lt;- ensures we can reproduce
+random_ages &lt;- sample(charity_data$age, 100)
+
+#take mean
+(mean_age &lt;- mean(random_ages))
+```
+
+```
+## [1] 45.64
+```
+
+So can we conclude that people who donate to this charity have a mean age of 45.64?
+
+
+---
+class: left, middle, rstudio-logo
+
+## Repeated sampling tells us about a pattern we can expect
+
+If we were to do this process 1000 times, and draw a density plot, this is what it would look like.  You can see the code for this in the source of this document.
+
+&lt;img src="2-inference_and_linear_regression_files/figure-html/unnamed-chunk-2-1.png" height="350" style="float:left; padding:10px" /&gt;
+
+Our density plot shows the following properties:
+
+* Has the shape of a normal (Gaussian) distribution
+* Blue line as the mean value (the mean of the sample means) - most likely value for the population mean
+* Red dashed lines as +/- 1 standard deviations - 69% probability that population mean is in this range
+* Brown dashed lines as +/- 1.96 standard deviations - 95% probability that population mean is in this range
+
+---
+class: left, middle, rstudio-logo
+
+## This observation leads to some important concepts
+
+1.  The expected mean over many samples of a random variable is itself a random variable, with an mean value and a distribution around that mean.
+2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error* for the population mean
+3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean
+
+As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence intervals 
+
+
+---
+class: left, middle, rstudio-logo
+
+## Determining standard errors
+
+So, let's look at the mean age of all the individuals in our charity dataset:
+
+
+```r
+(sample_mean_age &lt;- mean(charity_data$age))
+```
+
+```
+## [1] 46.99718
+```
+
+The mathematical formula for standard error is simply the standard deviation of the data divided by the square root of the sample size:
+
+$$
+SE = \frac{\sigma}{\sqrt{n}}
+$$
+
+We can use this to calculate the standard error of the mean age for the entire population:
+
+
+```r
+(sample_se_mean_age &lt;- sd(charity_data$age)/sqrt(length(charity_data$age)))
+```
+
+```
+## [1] 0.8299068
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Determining confidence intervals
+
+Confidence intervals directly correspond to multiples of standard errors.  We saw in a previous slide that the 95% confidence interval corresponded to +/- 1.96 standard errors.  So if we wanted to do this longhand, we could calculate the 95% confidence interval for the mean age of the charity population:
+
+
+```r
+(lower &lt;- sample_mean_age - 1.96 * sample_se_mean_age)
+```
+
+```
+## [1] 45.37056
+```
+
+
+```r
+(upper &lt;- sample_mean_age + 1.96 * sample_se_mean_age)
+```
+
+```
+## [1] 48.62379
+```
+
+Based on our sample, we can **conclude with 95% confidence** that the mean age of those who donate to the charity is between 45.37 and 48.62.
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Sampling, standard errors and confidence intervals
+
+For our next short exercise, we will do some practice on estimating standard errors and confidence intervals from samples.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02A - Statistical Inference**.
+
+Let's work on **Exercises 1 and 2**.
+
+---
+class: left, middle, rstudio-logo
+
+## How can we use this to test a hypothesis?
+
+Let's imagine we want to know if, on average, there is a difference between how much men donate to our charity versus women.
+
+We can consider the difference between the mean male donation and the mean female donation as a random variable in a similar way to how we looked at the previous problem.  Let's calculate the mean of that difference.  
+
+
+```r
+m_donation &lt;- charity_data$total_donations[charity_data$gender == "M"]
+f_donation &lt;- charity_data$total_donations[charity_data$gender == "F"]
+mean_m &lt;- mean(m_donation)
+mean_f &lt;- mean(f_donation)
+
+(diff_mean &lt;- mean_m - mean_f)
+```
+
+```
+## [1] 163.5132
+```
+
+So men donate around $164 more than women on average in our sample.
+
+
+---
+class: left, middle, rstudio-logo
+
+## The null hypothesis
+
+Let's assume that the difference between average male donation and average female donation is zero.  This is called the *null hypothesis*.  It assumes that there is no difference between our two populations and challenges us to have a high confidence that we can reject this.
+
+If zero is not in our 95% confidence range, we can say that we reject the null hypothesis with 95% confidence.
+
+This process of determining the confidence of a difference between two sample means is called a `\(t\)`-test -  named after the `\(t\)`-distribution, which is the expected distribution of the difference between the means, dependent on the sample sizes of the two populations.
+
+We can shortcut the mathematics by simply running the `t.test()` function.
+
+---
+class: left, middle, rstudio-logo
+
+## Running a `\(t\)`-test
+
+
+```r
+t.test(m_donation, f_donation)
+```
+
+```
+## 
+## 	Welch Two Sample t-test
+## 
+## data:  m_donation and f_donation
+## t = 0.59402, df = 290.5, p-value = 0.553
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -378.2515  705.2779
+## sample estimates:
+## mean of x mean of y 
+##  2443.907  2280.394
+```
+
+We conclude that zero is in the 95% confidence interval for the difference between the male and female means for the population.  Therefore we fail to reject the null hypothesis at a 95% confidence level. 
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

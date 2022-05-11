@@ -1,0 +1,226 @@
+---
+title: "Statistical Inference and Linear Regression"
+author: "Keith McNulty"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&#9989; Understand the concept of statistical inference
+  - Briefly review some important statistical concepts
+  - Review an example of a statistical hypothesis test
+
+&#9989; Learn our first explanatory modeling method
+  - Review simple and multiple Linear Regression
+  - Learn some foundational concepts that apply to other model types
+
+---
+class: left, middle, rstudio-logo
+
+# Statistical Inference
+
+---
+class: left, middle, rstudio-logo
+
+## Samples and Populations
+
+In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a population, but we only have data on a sample subset of that population.
+
+What might be the sample and what might be the population in each of these problems?
+
+1.  A political election forecast
+2.  A market research survey for a grocery chain
+3.  An employer trying to understand if compensation levels may be a factor in employee retention
+
+No matter what we see in a sample, we can never be 100% certain that we would see the same in the population, but sometimes we can be certain enough to *infer* that we will see the same in the population.  The mathematics behind this process is known as *statistical inference*. 
+
+---
+class: left, middle, rstudio-logo
+
+## Let's look at an example
+
+Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a random variable, in that each persons age is independently drawn from the same overall distribution.
+
+```{r}
+url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
+charity_data <- read.csv(url)
+
+# select ages of ten people at random
+set.seed(123) # <- ensures we can reproduce
+random_ages <- sample(charity_data$age, 100)
+
+#take mean
+(mean_age <- mean(random_ages))
+
+```
+
+So can we conclude that people who donate to this charity have a mean age of `r mean_age`?
+
+
+---
+class: left, middle, rstudio-logo
+
+## Repeated sampling tells us about a pattern we can expect
+
+If we were to do this process 1000 times, and draw a density plot, this is what it would look like.  You can see the code for this in the source of this document.
+
+```{r, echo = FALSE, out.height = "350", out.extra='style="float:left; padding:10px"'}
+library(ggplot2)
+
+sample_means <- c()
+
+set.seed(123)
+for (i in 1:1000) {
+  sample_means[i] <- mean(sample(charity_data$age, 100))
+}
+
+
+ggplot() +
+  geom_density(aes(x = sample_means), fill = "pink", alpha = 0.3) +
+  geom_vline(xintercept = mean(sample_means), color = "blue") +
+  geom_vline(xintercept = mean(sample_means) + sd(sample_means), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = mean(sample_means) - sd(sample_means), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = mean(sample_means) - 1.96*sd(sample_means), color = "brown", linetype = "dashed") +
+  geom_vline(xintercept = mean(sample_means) + 1.96*sd(sample_means), color = "brown", linetype = "dashed") +
+  labs(x = "Sample Mean", y = "Density") +
+  annotate(geom = "text", x = 46.7, y = 0.29, label = "Mean", color = "blue") +
+  annotate(geom = "text", x = 45.4, y = 0.29, label = "-1 SD", color = "red") +
+  annotate(geom = "text", x = 44.0, y = 0.29, label = "-1.96 SD", color = "brown") +
+  annotate(geom = "text", x = 48.7, y = 0.29, label = "+1 SD", color = "red") +
+  annotate(geom = "text", x = 50.1, y = 0.29, label = "+1.96 SD", color = "brown") +
+  theme_minimal()
+```
+
+Our density plot shows the following properties:
+
+* Has the shape of a normal (Gaussian) distribution
+* Blue line as the mean value (the mean of the sample means) - most likely value for the population mean
+* Red dashed lines as +/- 1 standard deviations - 69% probability that population mean is in this range
+* Brown dashed lines as +/- 1.96 standard deviations - 95% probability that population mean is in this range
+
+---
+class: left, middle, rstudio-logo
+
+## This observation leads to some important concepts
+
+1.  The expected mean over many samples of a random variable is itself a random variable, with an mean value and a distribution around that mean.
+2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error* for the population mean
+3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean
+
+As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence intervals 
+
+
+---
+class: left, middle, rstudio-logo
+
+## Determining standard errors
+
+So, let's look at the mean age of all the individuals in our charity dataset:
+
+```{r}
+(sample_mean_age <- mean(charity_data$age))
+```
+
+The mathematical formula for standard error is simply the standard deviation of the data divided by the square root of the sample size:
+
+$$
+SE = \frac{\sigma}{\sqrt{n}}
+$$
+
+We can use this to calculate the standard error of the mean age for the entire population:
+
+```{r}
+(sample_se_mean_age <- sd(charity_data$age)/sqrt(length(charity_data$age)))
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Determining confidence intervals
+
+Confidence intervals directly correspond to multiples of standard errors.  We saw in a previous slide that the 95% confidence interval corresponded to +/- 1.96 standard errors.  So if we wanted to do this longhand, we could calculate the 95% confidence interval for the mean age of the charity population:
+
+```{r}
+(lower <- sample_mean_age - 1.96 * sample_se_mean_age)
+```
+
+```{r}
+(upper <- sample_mean_age + 1.96 * sample_se_mean_age)
+```
+
+Based on our sample, we can **conclude with 95% confidence** that the mean age of those who donate to the charity is between `r round(lower, 2)` and `r round(upper, 2)`.
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Sampling, standard errors and confidence intervals
+
+For our next short exercise, we will do some practice on estimating standard errors and confidence intervals from samples.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02A - Statistical Inference**.
+
+Let's work on **Exercises 1 and 2**.
+
+---
+class: left, middle, rstudio-logo
+
+## How can we use this to test a hypothesis?
+
+Let's imagine we want to know if, on average, there is a difference between how much men donate to our charity versus women.
+
+We can consider the difference between the mean male donation and the mean female donation as a random variable in a similar way to how we looked at the previous problem.  Let's calculate the mean of that difference.  
+
+```{r}
+m_donation <- charity_data$total_donations[charity_data$gender == "M"]
+f_donation <- charity_data$total_donations[charity_data$gender == "F"]
+mean_m <- mean(m_donation)
+mean_f <- mean(f_donation)
+
+(diff_mean <- mean_m - mean_f)
+```
+
+So men donate around $`r round(diff_mean)` more than women on average in our sample.
+
+
+---
+class: left, middle, rstudio-logo
+
+## The null hypothesis
+
+Let's assume that the difference between average male donation and average female donation is zero.  This is called the *null hypothesis*.  It assumes that there is no difference between our two populations and challenges us to have a high confidence that we can reject this.
+
+If zero is not in our 95% confidence range, we can say that we reject the null hypothesis with 95% confidence.
+
+This process of determining the confidence of a difference between two sample means is called a $t$-test -  named after the $t$-distribution, which is the expected distribution of the difference between the means, dependent on the sample sizes of the two populations.
+
+We can shortcut the mathematics by simply running the `t.test()` function.
+
+---
+class: left, middle, rstudio-logo
+
+## Running a $t$-test
+
+```{r}
+t.test(m_donation, f_donation)
+```
+
+We conclude that zero is in the 95% confidence interval for the difference between the male and female means for the population.  Therefore we fail to reject the null hypothesis at a 95% confidence level. 
+
+---
+class: left, middle, rstudio-logo
+
+## Understanding the $p$-value
+
