@@ -196,89 +196,20 @@ The `\(p\)`-value returned by a hypothesis test represents the likelihood of see
 
 * The red dashed lines represent the points at which the difference is zero (first line is F - M, second line is M - F)
 * This splits the density curve into 3 segments.
-* The total area of A + B represents the `\(p\)`-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
+* The total area of A + C represents the `\(p\)`-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
 * If this `\(p\)`-value is less than a specified standard known as `\(\alpha\)`, we can infer a rejection of the null hypothesis.  Usually `\(\alpha = 0.05\)`.  
 
 ---
 class: left, middle, rstudio-logo
 
-## Exercise - Sampling, standard errors and confidence intervals
+## Exercise - Hypothesis testing for a difference in means
 
-For our next short exercise, we will do some practice on estimating standard errors and confidence intervals from samples.
+For our next short exercise, we will do some practice on running a hypothesis test for a difference in means.
 
 Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02A - Statistical Inference**.
 
 Let's work on **Exercises 1 and 2**.
 
----
-class: left, middle, rstudio-logo
-
-## How can we use this to test a hypothesis?
-
-Let's imagine we want to know if, on average, there is a difference between how much men donate to our charity versus women.
-
-We can consider the difference between the mean male donation and the mean female donation as a random variable in a similar way to how we looked at the previous problem.  Let's calculate the mean of that difference.  
-
-
-```r
-m_donation &lt;- charity_data$total_donations[charity_data$gender == "M"]
-f_donation &lt;- charity_data$total_donations[charity_data$gender == "F"]
-mean_m &lt;- mean(m_donation)
-mean_f &lt;- mean(f_donation)
-
-(diff_mean &lt;- mean_m - mean_f)
-```
-
-```
-## [1] 163.5132
-```
-
-So men donate around $164 more than women on average in our sample.
-
-
----
-class: left, middle, rstudio-logo
-
-## The null hypothesis
-
-Let's assume that the difference between average male donation and average female donation is zero.  This is called the *null hypothesis*.  It assumes that there is no difference between our two populations and challenges us to have a high confidence that we can reject this.
-
-If zero is not in our 95% confidence range, we can say that we reject the null hypothesis with 95% confidence.
-
-This process of determining the confidence of a difference between two sample means is called a `\(t\)`-test -  named after the `\(t\)`-distribution, which is the expected distribution of the difference between the means, dependent on the sample sizes of the two populations.
-
-We can shortcut the mathematics by simply running the `t.test()` function.
-
----
-class: left, middle, rstudio-logo
-
-## Running a `\(t\)`-test
-
-
-```r
-t.test(m_donation, f_donation)
-```
-
-```
-## 
-## 	Welch Two Sample t-test
-## 
-## data:  m_donation and f_donation
-## t = 0.59402, df = 290.5, p-value = 0.553
-## alternative hypothesis: true difference in means is not equal to 0
-## 95 percent confidence interval:
-##  -378.2515  705.2779
-## sample estimates:
-## mean of x mean of y 
-##  2443.907  2280.394
-```
-
-We conclude that zero is in the 95% confidence interval for the difference between the male and female means for the population.  Therefore we fail to reject the null hypothesis at a 95% confidence level. 
-
----
-class: left, middle, rstudio-logo
-
-## Understanding the `\(p\)`-value
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

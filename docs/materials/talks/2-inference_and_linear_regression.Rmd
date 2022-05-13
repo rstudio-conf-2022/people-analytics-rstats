@@ -215,7 +215,7 @@ ggplot(data.frame(x = c(-2.5, 2.5)), aes(x = x)) +
 
 * The red dashed lines represent the points at which the difference is zero (first line is F - M, second line is M - F)
 * This splits the density curve into 3 segments.
-* The total area of A + B represents the $p$-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
+* The total area of A + C represents the $p$-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
 * If this $p$-value is less than a specified standard known as $\alpha$, we can infer a rejection of the null hypothesis.  Usually $\alpha = 0.05$.  
 
 ---
