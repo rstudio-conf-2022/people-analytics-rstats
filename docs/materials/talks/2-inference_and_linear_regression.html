@@ -41,7 +41,7 @@ class: left, middle, rstudio-logo
 
 ## Samples and Populations
 
-In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a population, but we only have data on a sample subset of that population.
+In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a *population*, but we only have data on a *sample* subset of that population.
 
 What might be the sample and what might be the population in each of these problems?
 
@@ -56,7 +56,7 @@ class: left, middle, rstudio-logo
 
 ## Let's look at an example
 
-Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a random variable, in that each persons age is independently drawn from the same overall distribution.
+Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a *random variable*, in that each persons age is independently drawn from the same overall distribution.
 
 
 ```r
@@ -99,72 +99,105 @@ class: left, middle, rstudio-logo
 
 ## This observation leads to some important concepts
 
-1.  The expected mean over many samples of a random variable is itself a random variable, with an mean value and a distribution around that mean.
-2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error* for the population mean
-3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean
+1.  The expected mean over many samples of a random variable is itself a random variable, with a mean value and a distribution around that mean.
+2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error (SE)* for the population mean
+3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean.  This confidence interval corresponds to specified multiples of standard errors.
 
-As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence intervals 
+As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence interval.  
+
+Often as a 'rule of thumb', practitioners will regard +/- 2 standard errors as the 95% confidence interval.
 
 
 ---
 class: left, middle, rstudio-logo
 
-## Determining standard errors
+## Hypothesis testing
 
-So, let's look at the mean age of all the individuals in our charity dataset:
+Now imagine someone asks us a question about differences between populations.  For example:  do men and women that donate to our charity have a different average age?
 
-
-```r
-(sample_mean_age &lt;- mean(charity_data$age))
-```
-
-```
-## [1] 46.99718
-```
-
-The mathematical formula for standard error is simply the standard deviation of the data divided by the square root of the sample size:
-
-$$
-SE = \frac{\sigma}{\sqrt{n}}
-$$
-
-We can use this to calculate the standard error of the mean age for the entire population:
+We do not have the data for all men and women that donate, but we do have the data from our sample dataset. Let's calculate the mean age of men and of women in that data set.
 
 
 ```r
-(sample_se_mean_age &lt;- sd(charity_data$age)/sqrt(length(charity_data$age)))
+age_m &lt;- charity_data$age[charity_data$gender == "M"]
+mean(age_m)
 ```
 
 ```
-## [1] 0.8299068
+## [1] 46.49007
+```
+
+
+```r
+age_f &lt;- charity_data$age[charity_data$gender == "F"]
+mean(age_f)
+```
+
+```
+## [1] 47.37438
+```
+
+So in our sample there is an age difference of about 0.9 years on average.  We now need to determine if that age difference is large enough to infer that there is a difference in the average age of all men who donate vs all women who donate.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Process of statistically testing a hypothesis of difference
+
+First we note that the difference of two random variables is a random variable, so in this case we can expect the difference between the mean age of men and the mean age of women to obey an expected sampling distribution with a standard error and a 95% confidence interval for the population value.
+
+So we can use the following process to test our whether we can infer that there is a difference:
+
+* Assume as a starting point that the difference in the population is actually zero.  This is called the *null hypothesis*. 
+* Use the sample to calculate the expected mean, standard error and 95% confidence interval for the difference between the mean ages in the population.
+* Determine whether or not zero lies inside or outside the 95% confidence interval.  If it lies outside, this means that there is less than a 5% chance that this sample would occur if the null hypothesis were true.
+* If there is less than a 5% chance that this sample would occur if the null hypothesis were true, we infer that the null hypothesis should be rejected and we conclude the *alternative hypothesis*.
+* Otherwise we do not infer that the null hypothesis can be rejected.
+
+
+
+
+
+---
+class: left, middle, rstudio-logo
+
+## Welch's `\(t\)`-test of difference in means
+
+Welch's `\(t\)`-test will perform all of these steps for you.  It will calculate the expected distribution of the difference in means based on your samples, it will compute the 95% confidence interval, and it will tell you where zero lies on the distribution.  In this case it tells us that we cannot infer a rejection of the null hypothesis.
+
+
+```r
+t.test(age_m, age_f)
+```
+
+```
+## 
+## 	Welch Two Sample t-test
+## 
+## data:  age_m and age_f
+## t = -0.53486, df = 339.75, p-value = 0.5931
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -4.136438  2.367802
+## sample estimates:
+## mean of x mean of y 
+##  46.49007  47.37438
 ```
 
 ---
 class: left, middle, rstudio-logo
 
-## Determining confidence intervals
+## `\(\alpha\)` and the `\(p\)`-value
 
-Confidence intervals directly correspond to multiples of standard errors.  We saw in a previous slide that the 95% confidence interval corresponded to +/- 1.96 standard errors.  So if we wanted to do this longhand, we could calculate the 95% confidence interval for the mean age of the charity population:
+The `\(p\)`-value returned by a hypothesis test represents the likelihood of seeing this sample difference or a larger difference if the null hypothesis were true.   
 
+&lt;img src="2-inference_and_linear_regression_files/figure-html/unnamed-chunk-6-1.png" height="350" style="float:left; padding:10px" /&gt;
 
-```r
-(lower &lt;- sample_mean_age - 1.96 * sample_se_mean_age)
-```
-
-```
-## [1] 45.37056
-```
-
-
-```r
-(upper &lt;- sample_mean_age + 1.96 * sample_se_mean_age)
-```
-
-```
-## [1] 48.62379
-```
-
-Based on our sample, we can **conclude with 95% confidence** that the mean age of those who donate to the charity is between 45.37 and 48.62.
+* The red dashed lines represent the points at which the difference is zero (first line is F - M, second line is M - F)
+* This splits the density curve into 3 segments.
+* The total area of A + B represents the `\(p\)`-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
+* If this `\(p\)`-value is less than a specified standard known as `\(\alpha\)`, we can infer a rejection of the null hypothesis.  Usually `\(\alpha = 0.05\)`.  
 
 ---
 class: left, middle, rstudio-logo
@@ -241,6 +274,12 @@ t.test(m_donation, f_donation)
 ```
 
 We conclude that zero is in the 95% confidence interval for the difference between the male and female means for the population.  Therefore we fail to reject the null hypothesis at a 95% confidence level. 
+
+---
+class: left, middle, rstudio-logo
+
+## Understanding the `\(p\)`-value
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

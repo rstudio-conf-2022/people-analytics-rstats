@@ -37,7 +37,7 @@ class: left, middle, rstudio-logo
 
 ## Samples and Populations
 
-In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a population, but we only have data on a sample subset of that population.
+In the vast majority of situations when we apply statistics to a problem, we are being asked to draw a conclusion about a *population*, but we only have data on a *sample* subset of that population.
 
 What might be the sample and what might be the population in each of these problems?
 
@@ -52,7 +52,7 @@ class: left, middle, rstudio-logo
 
 ## Let's look at an example
 
-Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a random variable, in that each persons age is independently drawn from the same overall distribution.
+Let's take the charity donation dataset that you worked on in the exercises in the last module, and let's determine the mean age of ten randomly selected people who made donations.  Note that the age of a person is considered a *random variable*, in that each persons age is independently drawn from the same overall distribution.
 
 ```{r}
 url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
@@ -97,10 +97,10 @@ ggplot() +
   geom_vline(xintercept = mean(sample_means) + 1.96*sd(sample_means), color = "brown", linetype = "dashed") +
   labs(x = "Sample Mean", y = "Density") +
   annotate(geom = "text", x = 46.7, y = 0.29, label = "Mean", color = "blue") +
-  annotate(geom = "text", x = 45.4, y = 0.29, label = "-1 SD", color = "red") +
-  annotate(geom = "text", x = 44.0, y = 0.29, label = "-1.96 SD", color = "brown") +
-  annotate(geom = "text", x = 48.7, y = 0.29, label = "+1 SD", color = "red") +
-  annotate(geom = "text", x = 50.1, y = 0.29, label = "+1.96 SD", color = "brown") +
+  annotate(geom = "text", x = 45.4, y = 0.29, label = "-1 SE", color = "red") +
+  annotate(geom = "text", x = 44.0, y = 0.29, label = "-1.96 SE", color = "brown") +
+  annotate(geom = "text", x = 48.7, y = 0.29, label = "+1 SE", color = "red") +
+  annotate(geom = "text", x = 50.1, y = 0.29, label = "+1.96 SE", color = "brown") +
   theme_minimal()
 ```
 
@@ -116,111 +116,117 @@ class: left, middle, rstudio-logo
 
 ## This observation leads to some important concepts
 
-1.  The expected mean over many samples of a random variable is itself a random variable, with an mean value and a distribution around that mean.
-2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error* for the population mean
-3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean
+1.  The expected mean over many samples of a random variable is itself a random variable, with a mean value and a distribution around that mean.
+2.  Given this distribution, we call a standard deviation above or below the expected mean of a random variable a *standard error (SE)* for the population mean
+3.  We call a probability range around the expected mean of a random variable a *confidence interval* for the population mean.  This confidence interval corresponds to specified multiples of standard errors.
 
-As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence intervals 
+As a consequence of this, if we know the mean of our sample, we can use the expected distribution of that mean to determine the standard error and the confidence interval.  
+
+Often as a 'rule of thumb', practitioners will regard +/- 2 standard errors as the 95% confidence interval.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Hypothesis testing
+
+Now imagine someone asks us a question about differences between populations.  For example:  do men and women that donate to our charity have a different average age?
+
+We do not have the data for all men and women that donate, but we do have the data from our sample dataset. Let's calculate the mean age of men and of women in that data set.
+
+```{r}
+age_m <- charity_data$age[charity_data$gender == "M"]
+mean(age_m)
+```
+
+```{r}
+age_f <- charity_data$age[charity_data$gender == "F"]
+mean(age_f)
+```
+
+So in our sample there is an age difference of about 0.9 years on average.  We now need to determine if that age difference is large enough to infer that there is a difference in the average age of all men who donate vs all women who donate.
 
 
 ---
 class: left, middle, rstudio-logo
 
-## Determining standard errors
+## Process of statistically testing a hypothesis of difference
 
-So, let's look at the mean age of all the individuals in our charity dataset:
+First we note that the difference of two random variables is a random variable, so in this case we can expect the difference between the mean age of men and the mean age of women to obey an expected sampling distribution with a standard error and a 95% confidence interval for the population value.
+
+So we can use the following process to test our whether we can infer that there is a difference:
+
+* Assume as a starting point that the difference in the population is actually zero.  This is called the *null hypothesis*. 
+* Use the sample to calculate the expected mean, standard error and 95% confidence interval for the difference between the mean ages in the population.
+* Determine whether or not zero lies inside or outside the 95% confidence interval.  If it lies outside, this means that there is less than a 5% chance that this sample would occur if the null hypothesis were true.
+* If there is less than a 5% chance that this sample would occur if the null hypothesis were true, we infer that the null hypothesis should be rejected and we conclude the *alternative hypothesis*.
+* Otherwise we do not infer that the null hypothesis can be rejected.
+
+
+
+
+
+---
+class: left, middle, rstudio-logo
+
+## Welch's $t$-test of difference in means
+
+Welch's $t$-test will perform all of these steps for you.  It will calculate the expected distribution of the difference in means based on your samples, it will compute the 95% confidence interval, and it will tell you where zero lies on the distribution.  In this case it tells us that we cannot infer a rejection of the null hypothesis.
 
 ```{r}
-(sample_mean_age <- mean(charity_data$age))
-```
-
-The mathematical formula for standard error is simply the standard deviation of the data divided by the square root of the sample size:
-
-$$
-SE = \frac{\sigma}{\sqrt{n}}
-$$
-
-We can use this to calculate the standard error of the mean age for the entire population:
-
-```{r}
-(sample_se_mean_age <- sd(charity_data$age)/sqrt(length(charity_data$age)))
+t.test(age_m, age_f)
 ```
 
 ---
 class: left, middle, rstudio-logo
 
-## Determining confidence intervals
+## $\alpha$ and the $p$-value
 
-Confidence intervals directly correspond to multiples of standard errors.  We saw in a previous slide that the 95% confidence interval corresponded to +/- 1.96 standard errors.  So if we wanted to do this longhand, we could calculate the 95% confidence interval for the mean age of the charity population:
+The $p$-value returned by a hypothesis test represents the likelihood of seeing this sample difference or a larger difference if the null hypothesis were true.   
 
-```{r}
-(lower <- sample_mean_age - 1.96 * sample_se_mean_age)
+```{r, echo = FALSE, out.height = "350", out.extra='style="float:left; padding:10px"'}
+diff <- mean(age_m) - mean(age_f)
+test <- t.test(age_m, age_f)
+lower <- test$conf.int[1]
+upper <- test$conf.int[2]
+tval <- test$statistic
+df <- test$parameter
+se <- test$stderr
+breaks <- -2:2
+labels <- round(diff + se*breaks, 2)
+
+ggplot(data.frame(x = c(-2.5, 2.5)), aes(x = x)) +
+  stat_function(fun = dt, args = list(df = df), color = "blue") +
+  scale_x_continuous(breaks = breaks,
+                     labels = labels) +
+  geom_vline(xintercept = tval, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = -tval, linetype = "dashed", color = "red") +
+  annotate(geom = "text", x = 1.2, y = 0.4, 
+           label = "Mean M - Mean F = 0", color = "red") +
+  annotate(geom = "text", x = -1.2, y = 0.4, 
+           label = "Mean F - Mean M = 0", color = "red") +
+  annotate(geom = "text", x = -1, y = 0.1, label = "A", size = 10) +
+  annotate(geom = "text", x = 0, y = 0.1, label = "B", size = 10) +
+  annotate(geom = "text", x = 1, y = 0.1, label = "C", size = 10) +
+  labs(x = "Estimated population diff",
+       y = "Density") +
+  theme_minimal()
 ```
 
-```{r}
-(upper <- sample_mean_age + 1.96 * sample_se_mean_age)
-```
-
-Based on our sample, we can **conclude with 95% confidence** that the mean age of those who donate to the charity is between `r round(lower, 2)` and `r round(upper, 2)`.
+* The red dashed lines represent the points at which the difference is zero (first line is F - M, second line is M - F)
+* This splits the density curve into 3 segments.
+* The total area of A + B represents the $p$-value - it is the likelihood that samples with this difference or a larger difference would occur assuming there was a zero difference in the population.
+* If this $p$-value is less than a specified standard known as $\alpha$, we can infer a rejection of the null hypothesis.  Usually $\alpha = 0.05$.  
 
 ---
 class: left, middle, rstudio-logo
 
-## Exercise - Sampling, standard errors and confidence intervals
+## Exercise - Hypothesis testing for a difference in means
 
-For our next short exercise, we will do some practice on estimating standard errors and confidence intervals from samples.
+For our next short exercise, we will do some practice on running a hypothesis test for a difference in means.
 
 Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02A - Statistical Inference**.
 
 Let's work on **Exercises 1 and 2**.
 
----
-class: left, middle, rstudio-logo
-
-## How can we use this to test a hypothesis?
-
-Let's imagine we want to know if, on average, there is a difference between how much men donate to our charity versus women.
-
-We can consider the difference between the mean male donation and the mean female donation as a random variable in a similar way to how we looked at the previous problem.  Let's calculate the mean of that difference.  
-
-```{r}
-m_donation <- charity_data$total_donations[charity_data$gender == "M"]
-f_donation <- charity_data$total_donations[charity_data$gender == "F"]
-mean_m <- mean(m_donation)
-mean_f <- mean(f_donation)
-
-(diff_mean <- mean_m - mean_f)
-```
-
-So men donate around $`r round(diff_mean)` more than women on average in our sample.
-
-
----
-class: left, middle, rstudio-logo
-
-## The null hypothesis
-
-Let's assume that the difference between average male donation and average female donation is zero.  This is called the *null hypothesis*.  It assumes that there is no difference between our two populations and challenges us to have a high confidence that we can reject this.
-
-If zero is not in our 95% confidence range, we can say that we reject the null hypothesis with 95% confidence.
-
-This process of determining the confidence of a difference between two sample means is called a $t$-test -  named after the $t$-distribution, which is the expected distribution of the difference between the means, dependent on the sample sizes of the two populations.
-
-We can shortcut the mathematics by simply running the `t.test()` function.
-
----
-class: left, middle, rstudio-logo
-
-## Running a $t$-test
-
-```{r}
-t.test(m_donation, f_donation)
-```
-
-We conclude that zero is in the 95% confidence interval for the difference between the male and female means for the population.  Therefore we fail to reject the null hypothesis at a 95% confidence level. 
-
----
-class: left, middle, rstudio-logo
-
-## Understanding the $p$-value
 

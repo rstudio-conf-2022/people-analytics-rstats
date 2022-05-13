@@ -7,125 +7,75 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In this document we will briefly practice some foundational concepts of statistical inference and hypothesis testing.  Follow the instructions in the comments of each code chunk.
+In this document we will briefly practice some foundational concepts of 
+statistical inference and hypothesis testing.  Follow the instructions 
+in the comments of each code chunk.
 
-## Exercise 1 - Mean and standard deviation of a sample
+## Exercise 1 - Running a $t$-test
 
 ```{r}
 # Download the charity donation dataset from the URL provided
 url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
 
 
-
 ```
 
 ```{r}
-# Calculate the mean total donation for this sample
-
-# Calculate the standard deviation of the total donations for this sample
-
-
-```
-
-
-
-
-## Exercise 2 - Standard error and confidence interval
-
-```{r}
-# Calculate the standard error for the mean total donations of the population
-
-# Determine the upper and lower bounds for the 95% confidence interval for the 
-# mean total donations for the population
-
-
-```
-
-
-```{r}
-# EXTENSION: Determine the upper and lower bounds for the 99% confidence interval 
-# for the mean total donations for the population
-# You may need to search online for an appropriate standard error multiple
-
-
-```
-
-## Exercise 3 - Loading and inspecting dataframes
-
-```{r}
-# Here is a URL for on online csv of data about charity donations
-url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
-
-# Download this into a dataframe with a name of your choice
-
-
-```
-
-```{r}
-# Inspect the dataframe to find out how many rows of data there are
-# and what the columns names and data types are
-
-
-```
-
-## Exercise 4 - Using functions, packages and the pipe operator
-
-```{r}
-# Load the dplyr package 
-
-
-# Seek help on the functions filter() and pull() from dplyr
-# What do these functions do and what are their arguments?
-
-
-```
-
-```{r}
-# Using the pipe operator, write code to calculate the average amount
-# donated by Rural Domestic individuals, rounded to the nearest dollar.
-# Remember that == (double equals) is used for precise equality
+# Create two vectors capturing the total donations for those who have 
+# recently donated and those who have not
 
 
 
 ```
 
 ```{r}
-## EXTENSION: Write similar code to calculate the average amount donated 
-## by males the age range of 30-39 inclusive, rounded to the nearest dollar.
-
-
-
-```
-
-## Exercise 5 - Plotting and graphing
-
-```{r}
-# Using your charity dataset from the previous exercises, plot
-# total_donations (y-axis) against age (x-axis)
-
-
-```
-
-```{r}
-# Using an appropriate function, plot a histogram of total donations.
+# Calculate the difference in the means of these two vectors
+# Round this to 2 decimal places.
 
 
 
 ```
 
 ```{r}
-# EXTENSION: If you know ggplot2, use it to create a boxplot of
-# total donations grouped by gender.
+# Test the hypothesis that recent donors have a different mean donation amount. 
+# Ensure that your test is saved as an object with a name of your choice.
 
 
 
 ```
-
-
-## Exercise 6 - Documenting in R Markdown
 
 ```{r}
-# Knit this document into a HTML file using the 'Knit' button
-# View your output
+# EXTENSION:  Test the hypothesis that recent donors donate MORE
+# (Hint: seek help on the t.test function to work out how to do this)
+
+
 
 ```
+
+## Exercise 2 - Interpreting a $t$-test
+
+```{r}
+# The results of a t-test are actually a named list.
+# You can access specific elements of the list using $ (eg my_test$p.value)
+# Return the standard error value for the difference in mean total donations. 
+# Round this to 2 decimal places
+
+
+
+```
+
+```{r}
+# Return the p-value and the 95% confidence interval for the population diff.
+# round these to 2 decimal places 
+
+
+
+
+```
+
+Use these values to write an interpretation of your $t$-test, explaining what you have observed in the sample and what this means you can infer about the population.
+
+
+
+
+

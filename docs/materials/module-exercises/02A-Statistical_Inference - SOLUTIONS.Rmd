@@ -1,0 +1,88 @@
+---
+title: "2A - Statistical Inference - SOLUTIONS"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will briefly practice some foundational concepts of statistical inference and hypothesis testing.  Follow the instructions in the comments of each code chunk.
+
+## Exercise 1 - Running a $t$-test
+
+```{r}
+# Download the charity donation dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
+charity_data <- read.csv(url)
+
+```
+
+```{r}
+# Create two vectors capturing the total donations for those who have 
+# recently donated and those who have not
+donations_recent <- charity_data$total_donations[charity_data$recent_donation == 1]
+donations_notrecent <- charity_data$total_donations[charity_data$recent_donation == 0]
+```
+
+```{r}
+# Calculate the difference in the means of these two vectors
+# Round this to 2 decimal places
+diff <- mean(donations_recent) - mean(donations_notrecent) 
+(diff <- round(diff, 2))
+
+```
+
+```{r}
+# Test the hypothesis that recent donors have a different mean donation amount. 
+# Ensure that your test is saved as an object with a name of your choice.
+(diff_test <- t.test(donations_recent, donations_notrecent)) 
+
+```
+
+```{r}
+# EXTENSION:  Test the hypothesis that recent donors donate MORE
+# (Hint: seek help on the t.test function to work out how to do this)
+t.test(donations_recent, donations_notrecent, alternative = "greater")
+
+```
+
+## Exercise 2 - Interpreting a $t$-test
+
+```{r}
+# The results of a t-test are actually a named list.
+# You can access specific elements of the list using $ (eg test$p.value)
+# Return the standard error value for the difference in mean total donations. 
+# Round this to 2 decimal places
+(se <- diff_test$stderr |> 
+   round(2))
+
+```
+
+```{r}
+# Return the p-value and the 95% confidence interval for the population diff.
+# round these to 2 decimal places 
+(pval <- diff_test$p.value |> 
+   round(2))
+
+(confint <- diff_test$conf.int |> 
+    round(2))
+```
+
+Use these values to write an interpretation of your $t$-test, explaining what you have observed in the sample and what this means you can infer about the population.
+
+* The null hypothesis is that there is no difference in the mean donations.
+* The observed difference in means for the sample provided was `r diff`.
+* The standard error of this difference in means is `r se`.
+* The 95% confidence interval for the population difference is approimately 1.96
+standard errors either side of the observed value, which calculates to `r confint`.
+* A difference of zero is not inside the 95% confidence interval.
+* Therefore the likelihood of this difference occurring if the null hypothesis 
+were true is less than 5%
+* We can infer a rejection of the null hypothesis and an acceptance of the 
+alternative hypothesis that there is a difference in the mean donations.
+* The $p$-value of the test indicates that the likelihood of this difference 
+or a greater difference occurring if the null hypothesis were true is 
+approximately `r pval*100`%.
+
+
