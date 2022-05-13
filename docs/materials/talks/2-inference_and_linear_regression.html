@@ -5,6 +5,8 @@
     <meta charset="utf-8" />
     <meta name="author" content="Keith McNulty" />
     <script src="2-inference_and_linear_regression_files/header-attrs/header-attrs.js"></script>
+    <script src="2-inference_and_linear_regression_files/kePrint/kePrint.js"></script>
+    <link href="2-inference_and_linear_regression_files/lightable/lightable.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   <body>
@@ -211,6 +213,66 @@ Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?acc
 Let's work on **Exercises 1 and 2**.
 
 
+---
+class: left, middle, rstudio-logo
+
+## Using regression models for statistical inference
+
+Using similar principles to the simple hypothesis test we have just seen, we use regression modeling techniques on samples in order to make inferences about populations.  In most modeling scenarios we will have the following at the outset:
+
+1.  A sample `\(S\)` of observations taken from a population `\(P\)`
+2.  A dataset containing data for our sample set `\(S\)`.  The data includes a set of input variables `\(x_1, x_2, ..., x_p\)` and an outcome variable `\(y\)`.
+3.  A model type to relate `\(x_1, x_2, ..., x_p\)` to `\(y\)`.  We select this model type for the most part based on the scale of our outcome data `\(y\)`.
+
+We will use our sample dataset to estimate the parameters for the model type we have selected, and we will use these parameters to make inferences about the following:
+
+1.  Which input variables influence the outcome for the population?
+2.  To what degree does each input variable influence the outcome?
+3.  How much of the outcome is explained by all our input variables?
+
+---
+class: left, middle, rstudio-logo
+
+## Choosing your model type
+
+Regression model types are usually chosen based on the scale of the outcome variable `\(y\)`.  
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Outcome &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Model &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Continuous scale (eg money, height, weight) &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Linear regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Binary scale (Yes/No) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Nominal category scale (eg A, B, C) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Multinomial logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ordinal category scale (eg Low, Medium, High) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ordinal logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Time dependent binary scale &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Survival/proportional hazard regression &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+class: left, middle, rstudio-logo
+
+# Linear regression modeling
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
