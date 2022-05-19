@@ -1,0 +1,169 @@
+---
+title: "2B - Linear Regression"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct linear regression modeling on a data set relating to graduate salaries in the United States, to try to understand economic factors which influence gradiate salaries,
+
+## Exercise 1 - Running a simple linear regression model
+
+```{r}
+# Download the graduates dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/graduates.csv"
+
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+
+```
+
+```{r}
+# Determine how many observations we have in this data set
+
+```
+
+```{r}
+# use the colnames() function to get the names of the columns in the data set
+
+```
+
+```{r}
+# Use the cor() function to determine the correlation between unemployment rate and median salary
+
+
+```
+
+```{r}
+# Consider the scale of the Unemployment_rate column.  
+# Transform it into a more useful scale
+# (Hint: we will want to understand the impact of a percentage point change)
+
+```
+
+
+```{r}
+# Run a simple linear regression model to estimate the influence of unemployment rate
+# on graduate salaries, saving your model using a name of your choice
+
+
+
+```
+
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+
+
+
+```
+
+```{r}
+# Determine the 95% confidence interval for the coefficients
+
+
+
+```
+
+Write below an interpretation of these coefficients using the estimates and the confidence intervals which you just calculated.
+
+
+```{r}
+# EXTENSION:  If you are familiar with using ggplot2, create a plot of unemployment rate and
+# median salary and show the estimated linear model using geom_smooth()
+
+```
+
+## Exercise 3 - Running a multiple linear regression model
+
+```{r}
+# Run a multiple linear regression to determine the influence of both unemployment rate
+# and total graduate employees on median salary
+
+
+```
+
+```{r}
+# View the coefficients and confidence intervals
+
+
+
+```
+
+Write below an interpretation of the coefficients of this model.
+
+
+## Exercise 4 - Including categorical input variables
+
+```{r}
+# Add discipline as an input variable to the previous model you created in 
+# Exercise 3.  
+
+
+```
+
+
+```{r}
+# Inspect the results and determine which value was used as a reference for 
+# discipline in the model
+
+
+```
+
+
+Write below your thoughts on whether any specific disciplines have a significant influence on median salary.
+
+```{r}
+# EXTENSION:  Change your reference discipline to a discipline of your choice,
+# rerun the model and inspect the results.  How have they changed?
+
+```
+
+
+
+## Exercise 5 - Determining model fit
+
+```{r}
+# Determine the fit of your model from Exercise 4 
+
+```
+
+```{r}
+# Determine if any of the input variables can be removed to form a
+# more parsimonious model
+
+```
+
+```{r}
+# Verify that these is no substantial difference in the fit of your
+# more parsimonious model
+
+```
+
+```{r}
+# Run a summary of your parsimonious model and comment on
+# whether you are confident that it is better than a null model
+
+```
+
+## EXTENSION Exercise 6 - Collinearity
+
+```{r}
+# Determine if the two numerical input variables have a substantial correlation
+
+```
+
+```{r}
+# Using the package mctest, use the imcdiag() function to test if collinearity 
+# exists in your full model from Exercise 3.  Use the VIF method for this.
+
+
+```

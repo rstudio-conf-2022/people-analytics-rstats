@@ -273,6 +273,368 @@ Regression model types are usually chosen based on the scale of the outcome vari
 class: left, middle, rstudio-logo
 
 # Linear regression modeling
+
+---
+class: left, middle, rstudio-logo
+
+## Equation of a straight line
+
+*Linear regression* assumes that the outcome variable `\(y\)` has a straight line relationship with the input variables `\(x_1, x_2, ..., x_p\)`.
+
+You may remember the equation of a straight line from high school:
+
+$$
+y = mx + c
+$$
+
+where `\(m\)` is the gradient of the line and `\(c\)` is the `\(y\)`-intercept.
+
+&lt;img src="2-inference_and_linear_regression_files/figure-html/unnamed-chunk-8-1.png" width="300" height="300" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Simple linear regression
+
+*Simple linear regression* refers to the case where there is only one input variable and only one outcome variable.  This is an easy technique to visualize.  Given a set of data, we plot the `\(x\)` and `\(y\)` values, and then we find the *line of best fit*.
+
+Let's imagine doing this for fifty observations of the examination scores of some students on a four year progam, with our input variable `\(x\)` being their score in Year 3 (out of a total of 200) and our outcome variable `\(y\)` being their Final year score (out of a total of 300).
+
+
+&lt;img src="2-inference_and_linear_regression_files/figure-html/unnamed-chunk-9-1.png" width="300" height="300" style="float:left; padding:10px" style="display: block; margin: auto;" /&gt;
+The line of best fit for this sample has a gradient of 0.54 and an intercept of 84.58.  Therefore, using our sample to model for the relationship between Year 3 and Final year test scores, we can conclude:
+
+* Students who scored zero in Year 3  will score 84.58 in their final year on average.
+* Every point scored in Year 3 is associated with 0.54 points scored in the final year on average.
+
+---
+class: left, middle, rstudio-logo
+
+## Inferring from the sample to the population
+
+Now we want to infer this relationship from our sample to all students (past, present and future).  As we learned earlier in this module, there will be uncertainty about what the gradient and the intercept will be for the population, so our line of best fit will have a 95% confidence interval for the intercept and for the gradient.
+
+&lt;img src="2-inference_and_linear_regression_files/figure-html/unnamed-chunk-10-1.png" width="300" height="300" style="float:left; padding:10px" style="display: block; margin: auto;" /&gt;
+
+Therefore, we can infer the following for all students (past, present and future) with 95% confidence:
+
+* Students who score zero in Year 3 will score between 52.8 and 116.36 on average in their final year.
+* Every point scored in Year 3 is associated with between 0.24 and 0.83 points on average in the final year.
+
+---
+class: left, middle, rstudio-logo
+
+## Estimating the line of best fit in R
+
+Let's estimate our model using the full set of sample data instead of just 50 data points.  
+
+In general, to estimate any model in R, you need (at a minimum) a model function, some data and a formula.  In this case: 
+
+* Model is linear model - `lm()` function in R
+* Data is `ugtests`
+* Formula takes the form `Outcome ~ Input`, in this case `Final ~ Yr3` for a simple regression
+
+
+```r
+# get data 
+url &lt;- "https://peopleanalytics-regression-book.org/data/ugtests.csv"
+ugtests &lt;- read.csv(url)
+
+# estimate model and save model object
+model &lt;- lm(data = ugtests, formula = Final ~ Yr3)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting the coefficients
+
+The intercept and gradient are collectively known as the *coefficients* of the model.  The model output in R is a named list with many components, one of which contains the estimates of the coefficients.
+
+
+```r
+model$coefficients
+```
+
+```
+## (Intercept)         Yr3 
+##  56.2668876   0.8817947
+```
+
+We can be 95% certain that the gradient is non-zero if the confidence interval for `Yr3` does not contain zero.  You can use the `confint()` function on your model to view this:
+
+
+```r
+confint(model)
+```
+
+```
+##                  2.5 %     97.5 %
+## (Intercept) 49.4184585 63.1153168
+## Yr3          0.8197207  0.9438687
+```
+
+We can say that there is a *statistically significant* association between Year 3 scores and final year scores.  We can use the estimated coefficient to illustrate the extent to which Year 3 scores influence final year scores. For example, *each point scored in Year 3 is associated with approximately 0.88 points in the final year*.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Simple linear regression
+
+For our next short exercise, we will do some practice on running a simple linear regression model and interpreting the coefficients.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02B - Linear regression**.
+
+Let's work on **Exercises 1 and 2**.
+
+---
+class: left, middle, rstudio-logo
+
+## Multiple regression
+
+*Multiple regression* refers to a situation when an outcome is being modeled against more than one input variable.  Each input variable has its own gradient coefficient which helps determine the influence that input variable has on the outcome.
+
+For multiple linear regression, we assume:
+
+$$
+y = \alpha + \beta_1x_1 + \beta_2x_2 + ... + \beta_px_p
+$$
+where `\(\alpha\)` is the intercept and each `\(\beta_k\)` is the coefficient for input variable `\(x_k\)`.
+
+`\(\beta_k\)` represents the change in `\(y\)` associated with a unit increase in `\(x_k\)` **assuming no change in the other input variables**.
+
+---
+class: left, middle, rstudio-logo
+
+## Running a multiple linear regression model
+
+Let's relate our final year examination score to all previous years.  We simply extend our formula using the `+` symbol to include multiple input variables.  
+
+
+```r
+full_model &lt;- lm(data = ugtests, formula = Final ~ Yr1 + Yr2 + Yr3)
+
+full_model$coefficients
+```
+
+```
+## (Intercept)         Yr1         Yr2         Yr3 
+## 14.14598945  0.07602621  0.43128539  0.86568123
+```
+
+```r
+confint(full_model)
+```
+
+```
+##                   2.5 %     97.5 %
+## (Intercept)  3.39187185 24.9001071
+## Yr1         -0.05227936  0.2043318
+## Yr2          0.36749170  0.4950791
+## Yr3          0.80850142  0.9228610
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting a multiple regression model
+
+The key thing to remember is that every coefficient estimate assumes no change in the value of the other input variables.  
+
+* Individuals with zero in all three previous years can expect a score of between 3.39 and 24.9 on average in the final year
+* For individuals with the same scores in Years 1 and 2, an additional point in Year 3 is associated with between 0.81 and 0.92 additional points on average in the final year
+* For individuals with the same scores in Years 1 and 3, an additional point in Year 2 is associated with between 0.37 and 0.5 additional points on average in the final year
+* For individuals with the same scores in Years 2 and 3, there is no significant association of Year 1 score with final year score on average
+
+---
+class: left, middle, rstudio-logo
+
+## Using categorical input variables
+
+If an input variable is categorical, you need to check that it has the right data type or the model will not understand it.  
+
+
+```r
+url &lt;- "https://peopleanalytics-regression-book.org/data/sociological_data.csv"
+socio_data &lt;- read.csv(url)
+str(socio_data)
+```
+
+```
+## 'data.frame':	2618 obs. of  9 variables:
+##  $ annual_income_ppp: int  66417 55124 55124 54238 53573 52688 52245 51138 49810 49367 ...
+##  $ average_wk_hrs   : int  50 50 50 50 50 51 51 51 51 51 ...
+##  $ education_months : int  157 156 155 154 150 147 143 141 137 134 ...
+##  $ region           : chr  "Southern Asia" "Southern Asia" "Southern Asia" "Southern Asia" ...
+##  $ job_type         : chr  "Unskilled" "Unskilled" "Unskilled" "Unskilled" ...
+##  $ gender           : chr  "F" "F" "F" "F" ...
+##  $ family_size      : int  5 5 5 5 4 5 5 5 4 4 ...
+##  $ work_distance    : int  3 0 3 0 0 0 0 0 2 0 ...
+##  $ languages        : int  1 1 1 1 1 1 1 1 1 1 ...
+```
+
+If we want to use `region`, `job_type` or `gender` as input variables, we need to change them into factors.  You can do this using `as.factor()`, but many modeling function in R will automatically determine if character string columns should be considered to be categorical, and will automatically convert the data type for you.
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting categorical input variables
+
+Your model will assume a reference (default) category and then it will estimate the influence that a change to one of the other categories will have on the outcome variable.
+
+
+```r
+# model with a categorical and a numerical input
+socio_model &lt;- lm(annual_income_ppp ~ education_months + gender, 
+                  socio_data)
+socio_model$coefficients
+```
+
+```
+##      (Intercept) education_months          genderM 
+##       15513.2010         269.8212       16762.4734
+```
+
+If you wish you can relevel the variable to control which value to use as reference.
+
+
+```r
+# relevel gender to use M as the reference
+socio_data$gender &lt;- as.factor(socio_data$gender) |&gt; 
+  relevel(ref = "M")
+
+# rerun model
+socio_model &lt;- lm(annual_income_ppp ~ education_months + gender, 
+                  socio_data)
+socio_model$coefficients
+```
+
+```
+##      (Intercept) education_months          genderF 
+##       32275.6744         269.8212      -16762.4734
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Model summary
+
+Most regression models in R have a `summary()` function.
+
+
+```r
+# summary of student test score model
+summary(full_model)
+```
+
+```
+## 
+## Call:
+## lm(formula = Final ~ Yr1 + Yr2 + Yr3, data = ugtests)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -92.638 -20.349   0.001  18.954  98.489 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 14.14599    5.48006   2.581  0.00999 ** 
+## Yr1          0.07603    0.06538   1.163  0.24519    
+## Yr2          0.43129    0.03251  13.267  &lt; 2e-16 ***
+## Yr3          0.86568    0.02914  29.710  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 30.43 on 971 degrees of freedom
+## Multiple R-squared:  0.5303,	Adjusted R-squared:  0.5289 
+## F-statistic: 365.5 on 3 and 971 DF,  p-value: &lt; 2.2e-16
+```
+
+
+
+---
+class: left, middle, rstudio-logo
+
+## Understanding model fit
+
+It's never the case in people analytics that an outcome variable can be fully explained by a set of input variables, so it is of interest to understand *how much* of it is explained by the input variables we are using.  This gives us a sense of how well we have explained our outcome.
+
+The `\(R^2\)` of a linear regression model represents the proportion of the variance of the outcome variable that is explained by the input variables.  It takes a value between 0 (a 'null' model where the input variables have no explanatory power) and 1 (a perfect fit).  
+
+The R-squared is part of the summary function for linear models.
+
+
+```r
+summary(full_model)$r.squared
+```
+
+```
+## [1] 0.5303275
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Is your model 'better than nothing'?
+
+Depending on the fit and the sample size, its possible that your model is not significantly different from a 'null model'.  
+
+A model with a high `\(R^2\)` on a handful of observations might actually be useless.  Conversely, a model with a low `\(R^2\)` on a large data set might be better than nothing.  The *F-statistic* helps determine the likelihood that your model is better than a null model.  
+
+The `\(p\)`-value of the F-statistic tests the hypothesis that the model is no different from a null model.  You can see the results of this hypothesis test at the end of the model summary.
+
+---
+class: left, middle, rstudio-logo
+
+## Model simplification
+
+If an input variable is not considered significant in your model, it can be removed without a significant loss in fit.  It is always advisable to remove non-significant variables from models in order to have a simpler model.  This is known as *model parsimony*.
+
+
+```r
+simpler_model &lt;- lm(Final ~ Yr3 + Yr2, ugtests)
+
+summary(full_model)$r.squared
+```
+
+```
+## [1] 0.5303275
+```
+
+```r
+summary(simpler_model)$r.squared
+```
+
+```
+## [1] 0.5296734
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Key watchouts
+
+The following complicating factors can render the results of a linear regression model untrustworthy.  It is advisable to check for these before interpreting your model:
+
+1.  **Collinearity - Highly correlated input variables**:  These can result in inaccurate inferences about the importance of input variables.  Correlations of over 0.7 should set off serious alarm bells.  It is best to experiment with models that do not include both variables.
+2.  **Non-linear relationships**:  If the relationship is clearly non-linear, then applying linear regression may be inappropriate and may result in an over simplified model with a poor fit.  This is called *underfitting*.  Analysis of model error terms (*residuals*) can quickly spot if a linear model is inappropriate.
+3.  **Unusual observations**: Extreme observations can impact model estimates.  Extreme outcome values are known as *outliers* while extreme input variable values are known as *high leverage points*.  It is advisable to remove these if there are reasons to believe that data quality issues could be at play.   
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Multiple linear regression
+
+For our next short exercise, we will do some practice on running and interpreting a multiple linear regressio model.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 02B - Linear regression**.
+
+Let's work on **Exercises 3, 4 and 5**.
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
