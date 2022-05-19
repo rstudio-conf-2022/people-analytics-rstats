@@ -1,5 +1,6 @@
 ---
-title: "Statistical Inference and Linear Regression"
+title: "Explanatory Methods I"
+subtitle: "Statistical Inference and Linear Regression"
 author: "Keith McNulty"
 output:
   xaringan::moon_reader:
@@ -625,4 +626,7 @@ Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?acc
 
 Let's work on **Exercises 3, 4 and 5**.
 
+---
+class: left, middle, rstudio-logo
 
+# &#127857; Lunchtime!  &#128523; 

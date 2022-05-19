@@ -1,5 +1,6 @@
 ---
-title: "Welcome to the People Analytics Workshop"
+title: "Welcome to R for People Analytics"
+subtitle: "Introduction and Preliminaries"
 author: "Keith McNulty"
 output:
   xaringan::moon_reader:
@@ -476,5 +477,5 @@ Let's work on **Exercises 5 and 6**.
 ---
 class: left, middle, rstudio-logo 
 
-# &#9989;  Done - let's have a break!
+# &#9749; Let's have a break! &#128524;
 
