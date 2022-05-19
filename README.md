@@ -63,11 +63,11 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 
 | Time          | Activity         | Led by       |
 | :------------ | :--------------- | :----------  |
-| 09:00 - 10:30 | Preliminaries      | Keith McNulty |
+| 09:00 - 10:30 | [Preliminaries](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/1-preliminaries.html#1)      | Keith McNulty |
 |               | - Welcome and intros   | |
 |               | - Review of R fundamentals   | |
 | 10:30 - 11:00 | *Coffee break*   | |
-| 11:00 - 12:30 | Explanatory Methods I | Keith McNulty |
+| 11:00 - 12:30 | [Explanatory Methods I](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/2-inference_and_linear_regression.html#1) | Keith McNulty |
 |               | - Statistical inference and hypothesis testing   | |
 |               | - Linear regression | |
 | 12:30 - 13:30 | *Lunch break*    | |
