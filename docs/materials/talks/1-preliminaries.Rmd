@@ -154,13 +154,20 @@ class: left, middle, rstudio-logo, reallybigfont
 
 &#128562; A few other things
 
+---
+class: left, middle, rstudio-logo, reallybigfont 
 
+## How to ask questions
+
+&#128227;  Ask instructors or TAs (during breaks if possible!)
+
+&#128187;  Post to our [Github Discussions](https://github.com/rstudio-conf-2022/people-analytics-rstats/discussions) page!
 
 
 ---
 class: left, middle, rstudio-logo, reallybigfont 
 
-## How to get help
+## How to get help on exercises/assignments
 
 <table>
   <tr>
