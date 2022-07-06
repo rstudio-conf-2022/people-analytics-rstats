@@ -83,7 +83,7 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 
 | Time          | Activity         | Led by |
 | :------------ | :--------------- | :----- |
-| 09:00 - 10:30 | Network Analysis I       | Keith McNulty |
+| 09:00 - 10:30 | [Network Analysis I]((https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/5-working_with_and_visualizing_graphs.html#1))       | Keith McNulty |
 |               | - Basic graph theory | |
 |               | - Working with graphs in R  | |
 |               | - Visualizing graphs in R | |
