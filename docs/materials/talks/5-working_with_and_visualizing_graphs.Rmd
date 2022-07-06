@@ -1,0 +1,723 @@
+---
+title: "Network Analysis I"
+subtitle: "Working with and Visualizing Network Graphs"
+author: "<b>rstudio::</b>conf(2022)"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&#9989; Understand graphs as an analytic tool
+  - Review the mathematical definition of a graph
+  - Learn how to construct graphs in R
+
+&#9989; Review graph visualization options in R
+  - Static visualization methods
+  - Dynamic visualization methods
+
+---
+class: left, middle, rstudio-logo
+
+# Working with Graphs
+
+---
+class: left, middle, rstudio-logo
+
+## Graphs help us model connections between entities
+
+```{r, echo = FALSE, out.height = "350", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+library(igraph)
+library(ggraph)
+
+fourpeople <- data.frame(
+  from = c("David", "David", "David", "Jane", "Jane"),
+  to = c("Zubin", "Suraya", "Jane", "Zubin", "Suraya")
+) |> 
+  as.matrix()
+
+fourpeoplegraph <- igraph::graph_from_edgelist(fourpeople)
+
+ggraph(fourpeoplegraph) +
+  geom_edge_link(color = "blue") +
+  geom_node_point(size = 14, color = "pink") +
+  geom_node_text(aes(label = name)) +
+  theme_void()
+```
+
+* In People Analytics, it's quite common for the unit of analysis to be based on connection
+* To allow this, a different form of data structure is needed, known as a *graph*
+* This example graph connects four people based on whether they have worked together
+* The entities (people) are called *vertices* or *nodes*.  The connections are called *edges*.
+* For this type of relationship, there is no need to define a direction.  The edges are *undirected*. 
+* Example: Facebook friends, meetings
+
+---
+class: left, middle, rstudio-logo
+
+## Graphs can be undirected or directed, depending on the relationship
+
+```{r, echo = FALSE, out.height = "350", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+library(igraph)
+library(ggraph)
+
+fourpeoplemanage <- data.frame(
+  from = c("David", "David", "Suraya"),
+  to = c("Zubin", "Jane", "David")
+) |> 
+  as.matrix()
+fourpeoplemanagegraph <- igraph::graph_from_edgelist(fourpeoplemanage)
+ggraph(fourpeoplemanagegraph) +
+  geom_edge_link(arrow = arrow(length = unit(4, 'mm')),
+                 end_cap = circle(5, 'mm'),
+                 color = "blue") +
+  geom_node_point(size = 14, color = "pink") +
+  geom_node_text(aes(label = name)) +
+  theme_void()
+
+```
+
+* In this graph, the relationship is 'is a manager of'.  This relationship has direction.  
+* This is known as a *directed graph* or *digraph*.
+* In a directed graph, it is possible for edges to point in both directions between two vertices.
+* However, these would be considered *two different edges*.
+* Example: Twitter follow, email
+
+---
+class: left, middle, rstudio-logo
+
+## Multigraphs are graphs which allow multiple edges between vertices
+
+```{r, echo = FALSE, out.height = "350", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+library(igraph)
+library(igraphdata)
+library(dplyr)
+library(ggmap)
+
+data(USairports)
+subairports <- induced_subgraph(USairports, c("TUS", "SFO", "PHL"))
+
+airports <- V(subairports) |> names()
+coords <- geocode(airports)
+airports <- data.frame(airport=airports, coords)
+edgelist <- as_edgelist(subairports, names = TRUE) |> as.data.frame()
+colnames(edgelist) = c("From", "To")
+
+flights <- inner_join(edgelist, airports, by = c("From" = "airport"))
+flights <- inner_join(flights, airports, by = c("To" = "airport")) |> 
+  dplyr::filter(From != To)
+
+# Plot flight routes
+library(ggplot2)
+library(ggrepel)
+
+worldmap <- borders("state", colour="lightblue", fill="lightblue") # create a layer of borders
+ggplot() + 
+  worldmap +
+  geom_curve(data=flights, aes(x = lon.x[1], y = lat.x[1], xend = lon.y[1], yend = lat.y[1]), 
+             col = "black", size = 0.1, curvature = .05, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[2], y = lat.x[2], xend = lon.y[2], yend = lat.y[2]), 
+             col = "black", size = 0.1, curvature = .1, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[3], y = lat.x[3], xend = lon.y[3], yend = lat.y[3]), 
+             col = "black", size = 0.1, curvature = .15, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[4], y = lat.x[4], xend = lon.y[4], yend = lat.y[4]), 
+             col = "black", size = 0.1, curvature = .2, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[5], y = lat.x[5], xend = lon.y[5], yend = lat.y[5]), 
+             col = "black", size = 0.1, curvature = .05, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[6], y = lat.x[6], xend = lon.y[6], yend = lat.y[6]), 
+             col = "black", size = 0.1, curvature = .1, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[7], y = lat.x[7], xend = lon.y[7], yend = lat.y[7]), 
+             col = "black", size = 0.1, curvature = .15, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[8], y = lat.x[8], xend = lon.y[8], yend = lat.y[8]), 
+             col = "black", size = 0.1, curvature = .2, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[9], y = lat.x[9], xend = lon.y[9], yend = lat.y[9]), 
+             col = "black", size = 0.1, curvature = .05, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[10], y = lat.x[10], xend = lon.y[10], yend = lat.y[10]), 
+             col = "black", size = 0.1, curvature = .1, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[11], y = lat.x[11], xend = lon.y[11], yend = lat.y[11]), 
+             col = "black", size = 0.1, curvature = .15, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[12], y = lat.x[12], xend = lon.y[12], yend = lat.y[12]), 
+             col = "black", size = 0.1, curvature = .2, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[13], y = lat.x[13], xend = lon.y[13], yend = lat.y[13]), 
+             col = "black", size = 0.1, curvature = .25, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[14], y = lat.x[14], xend = lon.y[14], yend = lat.y[14]), 
+             col = "black", size = 0.1, curvature = 0, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[15], y = lat.x[15], xend = lon.y[15], yend = lat.y[15]), 
+             col = "black", size = 0.1, curvature = .05, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_curve(data=flights, aes(x = lon.x[16], y = lat.x[16], xend = lon.y[16], yend = lat.y[16]), 
+             col = "black", size = 0.1, curvature = .1, arrow = arrow(length=unit(0.20,"cm"))) + 
+  geom_point(data=airports, aes(x = lon, y = lat), col = "blue", size = 2) + 
+  geom_text_repel(data=airports, aes(x = lon, y = lat, label = airport), col = "black", size = 4, segment.color = NA) + 
+  theme(panel.background = element_rect(fill="white"), 
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()
+        )
+
+```
+
+* Each edge usually represents a different type of connection.
+* In this graph each edge represents a different flight number between three US cities on a given day in December 2010.
+* It's also possible for an edge to start and finish on the same vertex - this called a *loop edge*.
+* Graphs with only one edge between vertices and with no loop edges are called *simple graphs*.
+
+---
+class: left, middle, rstudio-logo
+
+## Defining graphs mathematically
+
+A graph $G$ consists of two sets:
+
+1.  The vertex set $V$
+2.  The edge set $E$, which consists of pairs of vertices in $V$
+
+Example (our directed 'is a manager of' graph):
+
+$$
+\begin{aligned}
+G &= (V, E) \\
+V &= \{\mathrm{Suraya}, \mathrm{David}, \mathrm{Zubin}, \mathrm{Jane}\} \\
+E &= \{
+\mathrm{Suraya} \longrightarrow \mathrm{David},
+\mathrm{David} \longrightarrow \mathrm{Zubin},
+\mathrm{David} \longrightarrow \mathrm{Jane}
+\}
+\end{aligned}
+$$
+
+---
+class: left, middle, rstudio-logo
+
+## Creating graph objects in R
+
+We use the `igraph` package to store objects in graph form.  
+
+At a minumum, we need the edge set (also known as an edgelist) as a data frame.
+
+```{r}
+(is_manager_of <- data.frame(
+  from = c("Suraya", "David", "David"),
+  to = c("David", "Zubin", "Jane")
+))
+
+```
+
+```{r}
+library(igraph)
+
+manager_graph <- igraph::graph_from_data_frame(
+  is_manager_of,
+  directed = TRUE
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Inside a graph object
+
+```{r}
+# view full graph object
+manager_graph
+```
+
+```{r}
+# view vertices
+V(manager_graph)
+```
+
+```{r}
+# view edges 
+E(manager_graph)
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Creating graphs
+
+For our next short exercise, we will do some practice on creating graphs in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 1, 2 and 3**.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Edge properties
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+library(igraph)
+library(ggraph)
+
+companytransfers <- data.frame(
+  from = c("A", "A", "B", "B"),
+  to = c("A", "B", "A", "C")
+) |> 
+  as.matrix()
+
+companytransfersgraph <- igraph::graph_from_edgelist(companytransfers)
+
+E(companytransfersgraph)$cur <- c("USD", "USD", "GBP", "GBP")
+E(companytransfersgraph)$amt <- c(150000, 570000, 230000, 175000)
+
+ggraph(companytransfersgraph, layout = 'kk') +
+  geom_edge_fan(aes(label = paste0("cur:", cur, ", amt:", amt)),
+                arrow = arrow(length = unit(2, 'mm')),
+                end_cap = circle(5, 'mm'),
+                angle_calc = "along",
+                label_dodge = unit(2.5, 'mm'),
+                label_size = 4
+                ) +
+  geom_node_point(size = 14, color = "pink") +
+  geom_edge_loop(aes(label = paste0("cur:", cur, ",\n amt:", amt)), arrow = arrow(length = unit(2, 'mm')), 
+                 label_size = 4, 
+                 angle_calc = "along",
+                 label_dodge = unit(7, 'mm')) +
+  geom_node_text(aes(label = name), size = 3) +
+  scale_x_continuous(expand = expansion(mult = 0.1)) +
+  theme_void()
+```
+
+* Further information about the relationship can be stored as a *property* or *attribute* in the edges of graphs
+* This graph represents financial transactions between three companies.
+* As well as showing the direction of the transaction, the edges also show the amount and currency of the transaction.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Adding edge properties to a graph
+
+```{r}
+# create company transaction graph
+transactions_edgelist <- data.frame(
+  from = c("A", "A", "B", "B"),
+  to = c("A", "B", "A", "C")
+)
+
+# create directed graph (note directed is default)
+(transactions_graph <- igraph::graph_from_data_frame(
+  transactions_edgelist
+))
+```
+Add edge attributes in order of the edges in the graph object:
+
+```{r}
+E(transactions_graph)$cur <- c("USD", "USD", "GBP", "GBP")
+E(transactions_graph)$amt <- c(15000, 570000, 230000, 175000)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Adding vertex properties to a graph
+
+In a similar way we can add properties or attributes to the vertices of a graph in order to store additional information about entities.   
+
+```{r}
+# location of companies
+V(transactions_graph)$loc <- c("USA", "UK", "France")
+```
+
+When we re-examine our graph we see that it contains these new vertex and edge properties:
+
+```{r}
+transactions_graph
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Weighted edges
+
+The most commonly used type of edge property is a numeric weight, which is often used to indicate the strength of the relationship.  
+
+A graph which has a numeric edge property called `weight` will be classified as a *weighted graph*.  Whether a graph is weighted or not will have consequences for some of the algorithms and methods we will learn later this morning.
+
+```{r}
+# add number of years managed as a weight on manager graph
+E(manager_graph)$weight <- c(8, 4, 2)
+```
+
+Now notice our graph object is a weighted (`W`) graph:
+
+```{r}
+manager_graph
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Adding edge and vertex properties manually is not particularly efficient.
+
+If your edgelist dataframe contains additional properties in columns, they will automatically be added to the graph.
+
+```{r}
+# get edgelist of romantic relationships in Mad Men
+url <- "https://ona-book.org/data/madmen_edges.csv"
+madmen_edgelist <- read.csv(url)
+head(madmen_edgelist)
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+If we load this dataframe directly into `igraph`, the `Married` edge property will be automatically captured.
+
+```{r}
+(madmen_graph <- igraph::graph_from_data_frame(
+  madmen_edgelist,
+  directed = FALSE
+))
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Similarly, vertex names and properties can be included in a vertex dataframe:
+
+```{r}
+url <- "https://ona-book.org/data/madmen_vertices.csv"
+madmen_vertices <- read.csv(url)
+head(madmen_vertices)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Vertex properties can be added on loading by using the `vertices` argument in `igraph::graph_from_data_frame()`:
+
+```{r}
+(madmen_graph <- igraph::graph_from_data_frame(
+  madmen_edgelist,
+  vertices = madmen_vertices,
+  directed = FALSE
+))
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Accessing properties
+
+Vertex or edge properties can be accessed within the vertex and edge sets of the graph:
+
+```{r}
+# get Married edge property
+E(madmen_graph)$Married[1:5]
+```
+
+```{r}
+V(madmen_graph)$Gender[1:5]
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Adding properties to graphs
+
+For our next short exercise, we will do some practice on adding properties to graphs in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 4, 5 and 6**.
+
+
+---
+class: left, middle, rstudio-logo
+
+## The importance of graph visualization
+
+Visualization is a very important way to understand a network graph.  
+
+Before we study how to analyze graphs and draw insights from them, we should learn how to visualize them.  
+
+There are quite a few options for how to visualize graphs, and we will look at a few of them briefly:
+
+1.  `igraph` native plotting:  visually basic but easy
+2.  `ggraph`: uses `ggplot2` grammar, more 'pleasant' look and feel
+3.  `networkD3`: uses D3 in Javascript, interactive and responsive
+
+
+---
+class: left, middle, rstudio-logo
+
+## Basic plotting using `igraph`
+
+The `plot()` function on on `igraph` object generates a quick plot, which usually needs some tweaking.
+
+```{r, out.height="400", fig.align="center"}
+plot(madmen_graph)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control visual features
+
+`plot()` uses vertex and edge properties to control visual features.  For example, here is how we would only show a label for main Madmen characters:
+
+```{r, out.height="400", fig.align="center"}
+V(madmen_graph)$label <- ifelse(V(madmen_graph)$Main, 
+                                V(madmen_graph)$name,
+                                "")
+plot(madmen_graph)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control vertex visual features
+
+Here are a few of the standard vertex properties used to control visual appearance in `plot()`:
+
+* `size`: The size of the vertex
+* `color`: The fill color of the vertex
+* `frame.color`: The border color of the vertex
+* `shape`: The shape of the vertex; multiple shape options are supported including `circle`, `square`, `rectangle` and `none`
+* `label`: The text of the label, as well as various label features controlled by `label.family`, `label.font`, `label.color`.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control edge visual features
+
+Here are a few of the standard edge properties used to control visual appearance in `plot()`:
+
+* `color`: The color of the edge
+* `width`: The width of the edge
+* `arrow.size`: The size of the arrow in a directed edge
+* `arrow.width`: The width of the arrow in a directed edge
+* `arrow.mode`: Whether edges should direct forward (`>`), backward (`<`) or both (`<>`)
+* `lty`: Line type of edges, with numerous options including `solid`, `dashed`, `dotted`, `dotdash` and `blank`
+* `curved`: The amount of curvature to apply to the edge, with zero (default) as a straight edge, negative numbers bending clockwise and positive bending anti-clockwise
+
+
+---
+class: left, middle, rstudio-logo
+
+## Using layouts
+
+The positioning of vertices in a graph are controlled by layouts.  A layout can be stored as a property of the overall graph.
+
+```{r, out.height="400", fig.align="center"}
+madmen_graph$layout <- igraph::layout_in_circle(madmen_graph)
+plot(madmen_graph)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Layout options
+
+`igraph` offers numerous layout functions to control the layout of your graph.  
+
+*Force-directed* layouts are very common and visually appealing graph layouts. They use physics principles to position connected vertices as close together as possible and unconnected vertices as far away as possible, finding an an optimal equilibrium.  
+
+* `layout_with_fr()`:  Fruchterman-Reingold - a very common force-directed layout
+* `layout_with_kk()`:  Kamada-Kawaii - another common force-directed layout
+
+Other layouts include: 
+
+* `layout_in_circle()`:  Circular layout
+* `layout_on_sphere()`: 3D-spherical simulation
+* `layout_on grid()`: Rectangular-grid layout
+* `layout_with_mds()`:  Multidimensional scaling
+
+---
+class: left, middle, rstudio-logo
+
+## Randomness in visualization
+
+Running the same layout function twice can often result in a different layouts due to the fact that random number generation is happening under the hood.
+
+```{r, eval = FALSE}
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph)
+```
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph, main = "Attempt 1")
+
+```
+
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:right; padding-left:40px"'}
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph, main = "Attempt 2")
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Setting a seed to control randomness
+
+Use the `set.seed()` function with the same seed before every layout command to ensure reproducibility.
+
+```{r, eval = FALSE}
+set.seed(123)
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph)
+```
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+set.seed(123)
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph, main = "Attempt 1")
+
+```
+
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:right; padding-left:40px"'}
+set.seed(123)
+madmen_graph$layout <- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph, main = "Attempt 2")
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Plotting using `igraph`
+
+For our next short exercise, we will do some practice on plotting graphs using `igraph` in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 7 and 8**.
+
+---
+class: left, middle, rstudio-logo
+
+## Visualizing using `ggraph`
+
+The `ggraph` package allows those who prefer the grammar of `ggplot2` to plot network graphs.
+
+```{r, out.height="300", fig.align="center"}
+library(ggraph)
+
+set.seed(123) # always set seed for static viz
+ggraph(madmen_graph, layout = "fr") +  # set layout in initial ggraph call 
+  geom_edge_link(color = "grey") + # basic edge features 
+  geom_node_point(size = 5, color = "red") + # basic vertex features
+  theme_void() # empty/blank background
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Using aesthetics to control features
+
+Vertex and node properties can be used as `ggplot2` aesthetics.  In this example, we color the vertices according to whether the vertex is a main character or not.
+
+```{r, out.height="300", fig.align="center"}
+library(ggraph)
+
+set.seed(123)
+ggraph(madmen_graph, layout = "fr") + 
+  geom_edge_link(color = "grey") + 
+  geom_node_point(size = 5, aes(color = factor(Main)), 
+                show.legend = FALSE) + 
+  theme_void() 
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+The `networkD3` package provides an API to the D3 Javascript visualization library, and can be useful for creating simply dynamic and interactive visualization.  `igraph` objects need to be converted to be used with `networkD3`.
+
+```{r}
+library(networkD3)
+
+# structure the madmen graph for D3, grouping according to Main characters
+madmen_d3 <- networkD3::igraph_to_networkD3(
+  madmen_graph, 
+  group = V(madmen_graph)$Main)
+
+
+# this creates a list of links and nodes
+head(madmen_d3$links, 2)
+
+head(madmen_d3$nodes, 2)
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+Then we pass the correct parameters through the `forceNetwork()` function to generate an interactive force-directed network.
+
+```{r, eval = FALSE}
+networkD3::forceNetwork(Links = madmen_d3$links, 
+                        Nodes = madmen_d3$nodes, 
+                        NodeID = "name",   
+                        Source = "source",
+                        Target = "target", 
+                        Group = "group")
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+
+```{r, echo = FALSE, fig.align="center"}
+networkD3::forceNetwork(Links = madmen_d3$links, Nodes = madmen_d3$nodes, 
+                        NodeID = "name",   Source = "source",
+                        Target = "target", Group = 'group', opacity = 1,
+                        linkDistance = 20, width = "600", zoom = TRUE)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Further visualization options
+
+For our next short exercise, we will do some practice on plotting graphs using `ggraph` and `networkD3` in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 9 and 10**.
+
+
+---
+class: left, middle, rstudio-logo
+
+# &#9749; Let's have a break! &#128524;

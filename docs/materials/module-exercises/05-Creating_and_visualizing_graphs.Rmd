@@ -1,0 +1,259 @@
+---
+title: "5 - Creating and Visualizing Graphs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will practice creating and examining graph objects in R, and visualizing those graphs using common visualization packages.
+
+## Exercise 1 - Creating an undirected graph object
+
+```{r}
+# Download the karate dataset from the URL provided
+url <- "https://ona-book.org/data/karate.csv"
+
+
+```
+
+```{r}
+# this dataset is the edgelist from a study of a karate club by Wayne W. Zachary in 1977
+# an edge between two vertices means that the two members socialized outside the club
+
+# create an undirected graph from the edgelist
+
+```
+
+```{r}
+# View the graph object - how many vertices and edges are there?
+
+```
+
+```{r}
+# View the vertex set
+
+```
+
+```{r}
+# View the edge set
+
+
+```
+
+
+## Exercise 2 - Creating a directed graph object
+
+```{r}
+# Download the schoolfriends edgelist from the URL provided
+url <- "https://ona-book.org/data/schoolfriends_edgelist.csv"
+
+
+
+```
+
+```{r}
+# This network is from a research project on French high school children
+# This edgelist gives two types of relationships.
+# The first type is a reported friendship, where the first person reported
+# the second person as a a friend in a survey.
+# The second type is a known Facebook friendship connection between the two.
+
+# filter the edgelist to just the reported friendships.
+
+```
+
+```{r}
+# create an appropriate graph object from this filtered edgelist. 
+
+
+
+```
+
+
+```{r}
+# Examine the graph object - how many vertices and edges does it have
+
+```
+
+
+## Exercise 3 - Comparing graphs
+
+```{r}
+# Filter the schoolfriends data set to just the facebook friendships
+
+
+```
+
+```{r}
+# Create and examine an appropriate graph object from this filtered data set
+
+
+
+```
+
+Write below a comparison of the basic properties of the two types of `schoolfriends` networks:
+
+
+
+## Exercise 4 - Loading a graph with edge properties
+
+```{r}
+# Load the workfrance_edgelist data set from the URL provided.
+# This is an edgelist of a network of interactions between office employees
+# in various departments based on how much time they spent together during a given day
+url <- "https://ona-book.org/data/workfrance_edgelist.csv"
+
+
+```
+
+```{r}
+# Create a undirected graph object from this edgelist including any edge properties
+
+
+
+```
+
+```{r}
+# verify that there is an edge property called mins and show the first ten values
+# of this edge property
+
+```
+
+## Exercise 5 - Loading a graph with vertex properties
+
+```{r}
+# Load the workfrance_vertices data set from the URL provided
+url <- "https://ona-book.org/data/workfrance_vertices.csv"
+
+
+```
+
+```{r}
+# Recreate the undirected graph object with both edge and vertex properties
+
+
+
+```
+
+```{r}
+# find the vertex properties in your new graph
+# choose one vertex property and show the first ten values
+
+
+```
+
+
+## Exercise 6 - Examining graph properties
+
+```{r}
+# Identify the data types of each of the edge and vertex properties in your
+# workfrance graph
+
+
+
+```
+
+```{r}
+# Use the graph object to find the mean number of mins for all edges in your 
+# workfrance graph
+
+
+
+```
+
+```{r}
+# EXTENSION - Create a subgraph of all vertices in the 'SSI' department
+# calculate the mean number of mins for all edges in this subgraph
+# Hint: try the igraph::induced_subgraph() function
+
+
+```
+
+
+## Exercise 7 - Plotting a network graph using `igraph`
+
+```{r}
+# Run a basic plot of the undirected karate graph
+
+
+
+```
+
+```{r}
+# Remove all labels except 'Mr Hi' and 'John A'
+
+
+
+```
+
+
+```{r}
+# Re-do the layout using the Kamada-Kawaii layout
+# Set a seed of 123 to control randomness
+# Check whether your neighbor generated an identical plot
+
+```
+
+## Exercise 8 - Plotting a network graph using `igraph` (EXTENSION)
+
+```{r}
+# Plot the undirected workfrance network graph without labels and using a 
+# Fruchterman-Reingold force directed layout.  Use a seed of 123.
+
+
+```
+
+```{r}
+# Resize the vertices to size 5
+
+```
+
+```{r}
+# Try to color the vertices of the graph by the dept of the vertex
+
+
+```
+
+
+## Exercise 9 - Plotting a network graph using `ggraph` (EXTENSION)
+
+```{r}
+# Create a basic Plot of the workfrance undirected network using ggraph
+# use a Kamada-Kawaii layout and set a seed of 123
+
+
+```
+
+```{r}
+# Redo the plot again using an aesthetic to color the vertices by dept
+
+```
+
+```{r}
+# (EXTENSION) Try to scale the edge by the mins edge property
+
+
+```
+
+
+## Exercise 10 - Interactive network visualization using `networkD3` (EXTENSION)
+
+```{r}
+# Create a group in the karate graph containing Mr Hi and John A
+
+
+```
+
+```{r}
+# Convert the karate graph for the purposes of using networkD3
+# Use you new group in the conversion
+
+```
+
+```{r}
+# Run a force network visualization of the karate graph in networkD3 
+
+
+```

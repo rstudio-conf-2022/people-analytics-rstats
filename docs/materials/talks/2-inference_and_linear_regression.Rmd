@@ -1,7 +1,7 @@
 ---
 title: "Explanatory Methods I"
 subtitle: "Statistical Inference and Linear Regression"
-author: "Keith McNulty"
+author: "<b>rstudio::</b>conf(2022)"
 output:
   xaringan::moon_reader:
     css: "style.css"
@@ -268,7 +268,7 @@ d <- data.frame(
   ),
 Model = c(
   "Linear regression",
-  "Binary logistic regression",
+  "Binomial logistic regression",
   "Multinomial logistic regression",
   "Ordinal logistic regression",
   "Survival/proportional hazard regression"
@@ -291,7 +291,7 @@ class: left, middle, rstudio-logo
 
 ## Equation of a straight line
 
-*Linear regression* assumes that the outcome variable $y$ has a straight line relationship with the input variables $x_1, x_2, ..., x_p$.
+*Linear regression* assumes that the mean of the outcome variable $y$ over many observations has a straight line relationship with the input variables $x_1, x_2, ..., x_p$.
 
 You may remember the equation of a straight line from high school:
 

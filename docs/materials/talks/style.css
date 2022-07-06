@@ -5,6 +5,8 @@ Author: Keith McNulty, Jiena McLellan
 Updated: 8/4/2020
 */
 
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;600&display=swap');
+
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
 
 /* Package defaults that we slightly tweak */
@@ -156,7 +158,7 @@ thead, tfoot, tr:nth-child(even) { background: none; }
 .title-slide h3 {
   font-size: 28px;
   font-weight: normal;
-  font-family: 'Oswald', sans-serif;
+  font-family: "Source Sans Pro", sans-serif !important;
   color: rgb(0, 41, 96, .4);
   text-align: left;
   text-shadow: none;

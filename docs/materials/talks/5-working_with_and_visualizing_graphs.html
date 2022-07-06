@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Network Analysis I</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="rstudio::conf(2022)" />
+    <script src="5-working_with_and_visualizing_graphs_files/header-attrs/header-attrs.js"></script>
+    <script src="5-working_with_and_visualizing_graphs_files/htmlwidgets/htmlwidgets.js"></script>
+    <script src="5-working_with_and_visualizing_graphs_files/d3/d3.min.js"></script>
+    <script src="5-working_with_and_visualizing_graphs_files/forceNetwork-binding/forceNetwork.js"></script>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Network Analysis I
+## Working with and Visualizing Network Graphs
+### <b>rstudio::</b>conf(2022)
+
+---
+
+
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&amp;#9989; Understand graphs as an analytic tool
+  - Review the mathematical definition of a graph
+  - Learn how to construct graphs in R
+
+&amp;#9989; Review graph visualization options in R
+  - Static visualization methods
+  - Dynamic visualization methods
+
+---
+class: left, middle, rstudio-logo
+
+# Working with Graphs
+
+---
+class: left, middle, rstudio-logo
+
+## Graphs help us model connections between entities
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-1-1.png" width="300" height="350" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+* In People Analytics, it's quite common for the unit of analysis to be based on connection
+* To allow this, a different form of data structure is needed, known as a *graph*
+* This example graph connects four people based on whether they have worked together
+* The entities (people) are called *vertices* or *nodes*.  The connections are called *edges*.
+* For this type of relationship, there is no need to define a direction.  The edges are *undirected*. 
+* Example: Facebook friends, meetings
+
+---
+class: left, middle, rstudio-logo
+
+## Graphs can be undirected or directed, depending on the relationship
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-2-1.png" width="300" height="350" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+* In this graph, the relationship is 'is a manager of'.  This relationship has direction.  
+* This is known as a *directed graph* or *digraph*.
+* In a directed graph, it is possible for edges to point in both directions between two vertices.
+* However, these would be considered *two different edges*.
+* Example: Twitter follow, email
+
+---
+class: left, middle, rstudio-logo
+
+## Multigraphs are graphs which allow multiple edges between vertices
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-3-1.png" width="400" height="350" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+* Each edge usually represents a different type of connection.
+* In this graph each edge represents a different flight number between three US cities on a given day in December 2010.
+* It's also possible for an edge to start and finish on the same vertex - this called a *loop edge*.
+* Graphs with only one edge between vertices and with no loop edges are called *simple graphs*.
+
+---
+class: left, middle, rstudio-logo
+
+## Defining graphs mathematically
+
+A graph `\(G\)` consists of two sets:
+
+1.  The vertex set `\(V\)`
+2.  The edge set `\(E\)`, which consists of pairs of vertices in `\(V\)`
+
+Example (our directed 'is a manager of' graph):
+
+$$
+`\begin{aligned}
+G &amp;= (V, E) \\
+V &amp;= \{\mathrm{Suraya}, \mathrm{David}, \mathrm{Zubin}, \mathrm{Jane}\} \\
+E &amp;= \{
+\mathrm{Suraya} \longrightarrow \mathrm{David},
+\mathrm{David} \longrightarrow \mathrm{Zubin},
+\mathrm{David} \longrightarrow \mathrm{Jane}
+\}
+\end{aligned}`
+$$
+
+---
+class: left, middle, rstudio-logo
+
+## Creating graph objects in R
+
+We use the `igraph` package to store objects in graph form.  
+
+At a minumum, we need the edge set (also known as an edgelist) as a data frame.
+
+
+```r
+(is_manager_of &lt;- data.frame(
+  from = c("Suraya", "David", "David"),
+  to = c("David", "Zubin", "Jane")
+))
+```
+
+```
+##     from    to
+## 1 Suraya David
+## 2  David Zubin
+## 3  David  Jane
+```
+
+
+```r
+library(igraph)
+
+manager_graph &lt;- igraph::graph_from_data_frame(
+  is_manager_of,
+  directed = TRUE
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Inside a graph object
+
+
+```r
+# view full graph object
+manager_graph
+```
+
+```
+## IGRAPH 5635cc7 DN-- 4 3 -- 
+## + attr: name (v/c)
+## + edges from 5635cc7 (vertex names):
+## [1] Suraya-&gt;David David -&gt;Zubin David -&gt;Jane
+```
+
+
+```r
+# view vertices
+V(manager_graph)
+```
+
+```
+## + 4/4 vertices, named, from 5635cc7:
+## [1] Suraya David  Zubin  Jane
+```
+
+
+```r
+# view edges 
+E(manager_graph)
+```
+
+```
+## + 3/3 edges from 5635cc7 (vertex names):
+## [1] Suraya-&gt;David David -&gt;Zubin David -&gt;Jane
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Creating graphs
+
+For our next short exercise, we will do some practice on creating graphs in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 1, 2 and 3**.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Edge properties
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-9-1.png" width="300" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+* Further information about the relationship can be stored as a *property* or *attribute* in the edges of graphs
+* This graph represents financial transactions between three companies.
+* As well as showing the direction of the transaction, the edges also show the amount and currency of the transaction.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Adding edge properties to a graph
+
+
+```r
+# create company transaction graph
+transactions_edgelist &lt;- data.frame(
+  from = c("A", "A", "B", "B"),
+  to = c("A", "B", "A", "C")
+)
+
+# create directed graph (note directed is default)
+(transactions_graph &lt;- igraph::graph_from_data_frame(
+  transactions_edgelist
+))
+```
+
+```
+## IGRAPH d20d72a DN-- 3 4 -- 
+## + attr: name (v/c)
+## + edges from d20d72a (vertex names):
+## [1] A-&gt;A A-&gt;B B-&gt;A B-&gt;C
+```
+Add edge attributes in order of the edges in the graph object:
+
+
+```r
+E(transactions_graph)$cur &lt;- c("USD", "USD", "GBP", "GBP")
+E(transactions_graph)$amt &lt;- c(15000, 570000, 230000, 175000)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Adding vertex properties to a graph
+
+In a similar way we can add properties or attributes to the vertices of a graph in order to store additional information about entities.   
+
+
+```r
+# location of companies
+V(transactions_graph)$loc &lt;- c("USA", "UK", "France")
+```
+
+When we re-examine our graph we see that it contains these new vertex and edge properties:
+
+
+```r
+transactions_graph
+```
+
+```
+## IGRAPH d20d72a DN-- 3 4 -- 
+## + attr: name (v/c), loc (v/c), cur (e/c), amt (e/n)
+## + edges from d20d72a (vertex names):
+## [1] A-&gt;A A-&gt;B B-&gt;A B-&gt;C
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Weighted edges
+
+The most commonly used type of edge property is a numeric weight, which is often used to indicate the strength of the relationship.  
+
+A graph which has a numeric edge property called `weight` will be classified as a *weighted graph*.  Whether a graph is weighted or not will have consequences for some of the algorithms and methods we will learn later this morning.
+
+
+```r
+# add number of years managed as a weight on manager graph
+E(manager_graph)$weight &lt;- c(8, 4, 2)
+```
+
+Now notice our graph object is a weighted (`W`) graph:
+
+
+```r
+manager_graph
+```
+
+```
+## IGRAPH 5635cc7 DNW- 4 3 -- 
+## + attr: name (v/c), weight (e/n)
+## + edges from 5635cc7 (vertex names):
+## [1] Suraya-&gt;David David -&gt;Zubin David -&gt;Jane
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Adding edge and vertex properties manually is not particularly efficient.
+
+If your edgelist dataframe contains additional properties in columns, they will automatically be added to the graph.
+
+
+```r
+# get edgelist of romantic relationships in Mad Men
+url &lt;- "https://ona-book.org/data/madmen_edges.csv"
+madmen_edgelist &lt;- read.csv(url)
+head(madmen_edgelist)
+```
+
+```
+##          Name1            Name2 Married
+## 1 Betty Draper    Henry Francis       1
+## 2 Betty Draper       Random guy       0
+## 3   Don Draper          Allison       0
+## 4   Don Draper Bethany Van Nuys       0
+## 5   Don Draper     Betty Draper       1
+## 6   Don Draper   Bobbie Barrett       0
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+If we load this dataframe directly into `igraph`, the `Married` edge property will be automatically captured.
+
+
+```r
+(madmen_graph &lt;- igraph::graph_from_data_frame(
+  madmen_edgelist,
+  directed = FALSE
+))
+```
+
+```
+## IGRAPH 3170796 UN-- 45 39 -- 
+## + attr: name (v/c), Married (e/n)
+## + edges from 3170796 (vertex names):
+##  [1] Betty Draper--Henry Francis    Betty Draper--Random guy      
+##  [3] Don Draper  --Allison          Don Draper  --Bethany Van Nuys
+##  [5] Betty Draper--Don Draper       Don Draper  --Bobbie Barrett  
+##  [7] Don Draper  --Candace          Don Draper  --Doris           
+##  [9] Don Draper  --Faye Miller      Don Draper  --Joy             
+## [11] Don Draper  --Megan Calvet     Don Draper  --Midge Daniels   
+## [13] Don Draper  --Rachel Menken    Don Draper  --Shelly          
+## [15] Don Draper  --Suzanne Farrell 
+## + ... omitted several edges
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Similarly, vertex names and properties can be included in a vertex dataframe:
+
+
+```r
+url &lt;- "https://ona-book.org/data/madmen_vertices.csv"
+madmen_vertices &lt;- read.csv(url)
+head(madmen_vertices)
+```
+
+```
+##           label Gender Main
+## 1  Betty Draper female    1
+## 2    Don Draper   male    1
+## 3   Harry Crane   male    0
+## 4 Joan Holloway female    1
+## 5    Lane Pryce   male    0
+## 6   Peggy Olson female    1
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Loading properties from data frames
+
+Vertex properties can be added on loading by using the `vertices` argument in `igraph::graph_from_data_frame()`:
+
+
+```r
+(madmen_graph &lt;- igraph::graph_from_data_frame(
+  madmen_edgelist,
+  vertices = madmen_vertices,
+  directed = FALSE
+))
+```
+
+```
+## IGRAPH bb379d1 UN-- 45 39 -- 
+## + attr: name (v/c), Gender (v/c), Main (v/n), Married (e/n)
+## + edges from bb379d1 (vertex names):
+##  [1] Betty Draper--Henry Francis    Betty Draper--Random guy      
+##  [3] Don Draper  --Allison          Don Draper  --Bethany Van Nuys
+##  [5] Betty Draper--Don Draper       Don Draper  --Bobbie Barrett  
+##  [7] Don Draper  --Candace          Don Draper  --Doris           
+##  [9] Don Draper  --Faye Miller      Don Draper  --Joy             
+## [11] Don Draper  --Megan Calvet     Don Draper  --Midge Daniels   
+## [13] Don Draper  --Rachel Menken    Don Draper  --Shelly          
+## [15] Don Draper  --Suzanne Farrell 
+## + ... omitted several edges
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Accessing properties
+
+Vertex or edge properties can be accessed within the vertex and edge sets of the graph:
+
+
+```r
+# get Married edge property
+E(madmen_graph)$Married[1:5]
+```
+
+```
+## [1] 1 0 0 0 1
+```
+
+
+```r
+V(madmen_graph)$Gender[1:5]
+```
+
+```
+## [1] "female" "male"   "male"   "female" "male"
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Adding properties to graphs
+
+For our next short exercise, we will do some practice on adding properties to graphs in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 4, 5 and 6**.
+
+
+---
+class: left, middle, rstudio-logo
+
+## The importance of graph visualization
+
+Visualization is a very important way to understand a network graph.  
+
+Before we study how to analyze graphs and draw insights from them, we should learn how to visualize them.  
+
+There are quite a few options for how to visualize graphs, and we will look at a few of them briefly:
+
+1.  `igraph` native plotting:  visually basic but easy
+2.  `ggraph`: uses `ggplot2` grammar, more 'pleasant' look and feel
+3.  `networkD3`: uses D3 in Javascript, interactive and responsive
+
+
+---
+class: left, middle, rstudio-logo
+
+## Basic plotting using `igraph`
+
+The `plot()` function on on `igraph` object generates a quick plot, which usually needs some tweaking.
+
+
+```r
+plot(madmen_graph)
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-22-1.png" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control visual features
+
+`plot()` uses vertex and edge properties to control visual features.  For example, here is how we would only show a label for main Madmen characters:
+
+
+```r
+V(madmen_graph)$label &lt;- ifelse(V(madmen_graph)$Main, 
+                                V(madmen_graph)$name,
+                                "")
+plot(madmen_graph)
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-23-1.png" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control vertex visual features
+
+Here are a few of the standard vertex properties used to control visual appearance in `plot()`:
+
+* `size`: The size of the vertex
+* `color`: The fill color of the vertex
+* `frame.color`: The border color of the vertex
+* `shape`: The shape of the vertex; multiple shape options are supported including `circle`, `square`, `rectangle` and `none`
+* `label`: The text of the label, as well as various label features controlled by `label.family`, `label.font`, `label.color`.
+
+
+---
+class: left, middle, rstudio-logo
+
+## Using properties to control edge visual features
+
+Here are a few of the standard edge properties used to control visual appearance in `plot()`:
+
+* `color`: The color of the edge
+* `width`: The width of the edge
+* `arrow.size`: The size of the arrow in a directed edge
+* `arrow.width`: The width of the arrow in a directed edge
+* `arrow.mode`: Whether edges should direct forward (`&gt;`), backward (`&lt;`) or both (`&lt;&gt;`)
+* `lty`: Line type of edges, with numerous options including `solid`, `dashed`, `dotted`, `dotdash` and `blank`
+* `curved`: The amount of curvature to apply to the edge, with zero (default) as a straight edge, negative numbers bending clockwise and positive bending anti-clockwise
+
+
+---
+class: left, middle, rstudio-logo
+
+## Using layouts
+
+The positioning of vertices in a graph are controlled by layouts.  A layout can be stored as a property of the overall graph.
+
+
+```r
+madmen_graph$layout &lt;- igraph::layout_in_circle(madmen_graph)
+plot(madmen_graph)
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-24-1.png" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Layout options
+
+`igraph` offers numerous layout functions to control the layout of your graph.  
+
+*Force-directed* layouts are very common and visually appealing graph layouts. They use physics principles to position connected vertices as close together as possible and unconnected vertices as far away as possible, finding an an optimal equilibrium.  
+
+* `layout_with_fr()`:  Fruchterman-Reingold - a very common force-directed layout
+* `layout_with_kk()`:  Kamada-Kawaii - another common force-directed layout
+
+Other layouts include: 
+
+* `layout_in_circle()`:  Circular layout
+* `layout_on_sphere()`: 3D-spherical simulation
+* `layout_on grid()`: Rectangular-grid layout
+* `layout_with_mds()`:  Multidimensional scaling
+
+---
+class: left, middle, rstudio-logo
+
+## Randomness in visualization
+
+Running the same layout function twice can often result in a different layouts due to the fact that random number generation is happening under the hood.
+
+
+```r
+madmen_graph$layout &lt;- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph)
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-26-1.png" width="300" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-27-1.png" width="300" height="300" style="float:right; padding-left:40px" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Setting a seed to control randomness
+
+Use the `set.seed()` function with the same seed before every layout command to ensure reproducibility.
+
+
+```r
+set.seed(123)
+madmen_graph$layout &lt;- igraph::layout_with_fr(madmen_graph)
+plot(madmen_graph)
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-29-1.png" width="300" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-30-1.png" width="300" height="300" style="float:right; padding-left:40px" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Plotting using `igraph`
+
+For our next short exercise, we will do some practice on plotting graphs using `igraph` in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 7 and 8**.
+
+---
+class: left, middle, rstudio-logo
+
+## Visualizing using `ggraph`
+
+The `ggraph` package allows those who prefer the grammar of `ggplot2` to plot network graphs.
+
+
+```r
+library(ggraph)
+
+set.seed(123) # always set seed for static viz
+ggraph(madmen_graph, layout = "fr") +  # set layout in initial ggraph call 
+  geom_edge_link(color = "grey") + # basic edge features 
+  geom_node_point(size = 5, color = "red") + # basic vertex features
+  theme_void() # empty/blank background
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-31-1.png" height="300" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Using aesthetics to control features
+
+Vertex and node properties can be used as `ggplot2` aesthetics.  In this example, we color the vertices according to whether the vertex is a main character or not.
+
+
+```r
+library(ggraph)
+
+set.seed(123)
+ggraph(madmen_graph, layout = "fr") + 
+  geom_edge_link(color = "grey") + 
+  geom_node_point(size = 5, aes(color = factor(Main)), 
+                show.legend = FALSE) + 
+  theme_void() 
+```
+
+&lt;img src="5-working_with_and_visualizing_graphs_files/figure-html/unnamed-chunk-32-1.png" height="300" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+The `networkD3` package provides an API to the D3 Javascript visualization library, and can be useful for creating simply dynamic and interactive visualization.  `igraph` objects need to be converted to be used with `networkD3`.
+
+
+```r
+library(networkD3)
+
+# structure the madmen graph for D3, grouping according to Main characters
+madmen_d3 &lt;- networkD3::igraph_to_networkD3(
+  madmen_graph, 
+  group = V(madmen_graph)$Main)
+
+
+# this creates a list of links and nodes
+head(madmen_d3$links, 2)
+```
+
+```
+##   source target value
+## 1      5     31     0
+## 2      1     11     0
+```
+
+```r
+head(madmen_d3$nodes, 2)
+```
+
+```
+##           name group
+## 1 Betty Draper     1
+## 2   Don Draper     1
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+Then we pass the correct parameters through the `forceNetwork()` function to generate an interactive force-directed network.
+
+
+```r
+networkD3::forceNetwork(Links = madmen_d3$links, 
+                        Nodes = madmen_d3$nodes, 
+                        NodeID = "name",   
+                        Source = "source",
+                        Target = "target", 
+                        Group = "group")
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Interactive visualization using `networkD3`
+
+
+<div id="htmlwidget-2ab994230164e3049ad7" style="width:600px;height:504px;" class="forceNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2ab994230164e3049ad7">{"x":{"links":{"source":[5,1,8,1,1,5,1,0,1,5,1,3,3,6,0,2,7,7,4,2,1,8,5,1,1,7,7,5,6,1,0,4,3,1,1,4,6,7,1],"target":[31,11,43,12,13,32,14,1,15,33,16,26,27,35,9,24,38,39,28,25,17,44,34,18,19,40,41,6,36,20,10,29,7,21,22,30,37,42,23],"colour":["#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666"]},"nodes":{"name":["Betty Draper","Don Draper","Harry Crane","Joan Holloway","Lane Pryce","Peggy Olson","Pete Campbell","Roger Sterling","Sal Romano","Henry Francis","Random guy","Allison","Bethany Van Nuys","Bobbie Barrett","Candace","Doris","Faye Miller","Joy","Megan Calvet","Midge Daniels","Rachel Menken","Shelly","Suzanne Farrell","Woman at the Clios party","Hildy","Jennifer Crane","Franklin","Greg Harris","Janine","Rebecca Pryce","Toni","Abe Drexler","Brooklyn College Student","Duck Phillips","Mark","Gudrun","Playtex bra model","Trudy Campbell","Ida Blankenship","Jane Siegel","Mirabelle Ames","Mona Sterling","Vicky","Bellhop in Baltimore","Kitty Romano"],"group":[1,1,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"options":{"NodeID":"name","Group":"group","colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":7,"fontFamily":"serif","clickTextSize":17.5,"linkDistance":20,"linkWidth":"function(d) { return Math.sqrt(d.value); }","charge":-30,"opacity":1,"zoom":true,"legend":false,"arrows":false,"nodesize":false,"radiusCalculation":" Math.sqrt(d.nodesize)+6","bounded":false,"opacityNoHover":0,"clickAction":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Further visualization options
+
+For our next short exercise, we will do some practice on plotting graphs using `ggraph` and `networkD3` in R.
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 05 - Creating and visualizing graphs**.
+
+Let's work on **Exercises 9 and 10**.
+
+
+---
+class: left, middle, rstudio-logo
+
+# &amp;#9749; Let's have a break! &amp;#128524;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

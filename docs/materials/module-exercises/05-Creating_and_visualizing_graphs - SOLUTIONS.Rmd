@@ -1,0 +1,328 @@
+---
+title: "5 - Creating and Visualizing Graphs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will practice creating and examining graph objects in R, and visualizing those graphs using common visualization packages.
+
+## Exercise 1 - Creating an undirected graph object
+
+```{r}
+# Download the karate dataset from the URL provided
+url <- "https://ona-book.org/data/karate.csv"
+
+karate_edgelist <- read.csv(url)
+```
+
+```{r}
+# this dataset is the edgelist from a study of a karate club by Wayne W. Zachary in 1977
+# an edge between two vertices means that the two members socialized outside the club
+
+# create an undirected graph from the edgelist
+library(igraph)
+
+karate_graph <- igraph::graph_from_data_frame(
+  karate_edgelist,
+  directed = FALSE
+)
+```
+
+```{r}
+# View the graph object - how many vertices and edges are there?
+karate_graph
+```
+
+```{r}
+# View the vertex set
+V(karate_graph)
+```
+
+```{r}
+# View the edge set
+E(karate_graph)
+
+```
+
+
+## Exercise 2 - Creating a directed graph object
+
+```{r}
+# Download the schoolfriends edgelist from the URL provided
+url <- "https://ona-book.org/data/schoolfriends_edgelist.csv"
+
+schoolfriends_edgelist <- read.csv(url)
+
+```
+
+```{r}
+# This network is from a research project on French high school children
+# This edgelist gives two types of relationships.
+# The first type is a reported friendship, where the first person reported
+# the second person as a a friend in a survey.
+# The second type is a known Facebook friendship connection between the two.
+
+# filter the edgelist to just the reported friendships.
+library(dplyr)
+
+schoolfriends_rp_edgelist <- schoolfriends_edgelist |> 
+  dplyr::filter(type == "reported")
+```
+
+```{r}
+# create an appropriate graph object from this filtered edgelist. 
+schoolfriends_rp_graph <- igraph::graph_from_data_frame(
+  schoolfriends_rp_edgelist,
+  directed = TRUE
+)
+
+
+```
+
+
+```{r}
+# Examine the graph object - how many vertices and edges does it have
+schoolfriends_rp_graph
+```
+
+
+
+
+## Exercise 3 - Comparing graphs
+
+```{r}
+# Filter the schoolfriends data set to just the facebook friendships
+schoolfriends_fb_edgelist <- schoolfriends_edgelist |> 
+  dplyr::filter(type == "facebook")
+
+```
+
+```{r}
+# Create and examine an appropriate graph object from this filtered data set
+(schoolfriends_fb_graph <- igraph::graph_from_data_frame(
+  schoolfriends_fb_edgelist,
+  directed = FALSE
+))
+
+
+```
+
+Write below a comparison of the basic properties of the two types of `schoolfriends` networks:
+
+1. The reported friendship graph is directed, whereas the Facebook friendship graph is undirected.
+2. The reported friendship graph has 134 vertices, compared to 156 vertices for the Facebook friendship graph, indicting that it is more more students had Facebook friendships versus reported friendships.
+3. There are 668 edges in the reported friendship graph, but 1437 in the Facebook friendship graph.  This indicates that Facebook friendships are more common than reported friendships.
+
+
+## Exercise 4 - Loading a graph with edge properties
+
+```{r}
+# Load the workfrance_edgelist data set from the URL provided.
+# This is an edgelist of a network of interactions between office employees
+# in various departments based on how much time they spent together during a given day
+url <- "https://ona-book.org/data/workfrance_edgelist.csv"
+workfrance_edgelist <- read.csv(url)
+
+```
+
+```{r}
+# Create a undirected graph object from this edgelist including any edge properties
+workfrance_graph <- igraph::graph_from_data_frame(
+  workfrance_edgelist,
+  directed = FALSE
+)
+
+
+```
+
+```{r}
+# verify that there is an edge property called mins and show the first ten values
+# of this edge property
+E(workfrance_graph)$mins[1:10]
+```
+
+## Exercise 5 - Loading a graph with vertex properties
+
+```{r}
+# Load the workfrance_vertices data set from the URL provided
+url <- "https://ona-book.org/data/workfrance_vertices.csv"
+workfrance_vertices <- read.csv(url)
+
+```
+
+```{r}
+# Recreate the undirected graph object with both edge and vertex properties
+workfrance_graph <- igraph::graph_from_data_frame(
+  workfrance_edgelist,
+  vertices = workfrance_vertices,
+  directed = FALSE
+)
+
+
+```
+
+```{r}
+# find the vertex properties in your new graph
+# choose one vertex property and show the first ten values
+V(workfrance_graph)$dept[1:10]
+
+```
+
+
+## Exercise 6 - Examining graph properties
+
+```{r}
+# Identify the data types of each of the edge and vertex properties in your
+# workfrance graph
+workfrance_graph
+```
+
+```{r}
+# Use the graph object to find the mean number of mins for all edges in your 
+# workfrance graph
+mean(E(workfrance_graph)$mins)
+
+
+```
+
+```{r}
+# EXTENSION - Create a subgraph of all vertices in the 'SSI' department
+# calculate the mean number of mins for all edges in this subgraph
+# Hint: try the igraph::induced_subgraph() function
+
+SSI_vertices <- V(workfrance_graph)[V(workfrance_graph)$dept == 'SSI']
+
+SSI_subgraph <- igraph::induced_subgraph(
+  workfrance_graph,
+  vids = SSI_vertices
+)
+
+mean(E(SSI_subgraph)$mins)
+```
+
+
+## Exercise 7 - Plotting a network graph
+
+```{r}
+# Run a basic plot of the undirected karate graph
+plot(karate_graph)
+
+```
+
+```{r}
+# Remove all labels except 'Mr Hi' and 'John A'
+V(karate_graph)$label <- ifelse(V(karate_graph)$name %in% c('Mr Hi', 'John A'),
+                                V(karate_graph)$name,
+                                "")
+
+plot(karate_graph)
+```
+
+
+```{r}
+# Re-do the layout using the Kamada-Kawaii layout
+# Set a seed of 123 to control randomness
+# Check whether your neighbor generated an identical plot
+set.seed(123)
+karate_graph$layout <- igraph::layout_with_kk(karate_graph)
+plot(karate_graph)
+```
+
+## Exercise 8 - Plotting a network graph (EXTENSION)
+
+```{r}
+# Plot the undirected workfrance network graph without labels and using a 
+# Fruchterman-Reingold force directed layout.  Use a seed of 123.
+set.seed(123)
+workfrance_graph$layout <- igraph::layout_with_fr(workfrance_graph)
+V(workfrance_graph)$label <- ""
+plot(workfrance_graph)
+
+```
+
+```{r}
+# Resize the vertices to size 5
+V(workfrance_graph)$size <- 5
+plot(workfrance_graph)
+```
+```{r}
+# Resize the vertices to size 5
+V(workfrance_graph)$size <- 5
+plot(workfrance_graph)
+```
+
+
+```{r}
+# Try to color the vertices of the graph by the dept of the vertex
+V(workfrance_graph)$color <- factor(V(workfrance_graph)$dept)
+plot(workfrance_graph)
+
+```
+
+
+## Exercise 9 - Plotting a network graph using `ggraph` (EXTENSION)
+
+```{r}
+# Create a basic Plot of the workfrance undirected network using ggraph
+# use a Kamada-Kawaii layout and set a seed of 123
+library(ggraph)
+
+set.seed(123)
+ggraph(workfrance_graph, layout = "kk") +
+  geom_edge_link(color = "grey") +
+  geom_node_point(size = 3) +
+  theme_void()
+
+```
+
+```{r}
+# Redo the plot again using an aesthetic to color the vertices by dept
+set.seed(123)
+ggraph(workfrance_graph, layout = "kk") +
+  geom_edge_link(color = "grey") +
+  geom_node_point(size = 3, aes(color = dept)) +
+  theme_void()
+```
+
+```{r}
+# (EXTENSION) Try to scale the edge by the mins edge property
+set.seed(123)
+ggraph(workfrance_graph, layout = "kk") +
+  geom_edge_link(aes(color = mins)) +
+  geom_node_point(size = 3, aes(color = dept),
+                  show.legend = FALSE) +
+  theme_void()
+
+```
+
+
+## Exercise 10 - Interactive network visualization using `networkD3` (EXTENSION)
+
+```{r}
+# Create a group in the karate graph containing Mr Hi and John A
+V(karate_graph)$group <- ifelse(V(karate_graph)$name %in% c("Mr Hi", "John A"), 1, 0)
+```
+
+```{r}
+# Convert the karate graph for the purposes of using networkD3
+# Use you new group in the conversion
+library(networkD3)
+
+karate_d3 <- networkD3::igraph_to_networkD3(karate_graph, 
+                                            group = V(karate_graph)$group)
+```
+
+```{r}
+# Run a force network visualization of the karate graph in networkD3 
+networkD3::forceNetwork(Links = karate_d3$links, 
+                        Nodes = karate_d3$nodes, 
+                        NodeID = "name",   
+                        Source = "source",
+                        Target = "target", 
+                        Group = "group",
+                        opacity = 1)
+
+```
