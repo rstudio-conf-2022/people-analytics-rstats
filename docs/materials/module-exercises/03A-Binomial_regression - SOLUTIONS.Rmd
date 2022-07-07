@@ -1,0 +1,106 @@
+---
+title: "03A - Binomial Logistic Regression Solutions"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct binomial logistic regression modeling on a data set relating to recruiting data and whether a person is hired or not hired based on test scores, interviews, and gender.
+
+## Exercise 1 - Running a simple binomial logistic regression model
+
+```{r}
+# Download the recruiting dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/recruiting.csv"
+recruiting <- read.csv(url)
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+head(recruiting)
+```
+
+```{r}
+# What do you think the datatypes are?
+# gender:
+# sat: 
+# apttest:
+# int1:
+# int2:
+# int3:
+# hired:
+```
+
+
+```{r}
+# Perform any necessary datatype adjustments
+recruiting$gender <- as.factor(recruiting$gender)
+recruiting$hired <- as.factor(recruiting$hired)
+recruiting$int1 <- ordered(recruiting$int1,
+                           levels = 1:5)
+recruiting$int2 <- ordered(recruiting$int2,
+                           levels = 1:5)
+recruiting$int3 <- ordered(recruiting$int3,
+                           levels = 1:5)
+```
+
+
+```{r}
+# Run a simple binomial logistic regression model to estimate the influence of SAT scores
+# on hire success, saving your model using a name of your choice
+model <- glm(data = recruiting, formula = hired ~  sat, family = "binomial")
+
+```
+
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+summary(model)$coefficients
+
+```
+
+```{r}
+# Take a look at the odds ratio for our independent variable. How do you interpret this?
+exp(model$coefficients)
+
+```
+
+```{r}
+# Do you think this is a good model?
+DescTools::PseudoR2(model)
+```
+
+## Exercise 3 - Running a multiple binomial logistic regression model
+
+```{r}
+# What variables look like they might be interesting to include?
+GGally::ggpairs(recruiting)
+
+```
+
+```{r}
+# let's try modeling hired based on apttest and gender
+
+model2 <- glm(hired ~ apttest + gender, data = recruiting, family = "binomial")
+
+```
+
+```{r}
+# View the coefficients and log odds
+summary(model2)$coefficients
+exp(model2$coefficients)
+```
+
+```{r}
+# Assess model fit - is this better than the simple model?
+DescTools::PseudoR2(model2)
+AIC(model)
+AIC(model2)
+```
+
