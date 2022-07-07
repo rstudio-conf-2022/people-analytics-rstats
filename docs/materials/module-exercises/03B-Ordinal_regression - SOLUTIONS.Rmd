@@ -1,0 +1,152 @@
+---
+title: "03B-Ordinal_regression - SOLUTIONS"
+output: html_document
+---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct ordinal logistic regression on data related to employee performance.
+
+## Exercise 1 - Running a simple ordinal logistic regression model
+
+```{r}
+# Download the employee performance dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/employee_performance.csv"
+perf <- read.csv(url)
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+head(perf)
+```
+
+```{r}
+# What do you think the datatypes are?
+# sales:
+# new_customers:
+# region:
+# gender:
+# rating:
+```
+
+
+```{r}
+# Perform any necessary datatype adjustments
+perf$region <- as.factor(perf$region)
+perf$gender <- as.factor(perf$gender)
+perf$rating <- ordered(perf$rating,
+                       levels = 1:3)
+```
+
+```{r}
+# Take a look at the pairs plot. What do you notice?
+GGally::ggpairs(recruiting)
+
+```
+
+```{r}
+# Run a simple ordinal logistic regression model to understand sales influence
+# on rating, saving your model using a name of your choice
+model <- polr(formula = rating ~ sales, data = perf)
+model
+```
+
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+summary(model)$coefficients
+
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+coefficients <- summary(model)$coefficients
+# calculate p-values
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio <- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+
+```
+
+```{r}
+# Do you think this is a good model?
+DescTools::PseudoR2(model)
+
+# looks like it is not
+generalhoslem::lipsitz.test(model)
+```
+
+## Exercise 3 - Add more information to the model
+
+```{r}
+# Let's try a model to see how sales, new_customers, and gender impact rating
+model2 <- polr(rating ~ sales + gender + new_customers, data = perf)
+
+summary(model2)
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+coefficients <- summary(model2)$coefficients
+# calculate p-values
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio <- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+```
+
+```{r}
+# Do you think this is a good model?
+DescTools::PseudoR2(model2)
+
+# looks like this one is better
+generalhoslem::lipsitz.test(model2)
+```
+
+# Exercise 4: Test the proportional odds assumption
+
+```{r}
+# First try the method where we compare the binary models to each other and use
+# our judgement
+perf$rating23 <- ifelse(perf$rating %in% c(2,3), 1, 0)
+perf$rating3 <- ifelse(perf$rating == 3, 1, 0)
+
+mod_23 <- glm(
+  rating23 ~ sales + gender + new_customers, data = perf, family = "binomial"
+)
+
+mod_3 <-glm(
+  rating3 ~ sales + gender + new_customers, data = perf, family = "binomial"
+)
+
+(coefficient_comparison <- data.frame(
+  mod_23 = summary(mod_23)$coefficients[ , "Estimate"],
+  mod_2 = summary(mod_3)$coefficients[ ,"Estimate"],
+  diff = summary(mod_3)$coefficients[ ,"Estimate"] - 
+    summary(mod_23)$coefficients[ , "Estimate"]
+))
+```
+
+```{r}
+# Alternatively with the Brant-Wald test
+# What do you  notice?
+library(brant)
+brant::brant(model2)
+
+```
