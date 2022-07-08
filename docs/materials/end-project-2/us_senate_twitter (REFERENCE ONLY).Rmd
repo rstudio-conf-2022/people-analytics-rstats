@@ -1,0 +1,110 @@
+---
+title: "Obtaining US Senator Network Data from Twitter"
+author: "Keith McNulty"
+date: '2022-07-08'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Getting the Twitter IDs of current US Senators
+
+The Twitter IDs of US senators who are currently active on Twitter are available at the [UC San Diego Library](https://ucsd.libguides.com/congress_twitter/senators).  We can scrape these details into a data frame.
+
+```{r}
+library(rvest)
+library(tidyverse)
+library(urltools)
+
+url <- "https://ucsd.libguides.com/congress_twitter/senators"
+tables <- url |> 
+  rvest::read_html() |> 
+  rvest::html_nodes("table") 
+
+senator_df <- tables[1] |> 
+  rvest::html_table(header = TRUE) |> 
+  dplyr::bind_rows(
+    tables[2] |> 
+      rvest::html_table(header = TRUE)
+  )
+
+senator_screen_names <- url |>
+  rvest::read_html() |> 
+  rvest::html_nodes("table") |> 
+  rvest::html_nodes("tr") |> 
+  rvest::html_node("a") |> 
+  rvest::html_attr("href") |> 
+  na.omit() |> 
+  urltools::url_parse() |> 
+  dplyr::select(screen_name = path)
+
+senator_df <- senator_df |> 
+  dplyr::bind_cols(senator_screen_names)
+```
+
+## Getting Twitter timelines
+
+We will use the screen names to extract the last 1000 tweets for each Senator:
+
+```{r}
+library(rtweet)
+
+results <- rtweet::get_timelines(senator_df$screen_name, n = 1000)
+```
+
+## Generating an edgelist
+
+We use a series of functions on the `results` dataframe to generate a weighted edgelist based on interactions between Senators.   An interaction is a mention, reply, retweet or quote tweet.  The weight is a count of the interactions.
+
+```{r}
+# function to create edgelist for single MP
+count_and_group <- function (df) {
+  df |> 
+    dplyr::select(ends_with("screen_name")) |> 
+    unlist() |> 
+    tibble(interacted_with = _) |> 
+    tidyr::drop_na() |> 
+    dplyr::group_by(interacted_with) |> 
+    dplyr::summarise(weight = n()) |> 
+    dplyr::filter(
+      # ensures that only Senator interactions are returned
+      interacted_with %in% senator_df$screen_name
+    )
+}
+
+# function to generate edgelist across all MPs
+create_edgelist <- function(tweet_df) {
+  tweet_df |> 
+    dplyr::nest_by(screen_name) |> 
+    dplyr::summarise(count_and_group(data)) |> 
+    # ignore interactions with self
+    dplyr::filter(screen_name != interacted_with) |> 
+    dplyr::rename(from = screen_name, to = interacted_with)
+}
+
+# create final edgelist
+senator_edgelist <- create_edgelist(results)
+```
+
+## Creating vertex information
+
+We gather some interesting facts and info about each active senator.
+
+```{r}
+senator_vertices <- results %>%
+  select(screen_name, profile_image_url, followers_count) %>%
+  distinct() |> 
+  left_join(senator_df) |> 
+  rename(name = Senator,
+         state = State,
+         party = Party)
+```
+
+Finally we ensure that there are no edges to deactivated Twitter profiles:
+
+```{r}
+senator_edgelist <- senator_edgelist |> 
+  dplyr::filter(to %in% senator_vertices$screen_name)
+```

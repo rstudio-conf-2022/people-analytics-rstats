@@ -1,0 +1,55 @@
+---
+title: "Network Project Option A"
+subtitle: "US Grocery Purchasing Network"
+author: "<b>rstudio::</b>conf(2022)"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Context
+
+We have simulated some data to represent a US grocery purchasing network.  This is a network of over 1,000 purchasing staff working for a major nationwide US grocery chain.
+
+The staff work to procure from local suppliers for the various categories of goods sold by the grocery chain.  They frequently communicate with other purchasing staff to discuss quality and value of suppliers and other procurement matters. 
+
+Your task is to explore and visualize this network of procurement staff and to try to gain an understanding of what factors influence interaction between staff. 
+
+---
+class: left, middle, rstudio-logo
+
+# Data provided
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 07A - Grocery Network Project**.
+
+In this assignment, you will find csv files of the edgelist and vertices of the grocery network.
+
+The edgelist is a weighted edgelist, with the `n_times` column indicating the number of times the two individuals have interacted in the past year.
+
+The vertex list contains information on the names, tenure, location, and focus product category of each member of staff.
+
+---
+class: left, middle, rstudio-logo
+
+# How to proceed
+
+You can work alone or with a partner or group if you prefer.
+
+Start an R Markdown file, and follow some of the methods you learned earlier to try to make progress on this project.  Don't be shy to ask for help if you need it.   
+
+Try to explain your approach in the text of your R Markdown document.  Imagine that other people will read your work and will need to understand what you are doing.  
+
+Don't forget to knit your document when you have finished.
+
+
