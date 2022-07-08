@@ -464,7 +464,7 @@ class: left, middle, rstudio-logo, bigfont
 
 ## Assortativity
 
-Homophily is the tendency for similar people to be connected to each other, i.e., "birds of a feather flock together". When people share common traits, it is easier to form relationships. Examples include
+Homophily is the tendency for similar people to be connected to each other, i.e., "birds of a feather flock together". When people share common traits, it is sometimes easier to form relationships. Examples include
 
 - education
 - political beliefs
@@ -483,7 +483,9 @@ class: left, middle, rstudio-logo, bigfont
 For undirected graphs:
 
 $$
+`\begin{equation}
 r = \frac{\sum_{i}e_{ii} - \sum_{i}a_i^2}{1-\sum_{i}a_i^2}
+\end{equation}`
 $$
 
 where:
@@ -532,7 +534,9 @@ Suppose we want to understand if dog owners tend to be connected to other dog ow
 &lt;/table&gt;
 
 $$
+`\begin{equation}
 r = \frac{(0.34+0.26)-(0.54^2+0.46^2)}{1-(0.54^2+0.46^2)} = 0.195
+\end{equation}`
 $$
 
 ---
@@ -541,7 +545,9 @@ class: left, middle, rstudio-logo, bigfont
 ## Assortativity for numeric data
 
 $$
+`\begin{equation}
 r = \frac{\sum_{xy}xy(e_{xy}-a_xb_y)}{\sigma_a\sigma_b}
+\end{equation}`
 $$
 
 where:

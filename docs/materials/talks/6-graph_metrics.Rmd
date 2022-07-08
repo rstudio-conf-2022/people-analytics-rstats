@@ -421,7 +421,9 @@ class: left, middle, rstudio-logo, bigfont
 For undirected graphs:
 
 $$
+\begin{equation}
 r = \frac{\sum_{i}e_{ii} - \sum_{i}a_i^2}{1-\sum_{i}a_i^2}
+\end{equation}
 $$
 
 where:
@@ -454,7 +456,9 @@ knitr::kable(t,
 ```
 
 $$
+\begin{equation}
 r = \frac{(0.34+0.26)-(0.54^2+0.46^2)}{1-(0.54^2+0.46^2)} = 0.195
+\end{equation}
 $$
 
 ---
@@ -463,7 +467,9 @@ class: left, middle, rstudio-logo, bigfont
 ## Assortativity for numeric data
 
 $$
+\begin{equation}
 r = \frac{\sum_{xy}xy(e_{xy}-a_xb_y)}{\sigma_a\sigma_b}
+\end{equation}
 $$
 
 where:
