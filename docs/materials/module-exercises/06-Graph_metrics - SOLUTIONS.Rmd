@@ -1,0 +1,239 @@
+---
+title: "6 - Graph Metrics and Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will practice various types of network analyses using an edgelist of dolphins
+
+## Exercise 1 - Basic graph summary metrics
+
+```{r}
+# Download the dolphin dataset from the URL provided
+url <- "https://ona-book.org/data/dolphins.csv"
+
+dolphin_edgelist <- read.csv(url)
+```
+
+```{r}
+# create an undirected graph
+library(igraph)
+dolphin_graph <- igraph::graph_from_data_frame(
+  dolphin_edgelist,
+  directed = FALSE
+)
+```
+
+```{r}
+# View the graph object - how many vertices and edges are there?
+dolphin_graph
+```
+
+
+```{r}
+# what is the distance between Zig and Fork
+distances(dolphin_graph, weights = NULL)["Zig","Fork"]
+
+```
+
+```{r}
+# How large is the network?
+vcount(dolphin_graph)
+ecount(dolphin_graph)
+```
+
+
+```{r}
+# Is this a dense network?
+edge_density(dolphin_graph)
+```
+
+```{r}
+# How many components are in this network?
+components(dolphin_graph)
+
+# What does this mean for our network?
+# we have a complete graph where all dolphins are somehow connected
+```
+
+```{r}
+# What is the network diameter?
+diameter(dolphin_graph)
+
+```
+
+
+## Exercise 2 - Centrality measures
+
+```{r}
+# Continuing with our same dolphin graph, which dolphin is an important connector?
+cent <-
+  dolphin_graph |>
+  tidygraph::as_tbl_graph() |>
+  dplyr::mutate(
+    DEGREE_CENT = tidygraph::centrality_degree(),
+    BTWN_CENT = tidygraph::centrality_betweenness(),
+    CLOSE_CENT = tidygraph::centrality_closeness()
+  )
+
+# SN100 has highest between centrality
+cent %>%
+  dplyr::arrange(
+    desc(BTWN_CENT)
+  )
+
+# Which dolphin has the most connections?  (Grin)
+cent %>%
+  dplyr::arrange(
+    desc(DEGREE_CENT)
+  )
+
+# Which dolphin has the most central? (SN100)
+cent %>%
+  dplyr::arrange(
+    desc(CLOSE_CENT)
+  )
+
+```
+
+```{r}
+# plot the dolphin graph and locate Grin and SN100 to see if these results make intuitive sense
+V(dolphin_graph)$highcent <- ifelse(V(dolphin_graph)$name %in% c("SN100","Grin"),1,0)
+
+ggraph::ggraph(dolphin_graph) +
+  geom_edge_link(color = "grey") +
+  geom_node_point(aes(color = as.factor(highcent), size = 3), show.legend = FALSE) +
+  scale_color_manual(values = c("lightblue","pink")) +
+  geom_node_text(aes(label = name)) +
+  theme_void()
+
+```
+
+```{r}
+# how large is the largest clique?
+clique_num(dolphin_graph)
+
+# how many cliques are between size 3 and 5?
+length(cliques(dolphin_graph, min = 3, max = 5))
+```
+
+## Exercise 3: Community detection
+
+```{r}
+# What communities do you see in the dolphin graph? Try out a couple of methods and compare results
+# e.g. cluster_louvain, cluster_leiden, cluster_fast_greedy
+set.seed(123)
+communities <- cluster_louvain(dolphin_graph)
+V(dolphin_graph)$community <- membership(communities)
+
+sizes(communities)
+
+```
+
+```{r}
+# plot your favorite option
+set.seed(123)
+ggraph(dolphin_graph, layout = "fr") +
+  geom_edge_link(color =  "grey") +
+  geom_node_point(aes(color = as.factor(community)),
+                  show.legend = FALSE) +
+  theme_void()
+```
+
+## Exercise 4 - Do people tend to email with people in their same department?
+
+```{r}
+# Download the email dataset from the URL provided
+url <- "https://ona-book.org/data/email_edgelist.csv"
+
+email_edgelist <- read.csv(url)
+
+# Download the corresponding department mappings from the URL provided
+url_v <- "https://ona-book.org/data/email_vertices.csv"
+
+email_dept <- read.csv(url_v)
+```
+
+```{r}
+# create the graph with vertice labels
+email_graph <- igraph::graph_from_data_frame(
+  email_edgelist,
+  directed = FALSE,
+  vertices = email_dept
+)
+
+# Calculate assortativity
+assortativity_nominal(email_graph, factor(V(email_graph)$dept))
+```
+
+## Exercise 5 - Exploring the friends graph (EXTENSION)
+
+```{r}
+# Download the friends dataset from the URL provided
+url <- "https://ona-book.org/data/friends_tv_edgelist.csv"
+
+friends_edgelist <- read.csv(url)
+```
+
+```{r}
+# which two characters interact most?
+friends_edgelist |>
+  dplyr::arrange(desc(weight))
+
+# is this a connected network?
+friends_graph <-
+  igraph::graph_from_data_frame(
+    friends_edgelist,
+    directed = FALSE
+  )
+
+components(friends_graph)
+
+# who is the most "important" character?
+c_vals <-
+  friends_graph |>
+  tidygraph::as_tbl_graph() |>
+  dplyr::mutate(
+    DEGREE_CENT = tidygraph::centrality_degree(),
+    BTWN_CENT = tidygraph::centrality_betweenness(),
+    CLOSE_CENT = tidygraph::centrality_closeness()
+  )
+
+# Ross and Joey come out on top of all metrics
+c_vals |>
+  dplyr::arrange(desc(DEGREE_CENT))
+
+c_vals |>
+  dplyr::arrange(desc(BTWN_CENT))
+
+c_vals |>
+  dplyr::arrange(desc(CLOSE_CENT))
+
+```
+
+```{r}
+# Are the friends part of the same community?
+set.seed(123)
+communities <- cluster_louvain(friends_graph, weights = NULL)
+V(friends_graph)$community <- membership(communities)
+
+membership(communities)[c("Joey","Monica","Chandler","Ross","Phoebe","Rachel")]
+
+# is anyone else in cluster 5?  so many random people....
+length(membership(communities)[membership(communities) == 5])
+
+# try leiden
+set.seed(123)
+communities <- cluster_leiden(friends_graph, weights = NULL)
+V(friends_graph)$community <- membership(communities)
+
+membership(communities)[c("Joey","Monica","Chandler","Ross","Phoebe","Rachel")]
+
+# this list of people makes a lot more sense to a Friends fan
+membership(communities)[membership(communities) == 49]
+```
+
+
