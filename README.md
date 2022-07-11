@@ -76,8 +76,8 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 |               | - Ordinal regression | |
 | 15:00 - 15:30 | *Coffee break*   | |
 | 15:30 - 17:00 | Advanced Explanatory Methods | Alex LoPilato |
-|               | - Mixed models                      | |
-|               | - Survival analysis               | |
+|               | - Survival analysis                     | |
+|               | - Important methods we couldn't cover              | |
 
 ### Day 2
 
