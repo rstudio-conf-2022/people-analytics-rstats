@@ -1,0 +1,203 @@
+---
+title: "Survival Analysis Exercises"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct survival analysis on a data set relating employee turnover to several variables that were measured at the time an employee was hired. 
+
+## Exercise 1 - Load, explore, and structure the survival data
+
+```{r}
+library(dplyr)
+library(survival)
+library(survminer)
+library(lubridate)
+
+# Read the survival_analysis_data.RDS file
+surv_data <- readRDS("docs/materials/talks/survival_analysis_data.RDS")
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+head(surv_data)
+```
+
+```{r}
+# Create a censor indicator variable that is 1 if the employee has left and 0 otherwise
+surv_data <- 
+  surv_data |> 
+  dplyr::mutate(
+    CENSOR = dplyr::case_when(
+      TURNOVER == "Yes" ~ 1,
+      TRUE ~ 0
+    )
+  )
+```
+
+```{r}
+# Replace missing TURNOVER_DATE values with "2022-07-01" -- think about what missing TURNOVER_DATES mean
+surv_data <- 
+  surv_data |>
+  dplyr::mutate(
+    TURNOVER_DATE = dplyr::case_when(
+      is.na(TURNOVER_DATE) ~ as.Date("2022-07-01"),
+      TRUE ~ TURNOVER_DATE
+    )
+  )
+```
+
+```{r}
+# Use the lubridate::interval() function to create the EVENT_TIME variable 
+# Hint: Use  %/% months(1) to transform the time difference into months 
+surv_data <- 
+  surv_data |>
+  dplyr::mutate(
+    EVENT_TIME = lubridate::interval(HIRE_DATE, TURNOVER_DATE) %/% months(1)
+  )
+```
+
+```{r}
+# Calculate some descriptive statistics for EVENT_TIME using the full sample, then group the data by CENSOR to see how the descriptives
+# change. 
+mean(surv_data$EVENT_TIME)
+median(surv_data$EVENT_TIME)
+
+surv_data |>
+  dplyr::group_by(
+    CENSOR
+  ) |>
+  dplyr::summarise(
+    MEAN_EVENT_TIME = mean(EVENT_TIME),
+    MEDIAN_EVENT_TIME = median(EVENT_TIME),
+    SD_EVENT_TIME = sd(EVENT_TIME)
+  )
+```
+
+## Exercise 2 - Create a survival object and estimate survival functions using Kaplan Meier estimates
+
+```{r}
+# Create a survival object using survival::Surv().
+# Remember it requires two arguments EVENT_TIME and CENSOR
+surv_object <- survival::Surv(
+  event = surv_data$CENSOR,
+  time = surv_data$EVENT_TIME
+)
+```
+
+```{r}
+# Use survival::survfit() to estimate survival probabilities using the Kaplan Meier estimator for the entire sample
+# How many months after hiring would you expect 50% of the sample to remain at the firm? (e.g. the median survival time)
+# How many months after hiring would you expect 75% of the sample to remain at the firm?
+
+km_all <- survival::survfit(surv_object ~ 1)
+summary(km_all)
+```
+
+Median: 47 months
+75: 24 months
+```{r}
+# Use survminer::ggsurvplot() to plot the overall survival function.
+survminer::ggsurvplot(km_all)
+```
+
+```{r}
+# Use survival::survfit() to estimate survival probabilities by the REFERRAL variable. 
+# For the portion of the sample that was referred for the job (REFERRAL == "Yes"), how many months after hiring would you expect 50% of the sample to remain at the firm? What about for the portion of the sample that was not referred? 
+# Why would the median survival time be missing? 
+
+km_ref <- survival::survfit(surv_object ~ REFERRAL, data = surv_data)
+summary(km_ref)
+```
+
+Referral == "Yes"
+Median is undefined as more than 50% remain after end of study.
+
+Referral == "No"
+Median: 44 months
+
+```{r}
+# Use survminer::ggsurvplot() to plot the survival function by REFERRAL status. Are the two curves different? 
+survminer::ggsurvplot(km_ref)
+```
+
+## Exercise 3 - Fit a cox proportional hazards model to your data. 
+
+```{r}
+# Estimate a cox proportional hazards model. Decide what predictors should be included. 
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC,
+  data = surv_data
+)
+```
+
+```{r}
+# View the coefficient estimates and standard errors of the model
+summary(mod)
+```
+
+```{r}
+# Test the proportional hazard assumption and determine if any variables violate it. If they do decide if you should drop them from the model.
+survival::cox.zph(mod)
+
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+```
+
+Prior experience is close to violating the assumption and is unrelated to attrition, so we can safely drop it from the model
+## Exercise 4 - Interpreting the proportional hazards results.
+
+```{r}
+# Using the final model you decided on during last exercise, provide an interpretation of each of the predictors you kept in the model. 
+summary(mod)
+```
+Referral reduces hazard by a factor of .38 (~62%).
+No difference between 0-1 and 2 jobs prior to hiring. 
+Having 3+ jobs in the year before hire increases hazard by a factor of 1.50 (50%).
+Compared to a "Concerns" rating on the programming exercise, Pass and Pass+ both reduce hazard by factors of .79 (21%) and .73 (27%), respectively.
+Every unit increase in interpersonal skills reduces the hazard by a factor of .91 (9%).
+Every additional increase in hiring rec reduces hazard by a factor of .92 (8%).
+
+```{r}
+# Use the function confint() to calculate the 95% confidence intervals for each coefficient.
+# Transform the confidence intervals so that they can be interpreted as confidence intervals for exp(coef).
+confint(mod)
+exp(confint(mod))
+```
+
+## Exercise 5 - Creating predicted survival curves from your proportional hazards model. 
+
+```{r}
+# Create a new data frame that contains a column for each of the variables you included in your Cox regression model. Pick of variable you are interested in and provide different values for that variable (the values need to occur in the original data frame) while holding the other variables constant (e.g. NUMBER_JOBS == "0-1" for all rows in the new data frame).
+new_data <- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), 
+                       PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+```
+
+```{r}
+# With your new data frame and your estimated Cox regression model, use the function: survival::survfit() to create predicted survival probabilities from your model and new data frame. 
+# Using summary(), explore these new probabilities. 
+predicted_surv_prob <- survival::survfit(mod, newdata = new_data)
+```
+
+```{r}
+# With your new data frame and your estimated Cox regression model, use the function: survminer::ggadjustedcurves() to plot your predicted survival functions. If you are familiar with ggplot2, then try to customize the plot output. 
+survminer::ggadjustedcurves(mod, 
+                            data = new_data, variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+Using the results of your final Cox regression model and your predicted survival functions to write a high-level business summary of what predictor or predictors you believe to be the most important to focus on to reduce attrition. 

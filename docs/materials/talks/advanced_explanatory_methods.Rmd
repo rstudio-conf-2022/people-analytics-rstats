@@ -1,0 +1,651 @@
+---
+title: "Advanced Explanatory Methods"
+subtitle: "Survival Analysis"
+author: "Alex LoPilato"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, comment = NA)
+library(survival)
+library(survminer)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+```
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&#9989; Understand the basics of Survival Analysis
+  - Overview of survival analysis
+  - Learn how to estimate survival functions
+  - Learn how to specify, test, and interpret proportional hazard models
+
+&#9989; An Overview of Other Key Methods
+  - Mixed Effects Models
+  - Multinomial Models
+---
+class: left, middle, rstudio-logo
+
+# Survival Analysis 
+
+---
+class: left, middle, rstudio-logo
+
+## What is Survival Analysis?
+
+Survival analysis is "a collection of statistical procedures for the analysis of data in which the outcome variable of interest is time until an event occurs" (Kleinbaum & Klein, 2012).
+
+Key things to note from the above definition: 
+
+  - Survival analysis is a set of statistical methods, not a single method
+  - The outcome variable in a survival analysis is either discrete or continuous *time*
+  - Survival analysis requires a clearly defined event
+
+---
+class: left, middle, rstudio-logo
+
+## Survival Analysis in People Analytics
+
+What People Analytic questions can survival analysis help answer?
+
+--
+
+  - When will an employee leave the firm? 
+  
+--
+
+  - When will an employee be first promoted? 
+  
+--
+
+  - When will a hiring decision be made? 
+
+---
+class: left, middle, rstudio-logo
+
+## How do we begin a survival analysis?
+
+To begin a survival analysis, you need to start with the following:
+
+- <b>Define the Event</b>
+- <b>Clarify how time will be used</b>
+  - Beginning of time
+  - Metric of time
+- <b>Understand Censoring</b>
+
+---
+class: left, middle, rstudio-logo
+
+## Our Working Example
+
+You are a data scientist working in a People Analytics team at a large tech firm. You have been asked to understand if any of the hiring data the firm collects on its entry level software engineers is predictive of turnover later on. You have access to the firm's Human Resource Information System, which includes:
+
+  - `HIRE_DATE`: The month and year an employee was hired
+  - `TURNOVER_DATE`: The month and year an employee left the firm 
+  - `TURNOVER`: Indicates if an employee left the firm
+  - `REFERRAL`: Employee was referred for hire by an existing employee
+  - `PROG_EXER_RATE`: Performance on pre-employment programming exercise
+  - `INTPER_RATE`: Score on an interpersonal personality scale
+  - `PRIOR_EXP`: Prior software engineer experience
+  - `NUMBER_JOBS`: Number of jobs held in the year before hire
+  - `HIRE_REC`: Number of interviewers who recommended employee be hired
+
+You restrict your analysis to employees who were hired between January 2016 and December 2017.
+
+---
+class: left, middle, rstudio-logo
+
+## A Glimpse of the Data
+
+```{r, echo = FALSE, fig.align = "center"}
+surv_data <- readRDS("survival_analysis_data.RDS")
+surv_data |> 
+  dplyr::select(
+    EID,
+    HIRE_DATE,
+    TURNOVER_DATE,
+    TURNOVER,
+    NUMBER_JOBS,
+    PRIOR_EXP,
+    HIRE_REC
+  ) |>
+  head(6)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Defining the Event 
+
+An event "represents an individual's transition from one 'state' to another 'state'" (Singer & Willett, 2003).
+
+Events must be: 
+  - <b>Mutually exclusive</b>
+  - <b>Exhaustive</b> 
+
+In our example, the event is <b>employee turnover</b>, which meets the above criteria as an employee is either employed at a given firm or not.
+
+---
+class: left, middle, rstudio-logo
+
+## Clarifying Time
+
+Time plays a major role in survival analysis, so we need to be very clear on two aspects of time: 
+
+  - <b>The Beginning of Time</b>: The time 0 of the survival analysis.  
+  - <b>The Metric of Time</b>: The unit of time in a survival analysis. You should choose the smallest unit possible that is still relevant to your analysis.
+
+For our example:
+  - Beginning of Time: Employees hire date
+  - Metric of Time: Months (if the data were available, we could consider weeks)
+
+---
+class: left, middle, rstudio-logo
+
+## What is censoring?
+
+Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly. 
+
+There are two types of censoring: 
+  - Right Censoring occurs when an individual's true event time is greater than their observed time.
+  - Left Censoring occurs when an individual's true event time is less than their observed time. 
+
+---
+class: left, middle, rstudio-logo
+
+## Do we have censored data?
+
+  - We have employees in our data who have not yet left the firm. 
+
+  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>/
+
+---
+class: left, middle, rstudio-logo
+
+## Impact of Censoring
+
+```{r, echo = FALSE, out.width="75%", out.height="75%", fig.align = "center"}
+plot_data <-
+  surv_data |>
+    dplyr::mutate(
+    TURNOVER_DATE = dplyr::case_when(
+      TURNOVER == "Yes" ~ TURNOVER_DATE,
+      TRUE ~ as.Date("2022-07-01")
+    ),
+    EVENT_TIME = lubridate::interval(HIRE_DATE, TURNOVER_DATE) %/% months(1)
+  )
+
+ggplot2::ggplot(
+  plot_data,
+  ggplot2::aes(
+    x = EVENT_TIME,
+    fill = TURNOVER
+  )
+) + 
+  ggplot2::geom_histogram(
+    position = ggplot2::position_dodge()
+  ) + 
+  ggplot2::labs(
+    x = "Months Since Hire",
+    y = "Count of Employees",
+    fill = "Turnover"
+  ) + 
+  ggplot2::theme_minimal()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## The Survival Distribution
+
+The methods of survival analysis all try to estimate and summarize the survival distribution. 
+
+There are two interrelated ways to specify the survival distribution:
+
+1. The Survival Function
+2. The Hazard Function
+
+---
+class: left, middle, rstudio-logo
+
+## The Survival Function
+
+The Survival Function defines the probability of surviving up to some point in time, $t$:
+
+$$S(t) = pr(T > t)$$
+
+```{r, echo = FALSE, out.width="60%", out.height="60%", fig.align = "center"}
+time <- seq(0, 70, length = 500)
+ggplot2::ggplot(
+  data.frame(time), 
+  ggplot2::aes(x = time)
+) +
+  ggplot2::geom_function(fun = pweibull, 
+                         args = list(shape = 8, scale = 42, lower.tail = F)) +
+  ggplot2::labs(
+    x = "Years in Workforce",
+    y = "Probability of Staying in the Workforce",
+    title = "Survival Function for Years in Workforce"
+  ) + 
+  ggplot2::theme_minimal()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## The Hazard Function 
+
+The hazard function, $h(t)$, is the instantaneous rate at which the events occur, given that the event has not already occurred. 
+
+```{r, echo = FALSE, out.width="60%", out.height="60%", fig.align = "center"}
+time <- seq(0, 70, length = 500)
+
+weib_haz <- function(x, shape, scale) {
+  dweibull(x, shape = shape, scale = scale) / 
+    pweibull(x, shape = shape, scale = scale, lower.tail = FALSE)
+}
+
+ggplot2::ggplot(
+  data.frame(time), 
+  ggplot2::aes(x = time)
+) +
+  ggplot2::geom_function(fun = weib_haz, 
+                         args = list(shape = 8, scale = 42)) +
+  ggplot2::labs(
+    x = "Years in Workforce",
+    y = "Rate of Exiting the Workforce",
+    title = "Hazard Function for Years in Workforce"
+  ) + 
+  ggplot2::theme_minimal()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## A Workflow for Survival Analysis
+
+1. Structure your data frame for a survival analysis
+2. Create a survival object using `survival::Surv()`
+3. Exploratory Data Analysis using the Kaplan-Meier Estimator
+4. Specify and test Cox Proportional Hazards (Cox PH) Model 
+5. Check the proportional hazards assumption of the Cox PH Model
+6. Use the Cox PH Model to aid business decisions 
+
+---
+class: left, middle, rstudio-logo
+
+## Structuring Your Data
+
+You will want to create: 
+  - a censor indicator, `CENSOR`
+  - an event time variable, `EVENT_TIME`
+
+```{r}
+surv_data <-
+  surv_data |>
+    dplyr::mutate(
+    TURNOVER_DATE = dplyr::case_when(
+      TURNOVER == "Yes" ~ TURNOVER_DATE,
+      TRUE ~ as.Date("2022-07-01")
+    ),
+    CENSOR = dplyr::case_when(
+      TURNOVER == "No" ~ 0,
+      TRUE ~ 1
+    ),
+    EVENT_TIME = lubridate::interval(HIRE_DATE, TURNOVER_DATE) %/% months(1)
+  )
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Structuring Your Data: `CENSOR` and `EVENT_TIME`
+
+```{r, echo = FALSE, fig.align = "center"}
+surv_data |>
+  dplyr::select(
+    EID,
+    HIRE_DATE,
+    TURNOVER_DATE,
+    TURNOVER,
+    CENSOR,
+    EVENT_TIME
+  ) |>
+  head()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Creating a Survival Object
+ 
+The survival object is created by the function `survival::Surv`, which typically requires two arguments: `event` and `time`. The survival object will be used as the outcome by the survival analysis methods we explore. 
+
+```{r}
+surv_object <- survival::Surv(
+  event = surv_data$CENSOR,
+  time = surv_data$EVENT_TIME
+)
+
+head(surv_object, 10)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Estimating the Survival Function: Kaplan-Meier Estimator
+
+The Kaplan-Meier (KM) Estimator is a non-parametric method that estimates the survival probabilities at each time an event occurs. We will use the function `survival::survfit()`, which uses the KM Estimator, to estimate survival probabilities from our data. 
+
+`survfit` requires two arguments:
+
+1. A formula object where the outcome is a survival object
+2. A data frame
+
+```{r}
+km_result <- survival::survfit(
+  surv_object ~ 1,
+  data = surv_data
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## The Output of survfit
+
+```{r, echo = FALSE, fig.align="center"}
+km_summary <- summary(km_result)
+
+km_data <- 
+  tibble::tibble(
+    TIME = km_summary$time,
+    N_RISK = km_summary$n.risk,
+    N_EVENT = km_summary$n.event, 
+    CENSOR = km_summary$n.censor,
+    SURVIVAL = km_summary$surv
+  )
+
+km_data[c(1:3, 69:71), ]
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Plotting the Survival Function
+
+```{r, out.width="50%", out.height="50%", fig.align = "center"}
+survminer::ggsurvplot(
+  km_result,
+  pval = TRUE,
+  conf.int = TRUE,
+  xlab = "Months since Hire",
+  ylab = "Probability of Staying at the Firm"
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Using the KM Estimator to Plot Multiple Survival Functions
+
+```{r, fig.align = "center", out.width="60%", out.height="60%"}
+km_result_jobs <- survival::survfit(surv_object ~ NUMBER_JOBS, data = surv_data)
+
+survminer::ggsurvplot(km_result_jobs, pval = TRUE, xlab = "Months Since Hire", ylab = "Probability of Staying")
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise -- Exploring Survival Data
+
+For our next short exercise, we will do some practice structuring and exploring our turnover data and estimating survival functions. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 1 and 2**.
+
+---
+class: left, middle, rstudio-logo
+
+## The Cox Proportional Hazards Model
+
+The Cox Proportional Hazards Model is a semi-parametric regression model that lets us estimate the impact that one or more predictors has on an individual's turnover likelihood. 
+
+The proportional hazards model estimates the effects a set of predictors has on an individual's hazard function: 
+
+$$h_{i}(t)=h_{0}(t)e^{x\beta}$$
+---
+class: left, middle, rstudio-logo
+
+## Fitting a Cox Proportional Hazards Model
+
+The `coxph` function requires: 
+
+  - A survival object, `surv_object`
+  - A formula that regresses the survival object on the predictors
+  - A data frame
+
+```{r}
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC,
+  data = surv_data
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Testing the Cox PH Model
+
+```{r}
+summary(mod)$coefficients |> round(3)
+```
+
+  - `z`: The ratio of `coef` to `se(coef)`, a Wald or z-test
+  - `Pr(>|z|)`: The p-value associated with each `z`
+  - `exp(coef)`: The multiplicative effects on the hazard (e.g. $e^{\beta_{1}}$)
+  
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Model Coefficients: `INTPER_RATE`
+
+```{r, echo = FALSE}
+mod_summ <- summary(mod)
+mod_coef <- mod_summ$coefficients
+mod_coef <- mod_coef[match("INTPER_RATE", rownames(mod_coef)), ]
+int_coef <- round(mod_coef["exp(coef)"], 3) |> as.numeric()
+```
+To interpret the effect that an individual's interpersonal skills at hiring, `INTPER_RATE`, has on turnover, we will use the `exp(coef)` column:
+  - Adjusting for all other variables, a <b>unit increase</b> in `INTPER_RATE` reduces the monthly risk of turnover (i.e. baseline hazard) by a factor of `r int_coef` or by `r abs((int_coef - 1))*100`%. 
+  - Adjusting for all other variables, a <b>unit decrease</b> in `INTPER_RATE` increases the monthly risk of turnover by a factor of `r round(1/int_coef, 3)` or by `r 100*(abs(round(1/int_coef, 3) - 1))`%. This is calculated by inverting `exp(coef)` ( $\frac{1}{e^{\beta}}=$ `r round(1/int_coef, 3)`).
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Coefficients: Things to Know
+
+Important things to know about interpreting model coefficients: 
+  - $\beta < 0$: a reduction in the hazard function (less chance of turnover)
+  - $\beta > 0$: an increase in the hazard function (more chance of turnover)
+  - $e^{\beta}$: a hazards ratio, where values less than 1 reduce the hazard and values greater than 1 increase the hazard
+  
+---
+class: left, middle, rstudio-logo
+
+## Testing the Proportional Hazards Assumption
+
+The proportional hazards assumption is important as it allows us to completely ignore the baseline hazard <b>and</b> interpret the effects of our predictors as being independent of time. 
+```{r}
+survival::cox.zph(mod)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Correcting for Proportional Hazards Violations
+
+What do we do if one or more of our variables violates the proportional hazards assumption?
+  - Remove the variable if it is not a significant predictor and refit the model
+  - Stratify by the variable--each level of the variable gets its own baseline hazard function 
+  - Interact the levels of the variable with time 
+
+---
+class: left, middle, rstudio-logo
+
+## Using the Cox PH Model for Decisions 
+
+The `survival::survfit()` function allows us to generate estimated survival probabilities from our fitted model and the `survminer::ggadjustedcurves()` function allows us to nicely plot these probabilities as a survival function.
+
+---
+class: left, middle, rstudio-logo
+
+## Using the Cox PH Model for Decisions 
+
+```{r, eval = FALSE}
+# Remove PRIOR_EXP as its non-sig and almost violates PH assump.
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+
+# Create a new data frame holding constant all vars 
+# except the effect of interest
+new_data <- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), 
+                       PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+
+# Plot the predicted survival functions
+survminer::ggadjustedcurves(mod, 
+                            data = new_data, variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Predicted Survival Functions
+
+```{r, echo = FALSE, fig.align = "center"}
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+
+new_data <- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+
+survminer::ggadjustedcurves(mod, data = new_data, 
+                            variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+---
+class: left, middle, rstudio-logo
+
+<!-- ## Cox PH Extensions -->
+
+<!-- There are several different ways to extend the Cox PH Model:  -->
+<!--   - Time varying predictors  -->
+<!--   - Fraility Models -->
+<!--   - Survival Trees -->
+<!--   - Competing Risks -->
+
+<!-- --- -->
+<!-- class: left, middle, rstudio-logo -->
+
+## Exercise
+
+For our next short exercise, we will do some practice fitting and interpreting the output of a Cox proportional hazard regression model. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 3 through 5**.
+
+---
+class: left, middle, rstudio-logo
+
+# Other Advanced Methods
+
+---
+class: left, middle, rstudio-logo
+
+## What are Mixed-Effect Regression Models
+
+Mixed-Effect Regression (MER) models as a more flexible class of generalized linear regression models (GLMs). 
+
+The advantage they have over GLMs (both simple and multiple) is that they allow you to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
+
+Common designs that lead to dependent residuals: 
+  - Clustered Data (Our focus today)
+  - Crossed Data
+
+---
+class: left, middle, rstudio-logo
+
+## The MER Model: A Conceptual Look 
+The MER model is:
+$$Y_{ij} = \underbrace{\gamma_{00} + \gamma_{01}z_{1j} + \gamma_{10}x_{1ij}+\gamma_{11}x_{1ij}z_{1j}}_{\text{Fixed Part}} + \underbrace{R_{ij} + U_{0j}}_{\text{Random Part}}$$
+  - The fixed part of the model includes the effects of your predictors (identical to GLMs)
+  - The random part of the model includes the residual terms: 
+    - $R_{ij}$: The within-cluster residual 
+    - $U_{0j}$: The between-cluster intercept residual
+  - The cluster-level residuals are referred to as random-effects
+  
+---
+class: left, middle, rstudio-logo
+
+## R Packages for Mixed-Effect Regression Models
+
+I recommend using the following packages (ordered by preference):
+1. `lme4`: Best for crossed random-effects
+2. `nlme`: Best for growth models 
+
+---
+class: left, middle, rstudio-logo
+
+## What are Multinomial Logistic Regression Models?
+
+Multinomial logistic regression is an extension of logistic regression when the outcome variable has more than two unordered categories. 
+
+It has a variety of uses such as: 
+
+  - Modeling voting choice in elections with multiple candidates
+  - Modeling choice of career options by students
+  - Modeling choice of benefit options by employees
+
+---
+class: left, middle, rstudio-logo
+
+## Multinomial Logistic Regression Models: A Conceptual Understanding
+
+Your firm offers three different health insurance plans (A, B, and C) and would like to understand what motivates an employee to choose one plan over another. To answer this question, you could use multinomial logistic regression, which allows you to fit a single model that estimates the effects of one or more predictors on choosing B over A (reference category) and C over A (reference category).
+
+$$\ln(\frac{P(y = B)}{P(y = A)}) = X\beta$$
+$$\ln(\frac{P(y = C)}{P(y = A)}) = X\alpha$$
