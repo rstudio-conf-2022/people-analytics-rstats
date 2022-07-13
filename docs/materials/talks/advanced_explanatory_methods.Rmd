@@ -1,7 +1,7 @@
 ---
 title: "Advanced Explanatory Methods"
 subtitle: "Survival Analysis"
-author: "Alex LoPilato"
+author: "<b>rstudio::</b>conf(2022)"
 output:
   xaringan::moon_reader:
     css: "style.css"
