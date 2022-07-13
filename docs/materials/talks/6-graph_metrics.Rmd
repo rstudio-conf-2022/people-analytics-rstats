@@ -33,11 +33,11 @@ class: left, middle, rstudio-logo, bigfont
   
   
 ---
-class: left, middle, rstudio-logo, bigfont
+class: left, middle, rstudio-logo
 
 ## Paths
 
-Consider the below graphs.  How can we get from A to C?
+Paths can help us understand how people are connection and how information is spread. Consider the below graphs and suppose the nodes are people. Person A wants to be introduced to Person C.  How can we facilitate that introduction, i.e., how can we get from A to C?  
 
 ```{r, echo = FALSE, fig.align = "center", out.height = 400}
 g <- data.frame(
@@ -100,7 +100,7 @@ class: left, middle, rstudio-logo
 
 ## Distance
 
-The distance between two nodes is the sum of the weights of the edges traversed in the path. For graphs without a weight property, every edge is assumed to have weight 1.
+The distance between two nodes is the sum of the weights of the edges traversed in the path. For graphs without a weight property, every edge is assumed to have weight 1.  Suppose these weights are the strength of the relationship.  Now which path would you choose to introduce Person A to Person C?
 
 ```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
 g <- data.frame(
@@ -127,7 +127,7 @@ class: left, middle, rstudio-logo
 
 ## Network size
 
-How large is our network?
+It is often useful to simply understand how large the network is.  How many nodes and edges are we dealing with?
 
 ```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
 
@@ -158,7 +158,7 @@ class: left, middle, rstudio-logo
 
 ## Network density
 
-Network density is defined as the number of actual edges divided by the number of possible edges. A graph with density of 1 is a *complete* graph, and a graph with low density is considered *sparse*.
+Network density is defined as the number of actual edges divided by the number of possible edges. A graph with density of 1 is a *complete* graph, and a graph with low density is considered *sparse*.  A network with high density will be able to disperse information faster than a graph with network density.
 
 
 ```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
@@ -181,7 +181,7 @@ class: left, middle, rstudio-logo
 
 ## Components
 
-It can be useful to know the number of **components** in a network.  A component is defined as the number of disconnected groups in a network.
+It can be useful to know the number of **components** in a network.  A component is defined as the number of disconnected groups in a network.  In a people network, is of particular interest to understand and minimize the number of small components, or "islands", of people who feel disconnected from the broader population.
 
 ```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
 
@@ -199,20 +199,55 @@ components(sg)
 ---
 class: left, middle, rstudio-logo
 
-## Network diameter
+## Network diameter (1/2)
 
-Network diameter is defined as the longest of the shortest paths in a network.  This is mostly useful in a *connected graph* where all nodes can connect in some way.  We have an *unconnected graph*, so this metric isn't particularly useful.
+Network diameter is defined as the longest of the shortest paths in a network.  This metric only makes sense in a *connected* graph, because in a *disconnected* graph it is simply $\infty$. For the graph below, what is the diameter of the network?
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+sge2 <- data.frame(
+  from = c("E","B","C","E","A"),
+  to = c("C","D","D","D","E")
+)
+
+sg2 <- igraph::graph_from_data_frame(sge2, directed = FALSE)
+
+set.seed(123)
+ggraph::ggraph(sge2, layout = "fr") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r, echo = FALSE}
+df <- data.frame(
+  From = c("A","A","A","A","B","B","B","C","C","D"),
+  To = c("B","C","D","E","C","D","E","D","E","E"),
+  `Shortest Path` = c("{A,E,D,B}", "{A,E,C}","{A,E,D}",
+                      "{A,E}","{B,D,C}","{B,D}","{B,D,E}",
+                      "{C,D}","{C,E}","{D,E}"),
+  Distance = c(3,2,2,1,2,1,2,1,1,1)
+)
+
+df
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Network diameter (2/2)
 
 ```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
 
-ggraph::ggraph(sge, layout = "kk") +
+set.seed(123)
+ggraph::ggraph(sge2, layout = "fr") +
   geom_edge_link(color = "grey") +
   geom_node_label(fill = "lightblue", aes(label = name)) +
   theme_void()
 ```
 
 ```{r}
-diameter(sg)
+diameter(sg2)
 ```
 
 ---
@@ -316,7 +351,7 @@ class: left, middle, rstudio-logo, bigfont
 
 ## Cliques (1/2)
 
-Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1).
+Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1). Cliques can help us identify tightly connected groups of people.
 
 How many cliques are in our network?
 
