@@ -1,6 +1,6 @@
 ---
 title: "Advanced Explanatory Methods"
-subtitle: "Linear Mixed-Effects Models and Survival Analysis"
+subtitle: "Survival Analysis"
 author: "Alex LoPilato"
 output:
   xaringan::moon_reader:
@@ -13,10 +13,9 @@ output:
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, comment = NA)
 library(survival)
 library(survminer)
-library(lme4)
 library(dplyr)
 library(tibble)
 library(ggplot2)
@@ -25,381 +24,14 @@ class: left, middle, rstudio-logo, bigfont
 
 ## Aims of this module
 
-&#9989; Understand the basics of Linear Mixed-Effects Regression (LMER) Models
-  - Conceptual overview of LMER models
-  - Learn how to specify, test, and interpret LMER models
-
 &#9989; Understand the basics of Survival Analysis
-
----
-class: left, middle, rstudio-logo
-
-# Linear Mixed-Effects Regression Models
-
----
-class: left, middle, rstudio-logo
-
-## What's in a name? 
-
-Before we begin to learn about LMER models, I find it important to clarify some confusing terminology. 
-
-Depending on one's background, LMER models may be called: 
-  - Multilevel Models
-  - Hierarchical Linear Models
-  - Random Coefficient Models
-  
-Despite different names, these models refer to the same statistical model! 
-
----
-class: left, middle, rstudio-logo
-
-## What are LMER models and why do we need them? 
-
-I like to think of LMER models as a more flexible class of linear regression models. The advantage they have over linear regression models (both simple and multiple) is that they allow the user (you) to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
-
-Common designs that lead to dependent residuals: 
-  - Clustered Data (Our focus today)
-  - Crossed Data
-
----
-class: left, middle, rstudio-logo
-
-## Clustered Data
-
-Clustering occurs anytime your data--specifically your outcome / dependent variable--can be modeled at different levels (i.e. clusters). For example, you could have an employee survey responses from five employees who belong to firm A and five employees who belong to firm B. In this example survey responses could be modeled at the employee-level or at the firm-level (cluster-level).
-
-Do you think clustered data is common in People Analytics? 
-
----
-class: left, middle, rstudio-logo
-
-## Clustered Data in People Analytics 
-
-"once you know hierarchies exist, you see them everywhere." (Kreft & De Leeuw, 1998)
-
-Here are some examples of clusters (groups) in People Analytics data: 
-  - Employees clustered in offices
-  - Employees clustered in work groups / teams
-  - Employees clustered in a performance evaluator
-
-Can anyone think of other ways clustering may show up in People Analytics data? (hint: repeated measurements)
-
----
-class: left, middle, rstudio-logo
-
-## Impact of Clustering 
-
-Why should we care about modeling clusters in our data? 
-  - Clustering can have statistical consequences 
-  - Clusters can be substantively interesting
-
----
-class: left, middle, rstudio-logo
-
-## Statistical Consequences of Clustering: Non-Independence
-
-Non-independence is the "degree to which responses from individuals within the same group are influenced by, depend on, or cluster by group." (Bliese, 2000)
-
-That is, as the level of non-independence increases, data collected from employees within a given firm becomes more similar relative to data collected from an employee from a different firm and we start to see more variation in our data that is due to differences among firms (clusters), not employees:
-
-$$\sigma_y^2 = \sigma_{within}^2 + \tau_{between}^2$$
-The magnitude of non-independence can be estimated by the intraclass correlation coefficient (ICC):
-
-$$ICC = \frac{\tau_{between}^2}{\sigma_{within}^2 + \tau_{between}^2}$$
-
----
-class: left, middle, rstudio-logo
-
-## Visualizing Non-Independence
-
-```{r, echo = FALSE, out.height = "500", out.width = "500", fig.align = "center"}
-library(ggplot2)
-
-n1 <- 100
-n2 <- 3
-n <- n1*n2
-gid <- rep(1:n2, each = n1)
-
-v1 <- 1
-icc <- c(.00, .30, .99)
-v2 <- (icc*v1)/(1 - icc)
-set.seed(456)
-
-y_low <- rnorm(n, mean = 0, sd = sqrt(v1)) + rep(rnorm(n2, mean = 0, sd = sqrt(v2[1])), each = n1)
-y_med <- rnorm(n, mean = 0, sd = sqrt(v1)) + rep(rnorm(n2, mean = 0, sd = sqrt(v2[2])), each = n1)
-y_high <- rnorm(n, mean = 0, sd = sqrt(v1)) + rep(rnorm(n2, mean = 0, sd = sqrt(v2[3])), each = n1)
-
-y_low <- scale(y_low)
-y_med <- scale(y_med)
-y_high <- scale(y_high)
-
-data <- data.frame(
-  X = rep(1:n, 3),
-  Y = c(y_low, y_med, y_high),
-  GROUP = as.factor(rep(gid, 3)),
-  CONDITION = rep(icc, each = n)
-)
-
-ggplot2::ggplot(
-  data = data, 
-  ggplot2::aes(
-    x = X,
-    y = Y,
-    color = GROUP
-  )
-) + 
-  ggplot2::geom_point() +
-  ggplot2::facet_wrap(~CONDITION, scales = "free") + 
-  ggplot2::labs(
-    x = "Employee Index",
-    y = "Outcome Variable",
-    color = "Firm Membership",
-    title = "Impact of Non-Independence"
-  ) +
-  theme_minimal()
-```
-
----
-class: left, middle, rstudio-logo
-
-## Statistical Impacts of Clustering: Non-Independence
-
-What if we just ignore the clusters? 
-
-Whenever we have clustered data, we need to use a statistical model that directly or indirectly models the cluster-level variation. If we  use a statistical model that does not account for the cluster-level variation, then that model will report **incorrect standard errors**!
-
-What is worse, is that depending on the effect being estimated, sometimes the standard error will be underestimated and other times it will be overestimated **leading to potential increases in both Type 1 and Type 2 errors.**
-
----
-class: left, middle, rstudio-logo
-
-## Modeling Clustered Data
-
-Now that you are sufficiently scared of non-independence, I have some good news: there are many different ways to correct for it! You just need to answer the following question: 
-
-  - Is the variance between clusters interesting or a nuisance? 
-
-If you answered *nuisance*, then you can use a variety of fixed-effect models (e.g. OLS regression model with indicator variables for each cluster) or cluster robust-standard errors (i.e. sandwich estimators). We will not talk about these methods further.  
-
-If you answered *interesting*, then you will want to use a *linear mixed-effects regression model*! 
-
----
-class: left, middle, rstudio-logo
-
-## The LMER Model: A Conceptual Look 
-
-At the lowest level, Level 1, we are modeling within-cluster variance by including any number of predictors that vary within-cluster. 
-
-$$Level\;1: Y_{ij} = \beta_{0j} + \beta_{1j}x_{1ij} + R_{ij}$$
-LMER models allow the intercept, $\beta_{0j}$, and slopes, $\beta_{1j}$, of the within-cluster predictors to vary across clusters. The intercept and slope variation can then be modeled at Level 2, the cluster level, by including any number of cluster-level predictors, $z_{kj}$, or predictors that vary across, but not within, cluster. This is how LMER models account for and model cluster-level variation. 
-$$Level\;2: \begin{align} &\beta_{0j} =  \gamma_{00} + \gamma_{01}z_{1j} + U_{0j}\\ &\beta_{1j} = \gamma_{10} + \gamma_{11}z_{1j} + U_{1j} \end{align}$$
----
-class: left, middle, rstudio-logo
-
-## The LMER Model: A Conceptual Look 
-The LMER model that is actually estimated:
-$$Y_{ij} = \underbrace{\gamma_{00} + \gamma_{01}z_{1j} + \gamma_{10}x_{1ij}+\gamma_{11}x_{1ij}z_{1j}}_{\text{Fixed Part}} + \underbrace{R_{ij} + U_{0j} + U_{1j}x_{1ij}}_{\text{Random Part}}$$
-  - The fixed part of the model includes the fixed-effects of the within- and between-cluster predictors. 
-  - The random part of the model includes the residual terms: 
-    - $R_{ij}$: The within-cluster residual 
-    - $U_{0j}$: The between-cluster intercept residual
-    - $U_{1j}$: The between-cluster slope residual
-  - The cluster-level residuals are referred to as random-effects
-  
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification
-
-Model specification is the process of building and selecting the most relevant statistical model based on substantive and statistical considerations. Specifying an LMER model is similar to how we specify a regular linear model, but there are added layers of complexity: 
-
-  - Correctly specifying the fixed part of your model: 
-    - Adding the correct within and between-cluster predictors / interactions
-  - Correctly specifying the random part of your model: 
-   - Determining if the within-cluster intercepts, slopes, or both should vary across clusters
-
----
-class: left, middle, rstudio-logo
-
-## Overview of the LMER Model Building Process
-
-1. Construct an ICC to determine if there is enough cluster-level variation to justify an LMER model
-2. Build the within-cluster part of the model (including specifying random slopes)
-3. Build the between-cluster part of the model
-4. Iterate between steps 2 and 3
-5. Check your model diagnostics (we will not cover this part)
-
----
-class: left, middle, rstudio-logo
-
-## Our Running Example
-
-To help introduce the LMER model building process, we will use the following example: 
-
-You are a data scientist at a large firm. You have been asked to determine what predicts an employee's engagement at work. To do this, you have been given a dataset that contains the outcome variable, `ENGAGEMENT`, and several predictors varibles obtained from a survey the employees responded to: how satisfied an employee is with their manager (`MGR_SAT`) and the level of psychological safety they feel within their workgroup (`PSYCH_SAFETY`). THe dataset also contains a unique ID for the work group an employee belongs to (`WORK_GROUP_ID`).
-
-<!-- You are a data scientist at a large tech firm. You have been asked to determine what predicts a software engineer's innovative performance on a team. To do this, you have been given a dataset that contains the outcome variable, `INN_PERF`, and several predictor variables obtained from a survey the software enginners responded to: a software engineer's intrinsic motivation (`INT_MOT`) and the team support for innovation an engineer perceives (`IND_INN_SUPPORT`). The dataset also contains a work group ID (`WORK_GROUP_ID`).   -->
-
----
-class: left, middle, rstudio-logo
-
-## LMER Modeling Process: Fitting an Empty Model
-
-The basic LMER model begins with a linear model that does not contain any predictor / independent variables: a null or empty model. This model allows us to partition the variance of the outcome variable at the within-cluster level (Level 1) and the between-cluster level (Level 2).
-
-Similar to estimating a regression model using the `lm()` function, LMER models can be estimated using the function `lmer()` from the `lme4` package. The `lmer()` function requires: 
-
-  - A dataset
-  - A formula that specifies the fixed and random parts of the model
-
-```{r}
-data <- readRDS("lmer-presentation-data.rds")
-
-lmer_empty_mod <- lme4::lmer(
-  ENGAGEMENT ~ 1 + (1|WORK_GROUP_ID),
-  data = data
-)
-```
-
----
-class: left, middle, rstudio-logo
-
-## Summarizing the Empty Model
-
-```{r}
-summary(lmer_empty_mod)
-```
-
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Starting at Level 1
-
-To begin specifying the within-cluster part of your model, it is helpful to follow these steps: 
-
-1. Select and transform the relevant predictors and any interactions among them. 
-2. Determine which of the predictors should have random slopes (typically want to keep this limited).
-3. Estimate the model including the predictors and random slopes you selected in steps 1 and 2.
-4. Test the significance of the random slopes and remove any non-significant slopes.
-5. Test the significance of the level 1 predictors and remove any non-significant slopes. 
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Centering Decisions 
-
-In LMER Models you have two ways to center the within-cluster predictors: 
-
-  - Grand Mean Centering (GMC)
-  - Centering Within Cluster (CWC)
-
-GMC is when you center the predictor around its grand mean (i.e. the mean across all predictor responses)--identical to what we usually do in simple / multiple linear regression. 
-
-CWC is when you center the predictor around its **group mean**. This is a new way of centering! CWC removes all of the between-cluster variation from the predictor (i.e. within-cluster predictor mean is now 0) and allows you to estimate the "pure" within-cluster effect of the predictor. It changes the interpretation of the predictor: Responses are now relative to the group mean!
-
-In our running example, we want to know the effect an employee's satisfaction with their manager relative to the other members in the work group has on their work engagement.
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Estimating and Testing the Within-Cluster Model
-
-```{r}
-lmer_mod_1 <- lme4::lmer(
-  ENGAGEMENT ~ MGR_SAT_CWC * PSYCH_SAFETY + (MGR_SAT_CWC + PSYCH_SAFETY | WORK_GROUP_ID),
-  data = data
-)
-
-```
-
-The model above specifies: 
-  - Fixed-effects of `MGR_SAT_CWC`, `PSYCH_SAFETY`, and their interaction, `MGR_SAT_CWC*PSYCH_SAFETY`
-  - Random intercept and slopes: `(MGR_SAT_CWC + PSYCH_SAFETY | WORK_GROUP_ID)`
-  
----
-class: left, middle, rstudio-logo
-
-## LMER Model Sepcification: Testing the Within-Cluster Model
-
-Testing the significance of the fixed-effects and random-effect covariance estimates is complicated. The typical rule of thumb is that if you have 50 or more clusters, then you can use a Wald test for the fixed-effects.
-
-The best practice, however, is to use either profile or bootstrap confidence intervals. We will use profile confidence intervals:
-
-```{r}
-round(confint(lmer_mod_1, method = "profile", oldNames = FALSE), 3)
-```
-
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Adding Group Means to Level 2
-
-With the within-cluster predictors set (for now), we can now start looking at cluster-level predictors and their interactions with within-cluster predictors. 
-
-For our example, we are interested in including the cluster means of the within-cluster predictors as Level 2 predictors: 
-
-  - `MGR_SAT_GROUP_MEAN_CENT`
-  - `PSYCH_SAFETY_GROUP_MEAN_CENT`
-
-Conceptually, you can think of these cluster-level variables as measuring the work group's leadership and psychological safety climate (similar to organizational culture). Both of these of cluster-level variables have been grand mean centered to aid in model interpretation. 
-
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Specifying and Estimating Level 2
-
-```{r}
-lmer_mod_2 <- lme4::lmer(
-  ENGAGEMENT ~ (MGR_SAT_CWC + PSYCH_SAFETY + MGR_SAT_GROUP_MEAN_CENT + PSYCH_SAFETY_GROUP_MEAN_CENT)^2 + (MGR_SAT_CWC | WORK_GROUP_ID),
-  data = data
-)
-```
-
----
-class: left, middle, rstudio-log
-
-## LMER Model Specification: Testing the Between and Within-Cluster Model
-
-```{r}
-round(confint(lmer_mod_2), 3)
-```
-
----
-class: left, middle, rstudio-logo
-
-## LMER Model Specification: Selecting and Interpreting the Final Model
-
-```{r}
-lmer_mod_3 <- lme4::lmer(
-  ENGAGEMENT ~ MGR_SAT_CWC*PSYCH_SAFETY_GROUP_MEAN_CENT + MGR_SAT_GROUP_MEAN_CENT + (MGR_SAT_CWC | WORK_GROUP_ID),
-  data = data
-)
-
-round(summary(lmer_mod_3)$coefficients, 3)
-```
-
----
-class: left, middle, rstudio-logo
-
-## Understanding Model Fit
-
-Like Ordinary Linear Regression, you can calculate an $R^2$ statistic for an LMER model. However, it is not as straightforward and there is debate about the correct ways to calculate $R^2$. We are going to use one of the easier formulas and calculate both a Level 1 and Level 2 $R^2$:
-
-```{r}
-# Fit an empty model: 
-lmer_empty <- lme4::lmer(ENGAGEMENT ~ 1 + (1 | WORK_GROUP_ID), data)
-
-# Fit your final model, BUT remove the random slopes: 
-lmer_final <- lme4::lmer(ENGAGEMENT ~ MGR_SAT_CWC*PSYCH_SAFETY_GROUP_MEAN_CENT + MGR_SAT_GROUP_MEAN_CENT + (1 | WORK_GROUP_ID), data)
-
-# Calculate average group size
-B <- nrow(lmer_empty@frame)/lme4::ngrps(lmer_empty)
-  
-# R2 Level 1: 
-1 - ( (sigma(lmer_final) + lme4::VarCorr(lmer_final)$WORK_GROUP_ID[1]) / (sigma(lmer_empty) + lme4::VarCorr(lmer_empty)$WORK_GROUP_ID[1]) ) 
- 
-# R2 Level 2: 
-1 - ( (sigma(lmer_final)/B + lme4::VarCorr(lmer_final)$WORK_GROUP_ID[1]) / (sigma(lmer_empty)/B + lme4::VarCorr(lmer_empty)$WORK_GROUP_ID[1]) ) 
-```
-
+  - Overview of survival analysis
+  - Learn how to estimate survival functions
+  - Learn how to specify, test, and interpret proportional hazard models
+
+&#9989; An Overview of Other Key Methods
+  - Mixed Effects Models
+  - Multinomial Models
 ---
 class: left, middle, rstudio-logo
 
@@ -410,7 +42,7 @@ class: left, middle, rstudio-logo
 
 ## What is Survival Analysis?
 
-Survival analysis is "a collection of statistical procedures for the analysis of data in which the outcome variable of interest is time until an event occurs." (Kleinbaum & Klein, 2012)
+Survival analysis is "a collection of statistical procedures for the analysis of data in which the outcome variable of interest is time until an event occurs" (Kleinbaum & Klein, 2012).
 
 Key things to note from the above definition: 
 
@@ -418,46 +50,49 @@ Key things to note from the above definition:
   - The outcome variable in a survival analysis is either discrete or continuous *time*
   - Survival analysis requires a clearly defined event
 
-If you are trying to answer whether or when events occur, then you will likely need to conduct a survival analysis.
-
 ---
 class: left, middle, rstudio-logo
 
 ## Survival Analysis in People Analytics
 
-  - When will an employee leave the firm? 
-    - Outcome: Time until turnover (event)
-  - When will an employee be first promoted? 
-    - Outcome: Time until first promotion (event)
-  - When will a hiring decision be made? 
-    - Outcome: Time until hire/do not hire decision (event)
+What People Analytic questions can survival analysis help answer?
 
-The questions above are all questions that a people analyst could be asked to answer and each question can be answered by a survival analysis. 
+--
+
+  - When will an employee leave the firm? 
+  
+--
+
+  - When will an employee be first promoted? 
+  
+--
+
+  - When will a hiring decision be made? 
 
 ---
 class: left, middle, rstudio-logo
 
-## Begining a Survival Analysis
+## How do we begin a survival analysis?
 
-To start a survival analysis, you need to first do the following:
+To begin a survival analysis, you need to start with the following:
 
-- Define the Event
-- Clarify Time
+- <b>Define the Event</b>
+- <b>Clarify how time will be used</b>
   - Beginning of time
   - Metric of time
-- Understand Censoring
+- <b>Understand Censoring</b>
 
 ---
 class: left, middle, rstudio-logo
 
-## Our Running Example
+## Our Working Example
 
 You are a data scientist working in a People Analytics team at a large tech firm. You have been asked to understand if any of the hiring data the firm collects on its entry level software engineers is predictive of turnover later on. You have access to the firm's Human Resource Information System, which includes:
 
   - `HIRE_DATE`: The month and year an employee was hired
-  - `TURNOVER`: The month and year an employee left the firm 
-  - `TURNOVER_DATE`: Indicates if an employee left the firm
-  - `GENDER`: Employee's gender at time of hire
+  - `TURNOVER_DATE`: The month and year an employee left the firm 
+  - `TURNOVER`: Indicates if an employee left the firm
+  - `REFERRAL`: Employee was referred for hire by an existing employee
   - `PROG_EXER_RATE`: Performance on pre-employment programming exercise
   - `INTPER_RATE`: Score on an interpersonal personality scale
   - `PRIOR_EXP`: Prior software engineer experience
@@ -471,9 +106,19 @@ class: left, middle, rstudio-logo
 
 ## A Glimpse of the Data
 
-```{r}
+```{r, echo = FALSE, fig.align = "center"}
 surv_data <- readRDS("survival_analysis_data.RDS")
-head(surv_data)
+surv_data |> 
+  dplyr::select(
+    EID,
+    HIRE_DATE,
+    TURNOVER_DATE,
+    TURNOVER,
+    NUMBER_JOBS,
+    PRIOR_EXP,
+    HIRE_REC
+  ) |>
+  head(6)
 ```
 
 ---
@@ -481,50 +126,93 @@ class: left, middle, rstudio-logo
 
 ## Defining the Event 
 
-In survival analysis an event "represents an individual's transistion from one 'state' to another 'state'." (Singer & Willett, 2003)
+An event "represents an individual's transition from one 'state' to another 'state'" (Singer & Willett, 2003).
 
-For survival analysis, events must be: 
-  - Mutually exclusive
-  - Exhaustive 
+Events must be: 
+  - <b>Mutually exclusive</b>
+  - <b>Exhaustive</b> 
 
-In our example, the event is employee turnover, which fits as an employee is either employed at a given firm or not.
+In our example, the event is <b>employee turnover</b>, which meets the above criteria as an employee is either employed at a given firm or not.
 
 ---
 class: left, middle, rstudio-logo
 
 ## Clarifying Time
 
-In a survival analysis, time plays a major role, so we need to be very clear on two aspects of time: 
+Time plays a major role in survival analysis, so we need to be very clear on two aspects of time: 
 
- 1. The Beginning of Time: The time 0 of the survival analysis. One common beginning is the occurrence of some event that places the individual at risk of experiencing the target event. In our example the beginning of time is hiring date. 
- 2. The Metric of Time: The unit of time in a survival analysis. You should choose the smallest unit possible that is still relevant to your analysis. We will use in months in our example.
- 3. The Event Time: The distance between the beginning of time and the occurrence of the event: the outcome of interest. In our example, it is the number of months between an employees hire and turnover dates. 
+  - <b>The Beginning of Time</b>: The time 0 of the survival analysis.  
+  - <b>The Metric of Time</b>: The unit of time in a survival analysis. You should choose the smallest unit possible that is still relevant to your analysis.
+
+For our example:
+  - Beginning of Time: Employees hire date
+  - Metric of Time: Months (if the data were available, we could consider weeks)
 
 ---
 class: left, middle, rstudio-logo
 
-## Censoring 
+## What is censoring?
 
-Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly. This is a very common issue in survival analysis. Think of our example, there are some employees who have yet to leave the firm. That is, they have not experienced the turnover event as of July 1st, 2022. That does not mean they will not leave eventually, it just means that during our analysis those employees did not experience the event. Their event times are censored (similar to missing data). We are going to assume that censoring is independent of the event of interest. 
+Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly. 
 
 There are two types of censoring: 
+  - Right Censoring occurs when an individual's true event time is greater than their observed time.
+  - Left Censoring occurs when an individual's true event time is less than their observed time. 
 
-  - Right Censoring: The event did not occur during the survival analysis.
-  - Left Censoring: The event occurred before the survival analysis. 
+---
+class: left, middle, rstudio-logo
+
+## Do we have censored data?
+
+  - We have employees in our data who have not yet left the firm. 
+
+  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>/
+
+---
+class: left, middle, rstudio-logo
+
+## Impact of Censoring
+
+```{r, echo = FALSE, out.width="75%", out.height="75%", fig.align = "center"}
+plot_data <-
+  surv_data |>
+    dplyr::mutate(
+    TURNOVER_DATE = dplyr::case_when(
+      TURNOVER == "Yes" ~ TURNOVER_DATE,
+      TRUE ~ as.Date("2022-07-01")
+    ),
+    EVENT_TIME = lubridate::interval(HIRE_DATE, TURNOVER_DATE) %/% months(1)
+  )
+
+ggplot2::ggplot(
+  plot_data,
+  ggplot2::aes(
+    x = EVENT_TIME,
+    fill = TURNOVER
+  )
+) + 
+  ggplot2::geom_histogram(
+    position = ggplot2::position_dodge()
+  ) + 
+  ggplot2::labs(
+    x = "Months Since Hire",
+    y = "Count of Employees",
+    fill = "Turnover"
+  ) + 
+  ggplot2::theme_minimal()
+```
 
 ---
 class: left, middle, rstudio-logo
 
 ## The Survival Distribution
 
-The methods of survival analysis all depend on a distribution called the survival distribution. 
+The methods of survival analysis all try to estimate and summarize the survival distribution. 
 
-There are two ways to specify the survival distribution:
+There are two interrelated ways to specify the survival distribution:
 
 1. The Survival Function
 2. The Hazard Function
-
-Depending on the method, predictors of event time (in out case time until turnover) by looking at differences in either the survival function or the hazard function.  
 
 ---
 class: left, middle, rstudio-logo
@@ -535,7 +223,7 @@ The Survival Function defines the probability of surviving up to some point in t
 
 $$S(t) = pr(T > t)$$
 
-```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center"}
+```{r, echo = FALSE, out.width="60%", out.height="60%", fig.align = "center"}
 time <- seq(0, 70, length = 500)
 ggplot2::ggplot(
   data.frame(time), 
@@ -558,7 +246,7 @@ class: left, middle, rstudio-logo
 
 The hazard function, $h(t)$, is the instantaneous rate at which the events occur, given that the event has not already occurred. 
 
-```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center"}
+```{r, echo = FALSE, out.width="60%", out.height="60%", fig.align = "center"}
 time <- seq(0, 70, length = 500)
 
 weib_haz <- function(x, shape, scale) {
@@ -586,17 +274,20 @@ class: left, middle, rstudio-logo
 ## A Workflow for Survival Analysis
 
 1. Structure your data frame for a survival analysis
-2. Create a survival object using `Surv()`
+2. Create a survival object using `survival::Surv()`
 3. Exploratory Data Analysis using the Kaplan-Meier Estimator
-4. Specify and compare Cox Proportional Hazards (Cox PH) Model 
-5. Use the Cox PH Model to aid business decisions 
+4. Specify and test Cox Proportional Hazards (Cox PH) Model 
+5. Check the proportional hazards assumption of the Cox PH Model
+6. Use the Cox PH Model to aid business decisions 
 
 ---
 class: left, middle, rstudio-logo
 
 ## Structuring Your Data
 
-The two key pieces of data needed for a survival analysis are a censor variable, `CENSOR`, that indicates if an event time is censored and an event time variable, `EVENT_TIME`, that is the difference between the beginning of time (hire date or when the study started) and the event occurrence or end of the study.
+You will want to create: 
+  - a censor indicator, `CENSOR`
+  - an event time variable, `EVENT_TIME`
 
 ```{r}
 surv_data <-
@@ -614,10 +305,18 @@ surv_data <-
   )
 ```
 
-```{r, echo = FALSE}
+---
+class: left, middle, rstudio-logo
+
+## Structuring Your Data: `CENSOR` and `EVENT_TIME`
+
+```{r, echo = FALSE, fig.align = "center"}
 surv_data |>
   dplyr::select(
     EID,
+    HIRE_DATE,
+    TURNOVER_DATE,
+    TURNOVER,
     CENSOR,
     EVENT_TIME
   ) |>
@@ -645,7 +344,12 @@ class: left, middle, rstudio-logo
 
 ## Estimating the Survival Function: Kaplan-Meier Estimator
 
-The Kaplan-Meier (KM) Estimator is a non-parametric method that estimates the survival probablitiies at each time point an event occurs. The function `survival::survfit()` uses the KM estimator to estimate a survival functino from your data. 
+The Kaplan-Meier (KM) Estimator is a non-parametric method that estimates the survival probabilities at each time an event occurs. We will use the function `survival::survfit()`, which uses the KM Estimator, to estimate survival probabilities from our data. 
+
+`survfit` requires two arguments:
+
+1. A formula object where the outcome is a survival object
+2. A data frame
 
 ```{r}
 km_result <- survival::survfit(
@@ -657,9 +361,29 @@ km_result <- survival::survfit(
 ---
 class: left, middle, rstudio-logo
 
+## The Output of survfit
+
+```{r, echo = FALSE, fig.align="center"}
+km_summary <- summary(km_result)
+
+km_data <- 
+  tibble::tibble(
+    TIME = km_summary$time,
+    N_RISK = km_summary$n.risk,
+    N_EVENT = km_summary$n.event, 
+    CENSOR = km_summary$n.censor,
+    SURVIVAL = km_summary$surv
+  )
+
+km_data[c(1:3, 69:71), ]
+```
+
+---
+class: left, middle, rstudio-logo
+
 ## Plotting the Survival Function
 
-```{r}
+```{r, out.width="50%", out.height="50%", fig.align = "center"}
 survminer::ggsurvplot(
   km_result,
   pval = TRUE,
@@ -674,64 +398,254 @@ class: left, middle, rstudio-logo
 
 ## Using the KM Estimator to Plot Multiple Survival Functions
 
-```{r}
+```{r, fig.align = "center", out.width="60%", out.height="60%"}
 km_result_jobs <- survival::survfit(surv_object ~ NUMBER_JOBS, data = surv_data)
 
 survminer::ggsurvplot(km_result_jobs, pval = TRUE, xlab = "Months Since Hire", ylab = "Probability of Staying")
 ```
 
+---
+class: left, middle, rstudio-logo
+
+## Exercise -- Exploring Survival Data
+
+For our next short exercise, we will do some practice structuring and exploring our turnover data and estimating survival functions. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 1 and 2**.
 
 ---
 class: left, middle, rstudio-logo
 
 ## The Cox Proportional Hazards Model
 
-The Cox Proportional Hazards Model is a regression model that lets us estimate the impact that one or more predictors has on an individual's turnover likelihood. Specifically, the proportional hazards model estimates the effects a set of predictors has on an individual's hazard function: 
+The Cox Proportional Hazards Model is a semi-parametric regression model that lets us estimate the impact that one or more predictors has on an individual's turnover likelihood. 
 
-$$h_{i}(t)=h_{0}e^{x\beta} $$
+The proportional hazards model estimates the effects a set of predictors has on an individual's hazard function: 
+
+$$h_{i}(t)=h_{0}(t)e^{x\beta}$$
 ---
 class: left, middle, rstudio-logo
 
 ## Fitting a Cox Proportional Hazards Model
 
+The `coxph` function requires: 
+
+  - A survival object, `surv_object`
+  - A formula that regresses the survival object on the predictors
+  - A data frame
+
 ```{r}
 mod <- survival::coxph(
-  surv_object ~ GENDER + NUMBER_JOBS + RJP_RATING + INTERPERSONAL_RATING + 
-    PRIOR_EXP + HIRE_REC,
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC,
   data = surv_data
 )
 ```
 
+---
+class: left, middle, rstudio-logo
+
 ## Testing the Cox PH Model
 
 ```{r}
-summary(mod)$coefficients |>
-  round(3)
+summary(mod)$coefficients |> round(3)
+```
+
+  - `z`: The ratio of `coef` to `se(coef)`, a Wald or z-test
+  - `Pr(>|z|)`: The p-value associated with each `z`
+  - `exp(coef)`: The multiplicative effects on the hazard (e.g. $e^{\beta_{1}}$)
+  
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Model Coefficients: `INTPER_RATE`
+
+```{r, echo = FALSE}
+mod_summ <- summary(mod)
+mod_coef <- mod_summ$coefficients
+mod_coef <- mod_coef[match("INTPER_RATE", rownames(mod_coef)), ]
+int_coef <- round(mod_coef["exp(coef)"], 3) |> as.numeric()
+```
+To interpret the effect that an individual's interpersonal skills at hiring, `INTPER_RATE`, has on turnover, we will use the `exp(coef)` column:
+  - Adjusting for all other variables, a <b>unit increase</b> in `INTPER_RATE` reduces the monthly risk of turnover (i.e. baseline hazard) by a factor of `r int_coef` or by `r abs((int_coef - 1))*100`%. 
+  - Adjusting for all other variables, a <b>unit decrease</b> in `INTPER_RATE` increases the monthly risk of turnover by a factor of `r round(1/int_coef, 3)` or by `r 100*(abs(round(1/int_coef, 3) - 1))`%. This is calculated by inverting `exp(coef)` ( $\frac{1}{e^{\beta}}=$ `r round(1/int_coef, 3)`).
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Coefficients: Things to Know
+
+Important things to know about interpreting model coefficients: 
+  - $\beta < 0$: a reduction in the hazard function (less chance of turnover)
+  - $\beta > 0$: an increase in the hazard function (more chance of turnover)
+  - $e^{\beta}$: a hazards ratio, where values less than 1 reduce the hazard and values greater than 1 increase the hazard
+  
+---
+class: left, middle, rstudio-logo
+
+## Testing the Proportional Hazards Assumption
+
+The proportional hazards assumption is important as it allows us to completely ignore the baseline hazard <b>and</b> interpret the effects of our predictors as being independent of time. 
+```{r}
+survival::cox.zph(mod)
 ```
 
 ---
 class: left, middle, rstudio-logo
 
-## Interpreting the Cox PH Model Coefficients
+## Correcting for Proportional Hazards Violations
 
-## Testing the Proportional Hazards Assumption
+What do we do if one or more of our variables violates the proportional hazards assumption?
+  - Remove the variable if it is not a significant predictor and refit the model
+  - Stratify by the variable--each level of the variable gets its own baseline hazard function 
+  - Interact the levels of the variable with time 
 
 ---
 class: left, middle, rstudio-logo
 
-## Cox PH Extensions
+## Using the Cox PH Model for Decisions 
 
-There are several different ways to extend the Cox PH Model: 
+The `survival::survfit()` function allows us to generate estimated survival probabilities from our fitted model and the `survminer::ggadjustedcurves()` function allows us to nicely plot these probabilities as a survival function.
 
-  - Time varying predictors 
-  - Fraility Models
-  - Survival Trees
-  - Competing Risks
+---
+class: left, middle, rstudio-logo
+
+## Using the Cox PH Model for Decisions 
+
+```{r, eval = FALSE}
+# Remove PRIOR_EXP as its non-sig and almost violates PH assump.
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+
+# Create a new data frame holding constant all vars 
+# except the effect of interest
+new_data <- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), 
+                       PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+
+# Plot the predicted survival functions
+survminer::ggadjustedcurves(mod, 
+                            data = new_data, variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Predicted Survival Functions
+
+```{r, echo = FALSE, fig.align = "center"}
+mod <- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+
+new_data <- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+
+survminer::ggadjustedcurves(mod, data = new_data, 
+                            variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+---
+class: left, middle, rstudio-logo
+
+<!-- ## Cox PH Extensions -->
+
+<!-- There are several different ways to extend the Cox PH Model:  -->
+<!--   - Time varying predictors  -->
+<!--   - Fraility Models -->
+<!--   - Survival Trees -->
+<!--   - Competing Risks -->
+
+<!-- --- -->
+<!-- class: left, middle, rstudio-logo -->
+
+## Exercise
+
+For our next short exercise, we will do some practice fitting and interpreting the output of a Cox proportional hazard regression model. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 3 through 5**.
+
+---
+class: left, middle, rstudio-logo
+
+# Other Advanced Methods
+
+---
+class: left, middle, rstudio-logo
+
+## What are Mixed-Effect Regression Models
+
+Mixed-Effect Regression (MER) models as a more flexible class of generalized linear regression models (GLMs). 
+
+The advantage they have over GLMs (both simple and multiple) is that they allow you to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
+
+Common designs that lead to dependent residuals: 
+  - Clustered Data (Our focus today)
+  - Crossed Data
+
+---
+class: left, middle, rstudio-logo
+
+## The MER Model: A Conceptual Look 
+The MER model is:
+$$Y_{ij} = \underbrace{\gamma_{00} + \gamma_{01}z_{1j} + \gamma_{10}x_{1ij}+\gamma_{11}x_{1ij}z_{1j}}_{\text{Fixed Part}} + \underbrace{R_{ij} + U_{0j}}_{\text{Random Part}}$$
+  - The fixed part of the model includes the effects of your predictors (identical to GLMs)
+  - The random part of the model includes the residual terms: 
+    - $R_{ij}$: The within-cluster residual 
+    - $U_{0j}$: The between-cluster intercept residual
+  - The cluster-level residuals are referred to as random-effects
   
 ---
 class: left, middle, rstudio-logo
 
-## Exercise
+## R Packages for Mixed-Effect Regression Models
+
+I recommend using the following packages (ordered by preference):
+1. `lme4`: Best for crossed random-effects
+2. `nlme`: Best for growth models 
 
 ---
 class: left, middle, rstudio-logo
+
+## What are Multinomial Logistic Regression Models?
+
+Multinomial logistic regression is an extension of logistic regression when the outcome variable has more than two unordered categories. 
+
+It has a variety of uses such as: 
+
+  - Modeling voting choice in elections with multiple candidates
+  - Modeling choice of career options by students
+  - Modeling choice of benefit options by employees
+
+---
+class: left, middle, rstudio-logo
+
+## Multinomial Logistic Regression Models: A Conceptual Understanding
+
+Your firm offers three different health insurance plans (A, B, and C) and would like to understand what motivates an employee to choose one plan over another. To answer this question, you could use multinomial logistic regression, which allows you to fit a single model that estimates the effects of one or more predictors on choosing B over A (reference category) and C over A (reference category).
+
+$$\ln(\frac{P(y = B)}{P(y = A)}) = X\beta$$
+$$\ln(\frac{P(y = C)}{P(y = A)}) = X\alpha$$
