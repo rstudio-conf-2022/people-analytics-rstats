@@ -235,7 +235,7 @@ Recalling the meaning of `(P > |z|)` - the p-value - we can determine that all t
 
 class: left, middle, rstudio-logo
 
-## Interpreting the coefficients  
+## Interpreting the coefficients
 
 Our coefficients indicate the linear impact on the log odds of a positive decision.  A negative coefficient decreases the log odds and a positive coefficient increases the log odds.  In this context we can see that physical attractiveness and sense of reciprocation both have a positive effect on likelihood of a positive decision when the decision maker is male, but intelligence has a negative impact.  
 
@@ -354,6 +354,16 @@ The *Aikake Information Criterion*  is also valuable in directly comparing two c
 ```{r}
 AIC(model_m)
 ```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Exercise - binomial regression
+
+For this exercise, you will run your own binomial regression model, interpret the coefficients and assess the fit.
+
+<add link> 
 
 ---
 
@@ -579,6 +589,18 @@ generalhoslem::lipsitz.test(manager_mod)
 
 class: left, middle, rstudio-logo
 
+## Exercise - ordinal regression model
+
+For this exercise, you will run your own ordinal logistic regression models, interpret the coefficients, and assess the fit.
+
+<add link>
+
+Please work on exercises 1-3.
+
+---
+
+class: left, middle, rstudio-logo
+
 # Verifying the proportional odds assumption
 
 Make two binary models...
@@ -630,6 +652,18 @@ Another option is to use the Brant-Wald test, which compares the proportional od
 library(brant)
 brant::brant(manager_mod)
 ```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Exercise - verifying proportional odds assumption
+
+For this exercise, you will verify that the proportional odds assumption holds.
+
+<add link>
+
+Please work on exercise 4.
 
 ---
 

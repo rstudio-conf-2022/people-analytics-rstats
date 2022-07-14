@@ -166,7 +166,7 @@ class: left, middle, rstudio-logo
 
 ## The speed dating dataset
 
-This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions where individuals met partners of the opposite sex.  
+This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this dataset only includes participants who identify as Male and Female and partners were formed only as Male-Female pairings.
 
 
 ```r
@@ -236,7 +236,7 @@ Recalling the meaning of `(P &gt; |z|)` - the p-value - we can determine that al
 
 class: left, middle, rstudio-logo
 
-## Interpreting the coefficients  
+## Interpreting the coefficients
 
 Our coefficients indicate the linear impact on the log odds of a positive decision.  A negative coefficient decreases the log odds and a positive coefficient increases the log odds.  In this context we can see that physical attractiveness and sense of reciprocation both have a positive effect on likelihood of a positive decision when the decision maker is male, but intelligence has a negative impact.  
 
@@ -388,6 +388,16 @@ AIC(model_m)
 
 class: left, middle, rstudio-logo
 
+## Exercise - binomial regression
+
+For this exercise, you will run your own binomial regression model, interpret the coefficients and assess the fit.
+
+&lt;add link&gt; 
+
+---
+
+class: left, middle, rstudio-logo
+
 # Ordinal logistic regression modeling
 
 ---
@@ -493,6 +503,7 @@ class: left, middle, rstudio-logo
 * `yrs_employed` is the number of years employed by the company 
 * `test_score` score on test given to all managers
 * `concern_flag` whether or not a complaint has been filed against manager
+* `group_size` is the number of employees in the group they are responsible for
 
 ---
 
@@ -582,7 +593,7 @@ summary(manager_mod)
 
 class: left, middle, rstudio-logo
 
-## Understanding Coefficients
+## Understanding Coefficients (1/2)
 
 We interpret our coefficients similarly to how we interpret in a binary model.
 
@@ -609,6 +620,28 @@ odds_ratio &lt;- exp(coefficients[ ,"Value"])
 ## Middle|Top     0.215476282 8.034798e-01 1.24045256
 ```
 
+---
+
+class: left, middle, rstudio-logo
+
+## Understanding Coefficients (2/2)
+
+We interpret our coefficients similarly to how we interpret in a binary model.
+
+```
+##                      Value      p_value odds_ratio
+## test_score     0.004298353 1.582800e-04 1.00430760
+## group_size     0.091593276 3.500009e-03 1.09591899
+## yrs_employed  -0.882717288 9.340653e-07 0.41365736
+## concern_flagY -0.317585209 2.905024e-01 0.72790465
+## Bottom|Middle -3.322720528 1.642038e-04 0.03605461
+## Middle|Top     0.215476282 8.034798e-01 1.24045256
+```
+
+  - Each additional point earned on the manager test **increases** the odds of being in the next highest performance group by 0.4%.
+  - Each additional person in your group **increases** the odds of being in the next highest performance group by 10%
+  - Each additional year of employment **decreases** the odds of being in the next highest performance group by 59%.
+  
 ---
 
 class: left, middle, rstudio-logo
@@ -641,6 +674,18 @@ generalhoslem::lipsitz.test(manager_mod)
 ## data:  formula:  performance_group ~ test_score + group_size + yrs_employed + formula:      concern_flag
 ## LR statistic = 7.5988, df = 9, p-value = 0.575
 ```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Exercise - ordinal regression model
+
+For this exercise, you will run your own ordinal logistic regression models, interpret the coefficients, and assess the fit.
+
+&lt;add link&gt;
+
+Please work on exercises 1-3.
 
 ---
 
@@ -723,6 +768,18 @@ brant::brant(manager_mod)
 ## 
 ## H0: Parallel Regression Assumption holds
 ```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Exercise - verifying proportional odds assumption
+
+For this exercise, you will verify that the proportional odds assumption holds.
+
+&lt;add link&gt;
+
+Please work on exercise 4.
 
 ---
 
