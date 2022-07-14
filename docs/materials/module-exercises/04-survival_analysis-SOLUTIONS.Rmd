@@ -17,13 +17,18 @@ library(survival)
 library(survminer)
 library(lubridate)
 
-# Read the survival_analysis_data.RDS file
-surv_data <- readRDS("docs/materials/talks/survival_analysis_data.RDS")
+# Load the survival analysis data file from the url provided
+url <- "https://rstudio-conf-2022.github.io/people-analytics-rstats/data/survival_analysis_data.csv"
+surv_data <- read.csv(url)
 ```
 
 ```{r}
 # view the first few rows in the data set to acquaint yourself with the data
 head(surv_data)
+
+# convert columns ending in 'DATE' to date format
+surv_data <- surv_data |> 
+  dplyr::mutate(across(ends_with("DATE"), as.Date))
 ```
 
 ```{r}
