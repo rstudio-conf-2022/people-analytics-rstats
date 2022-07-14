@@ -1,0 +1,130 @@
+---
+title: "Survival Analysis Exercises"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct survival analysis on a data set relating employee turnover to several variables that were measured at the time an employee was hired. 
+
+## Exercise 1 - Load, explore, and structure the survival data
+
+```{r}
+# Load the survival analysis data file from the url provided
+url <- "https://rstudio-conf-2022.github.io/people-analytics-rstats/data/survival_analysis_data.csv"
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+
+
+# convert columns ending in 'DATE' to date format
+
+```
+
+```{r}
+# Create a censor indicator variable that is 1 if the employee has left and 0 otherwise
+
+```
+
+```{r}
+# Replace missing TURNOVER_DATE values with "2022-07-01" -- think about what missing TURNOVER_DATES mean
+
+```
+
+```{r}
+# Use the lubridate::interval() function to create the EVENT_TIME variable 
+# Hint: Use  %/% months(1) to transform the time difference into months 
+
+```
+
+```{r}
+# Calculate some descriptive statistics for EVENT_TIME using the full sample, then group the data by CENSOR to see how the descriptives
+# change. 
+
+```
+
+## Exercise 2 - Create a survival object and estimate survival functions using Kaplan Meier estimates
+
+```{r}
+# Create a survival object using survival::Surv().
+# Remember it requires two arguments EVENT_TIME and CENSOR
+
+```
+
+```{r}
+# Use survival::survfit() to estimate survival probabilities using the Kaplan Meier estimator for the entire sample
+# How many months after hiring would you expect 50% of the sample to remain at the firm? (e.g. the median survival time)
+# How many months after hiring would you expect 75% of the sample to remain at the firm?
+
+```
+
+```{r}
+# Use survminer::ggsurvplot() to plot the overall survival function.
+
+```
+
+```{r}
+# Use survival::survfit() to estimate survival probabilities by the REFERRAL variable. 
+# For the portion of the sample that was referred for the job (REFERRAL == "Yes"), how many months after hiring would you expect 50% of the sample to remain at the firm? What about for the portion of the sample that was not referred? 
+# Why would the median survival time be missing? 
+
+```
+
+```{r}
+# Use survminer::ggsurvplot() to plot the survival function by REFERRAL status. Are the two curves different? 
+
+```
+
+## Exercise 3 - Fit a cox proportional hazards model to your data. 
+
+```{r}
+# Estimate a cox proportional hazards model. Decide what predictors should be included. 
+
+```
+
+```{r}
+# View the coefficient estimates and standard errors of the model
+
+```
+
+```{r}
+# Test the proportional hazard assumption and determine if any variables violate it.
+
+```
+
+## Exercise 4 - Interpreting the proportional hazards results.
+
+```{r}
+# Using the final model you decided on during last exercise, provide an interpretation of each of the predictors you kept in the model. 
+
+```
+
+```{r}
+# Use the function confint() to calculate the 95% confidence intervals for each coefficient.
+# Transform the confidence intervals so that they can be interpreted as confidence intervals for exp(coef).
+
+```
+
+## Exercise 5 - Creating predicted survival curves from your proportional hazards model. 
+
+```{r}
+# Create a new data frame that contains a column for each of the variables you included in your Cox regression model. Pick of variable you are interested in and provide different values for that variable (the values need to occur in the original data frame) while holding the other variables constant (e.g. NUMBER_JOBS == "0-1" for all rows in the new data frame).
+
+```
+
+```{r}
+# With your new data frame and your estimated Cox regression model, use the function: survival::survfit() to create predicted survival probabilities from your model and new data frame. 
+# Using summary(), explore these new probabilities. 
+
+```
+
+```{r}
+# With your new data frame and your estimated Cox regression model, use the function: survminer::ggadjustedcurves() to plot your predicted survival functions. If you are familiar with ggplot2, then try to customize the plot output. 
+
+```
+
+Using the results of your final Cox regression model and your predicted survival functions to write a high-level business summary of what predictor or predictors you believe to be the most important to focus on to reduce attrition. 

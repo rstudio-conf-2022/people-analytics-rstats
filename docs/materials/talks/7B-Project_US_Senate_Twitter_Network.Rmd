@@ -1,0 +1,55 @@
+---
+title: "Network Project Option B"
+subtitle: "US Senate Twitter Network"
+author: "<b>rstudio::</b>conf(2022)"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Context
+
+We have extracted details on the last 1,000 tweets of 98 US Senators currently active on Twitter, and used it to create a Twitter interaction edgelist.  
+
+Try to use this data to construct and visualize the network of Twitter interactions between US Senators.
+
+Try to understand the factors that drive Twitter interaction, and try to explore any interesting subgroups or important actors in the network.  If you have knowledge of US politics, see if you can bring this to bear on explaining what you discover in the network. 
+
+---
+class: left, middle, rstudio-logo
+
+# Data provided
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 07B - US Senator Twitter Network Project**.
+
+In this assignment, you will find csv files of the edgelist and vertices of the US Senator Twitter network.
+
+The edgelist is a weighted edgelist, with the `weight` column indicating the number of times the first individual has replied to, mentioned or retweeted the second individual.
+
+The vertex list contains information on each senator.  Use this information as you see fit in your analysis.
+
+---
+class: left, middle, rstudio-logo
+
+# How to proceed
+
+You can work alone or with a partner or group if you prefer.
+
+Start an R Markdown file, and follow some of the methods you learned earlier to try to make progress on this project.  Don't be shy to ask for help if you need it.   
+
+Try to explain your approach in the text of your R Markdown document.  Imagine that other people will read your work and will need to understand what you are doing.  
+
+Don't forget to knit your document when you have finished.
+
+

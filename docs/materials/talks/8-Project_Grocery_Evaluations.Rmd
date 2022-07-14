@@ -1,0 +1,70 @@
+---
+title: "Regression Project"
+subtitle: "Explaining Performance Evaluations of Grocery Procurement Staff"
+author: "<b>rstudio::</b>conf(2022)"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Context
+
+We have simulated some data related to recent performance evaluations of procurement staff at a US national grocery chain.  Our sample contains information on 341 procurement staff.  
+
+These staff work to procure from local suppliers for the various categories of goods sold by the grocery chain.  It is important that they procure goods that attract customers to their stores, and that they procure them from suppliers at competitive prices.
+
+Try to use the data provided to construct a model to explain some of the things that influence how procurement staff are evaluated.  Consider whether and how the variables influence the performance of the staff, and consider the extent to which this small set of variables contributes to an overall understanding of staff performance. 
+
+---
+class: left, middle, rstudio-logo, small
+
+# Data provided
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 8 - Grocery Performance Evaluation Project**.
+
+In this assignment, you will find a file called `grocery_eval.csv` containing the following fields of data.
+
+* `name`:  The name of the procurement staff member
+* `relative_target`:  This is a financial calculation of the relative discount or premium the staff member achieved across their product category.  Negative numbers mean the staff member procured at a discount from the expected price, while positive numbers mean the staff member procured at a premium to the expected price.
+* `customer`:  The average satisfaction rating from a customer survey in the relevant stores of the staff member when asked about their satisfaction with the range of products in the staff member's assigned category.
+* `volume_segment`:  The size of the staff member's procurement volume in SKUs, expressed in terms of increasing quintiles set nationally.
+* `revenue_segment`:  The $ sales of the staff member's procurement volume, expressed in terms of increasing quintiles set nationally.
+* `performance`:  The performance rating of the staff member on an increasing scale from 1 to 5.
+
+
+---
+class: left, middle, rstudio-logo
+
+# How to proceed
+
+You can work alone or with a partner or group if you prefer.
+
+Start an R Markdown file, and follow some of the methods you learned earlier to try to make progress on this project.  Don't be shy to ask for help if you need it.   
+
+Try to explain your approach in the text of your R Markdown document.  Imagine that other people will read your work and will need to understand what you are doing.  
+
+If you feel you have finished and have a lot of time to spare, consider proceeding to the extension exercise on the next page.
+
+Don't forget to knit your document when you have finished.
+
+---
+class: left, middle, rstudio-logo
+
+# Extension
+
+The 341 staff members included in this data set are all included in the Grocery network dataset from Project 7A.  You fill find the edgelist and vertex data sets from this network is also included in this assignment.
+
+Consider how to use this network data to create a statistic or statistics about each of the staff member's participation in the overall grocery procurement network nationwide.  
+
+By adding this information to your previous model see if you can enhance your explanation of factors which drive the performance of procurement staff. 

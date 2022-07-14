@@ -76,8 +76,8 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 |               | - Ordinal regression | |
 | 15:00 - 15:30 | *Coffee break*   | |
 | 15:30 - 17:00 | Advanced Explanatory Methods | Alex LoPilato |
-|               | - Mixed models                      | |
-|               | - Survival analysis               | |
+|               | - Survival analysis                     | |
+|               | - Important methods we couldn't cover              | |
 
 ### Day 2
 
@@ -95,8 +95,11 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 |               | - Assortativity and Similarity | |
 | 12:30 - 13:30 | *Lunch break*    | |
 | 13:30 - 15:00 | Hands-on Project I | |
+|               | - Option A - [US Grocery Chain Procurement Staff Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7A-Project_US_Grocery_Purchasing_Network.html#1) | |
+|               | - Option B - [US Senate Twitter Interaction Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7B-Project_US_Senate_Twitter_Network.html#1) | |
 | 15:00 - 15:30 | *Coffee break*   | |
 | 15:30 - 17:00 | Hands-on Project II        | |
+|               | [Grocery Performance Evaluations](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/8-Project_Grocery_Evaluations.html#1) | |
 
 ## Instructors
 

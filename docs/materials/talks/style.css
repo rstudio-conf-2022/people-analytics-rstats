@@ -378,6 +378,10 @@ midd-blockquote {
   background-color: blue;
 }
 
+.small {
+  font-size: 18px;
+}
+
 /* table */
 
 table {
