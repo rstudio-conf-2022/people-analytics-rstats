@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Explanatory Methods II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="rstudio::conf(2022)" />
+    <script src="3-binomial_and_ordinal_regression_files/header-attrs/header-attrs.js"></script>
+    <script src="3-binomial_and_ordinal_regression_files/kePrint/kePrint.js"></script>
+    <link href="3-binomial_and_ordinal_regression_files/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Explanatory Methods II
+]
+.subtitle[
+## Binomial Logistic Regression and Ordinal Regression
+]
+.author[
+### <b>rstudio::</b>conf(2022)
+]
+
+---
+
+  
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aim of this module
+
+&amp;#9989; Learn two more explanatory modeling methods
+  - Review binomial logistic regression
+  - Review ordinal logistic regression
+  
+---
+class: left, middle, rstudio-logo
+
+## Reminder on model types
+
+Next up, we'll focus on how to model data with binary outcome variable.
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Outcome &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Model &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Continuous scale (eg money, height, weight) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Linear regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Binary scale (Yes/No) &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Binary logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Nominal category scale (eg A, B, C) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Multinomial logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ordinal category scale (eg Low, Medium, High) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ordinal logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Time dependent binary scale &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Survival/proportional hazard regression &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+class: left, middle, rstudio-logo
+
+# Binomial logistic regression modeling
+
+---
+class: left, middle, rstudio-logo
+
+## Context:  the logistic function
+
+In the early 1800s, the Belgian mathematician Pierre François Verhulst proposed a function for modeling population growth, as follows:
+
+$$
+f(x) = \frac{L}{1 + e^{-k(x - x_0)}}
+$$
+where `\(L\)` is the limit of the population (known as the 'carrying capacity'), `\(k\)` is the steepness of the curve and `\(x_0\)` is the midpoint of `\(x\)` (in population terms the midpoint of time).  With `\(k = 1\)` and `\(x_0\)` = 0 this looks like:
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Modeling binary outcomes
+
+Imagine we are studying an outcome event `\(y\)` which can either occur or not occur, e.g. 'Hired' or 'Not Hired'.  We label `\(y = 1\)` if it does occur for a given observation, and `\(y = 0\)` otherwise.  `\(y\)` is called a *binary* or *dichotomous* outcome.
+
+Now imagine we want to relate `\(y\)` to a set of input variables `\(X\)`.   In order to study this using some method similar to our linear model, we need a sensible scale for `\(y\)`, knowing that it cannot be less than zero or greater than 1.
+
+One natural way forward is to consider the *probability* of y occurring:  `\(P(y = 1)\)` 
+
+---
+class: left, middle, rstudio-logo
+
+## Probability distribution for random variables
+
+Let's assume we have a single input variable `\(x\)` and we assume that `\(y\)` is more likely to occur as `\(x\)` increases.  We sample the data for increasing values of `\(x\)` and calculate mean probability that `\(y = 1\)`.  Over large enough samples, we expect to see something like a normal probability distribution.   
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Similarity with logistic distribution
+
+Notice the similar S (sigmoid) shape of the normal and logistic distributions.  This means we could take our logistic function with a carrying capacity of 1 (maximum probability) as an approximation of a normal distribution.  This turns out to have benefits in interpretation.
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: left, middle, rstudio-logo
+
+## What happens if we use a logistic function?
+
+$$
+P(y = 1) = \frac{1}{1 + e^{-k(x - x_0)}} = \frac{1}{1 + e^{-(\beta_0 + \beta_1x_1)}}
+$$
+where `\(\beta_0 = -kx_0\)` and `\(\beta_1 = k\)`.
+
+Meanwhile
+
+$$
+P(y = 0) =  1 - P(y = 1) = \frac{e^{-(\beta_0 + \beta_1x)}}{1 + e^{-(\beta_0 + \beta_1x)}}
+$$
+So, if we divide the two:
+
+$$
+\frac{P(y = 1)}{P(y = 0)} = \frac{1}{e^{-(\beta_0 + \beta_1x)}} = e^{\beta_0 + \beta_1x}
+$$
+
+---
+
+class: left, middle, rstudio-logo
+
+## The odds of y
+
+Now, if we take natural logarithms of our last equation, we get:
+
+$$
+\mathrm{ln}\left(\frac{P(y = 1)}{P(y = 0)}\right) = \beta_0 + \beta_1x
+$$
+So we have a linear model in the *log odds* of `\(y\)`.
+
+Since a *transformation* of our outcome is linear on our input variable, we can create a model known as a *generalized linear model*.  As we will see, the coefficients of a model like this can be interpreted very intuitively to explain the impact of input variables on the likelihood of `\(y\)` occurring.
+
+---
+
+class: left, middle, rstudio-logo
+
+## The speed dating dataset
+
+This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions where individuals met partners of the opposite sex.  
+
+
+```r
+# get data
+url &lt;- "https://raw.githubusercontent.com/keithmcnulty/speed_dating/master/speed_data_data.csv"
+speed_dating &lt;- read.csv(url)
+
+# select only some elements for this training
+speed_dating &lt;- speed_dating[ ,c("gender", "goal", "dec", "attr", "intel", "prob")] 
+head(speed_dating)
+```
+
+```
+##   gender goal dec attr intel prob
+## 1      0    2   1    6     7    6
+## 2      0    2   1    7     7    5
+## 3      0    2   1    5     9   NA
+## 4      0    2   1    7     8    6
+## 5      0    2   1    5     7    6
+## 6      0    2   0    4     7    5
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Data fields for `speed_dating`
+
+The individuals were given a series of surveys to complete as part of the experiment.
+* `dec` is the decision on whether the individual wanted to meet that specific partner again after the speed date and is our outcome for this example.  
+* `attr`, `intel`, and `prob` are ratings out of ten on physical attractiveness, intelligence and the individual's belief that the partner also liked them. 
+* `gender` is the gender of the individual: female is 0 and male is 1
+* `goal` is a categorical variable with a code for different goals of the individual in attending (eg 'seemed like a fun night out', or 'looking for a serious relationship').
+
+In this example we are going to look purely at the speed date level and not consider the fact that several speed dates may involve the same individual.  We will add in that element in a future session when we look at *mixed models*.
+
+We are aiming to model the decision `dec` against the ratings `attr`, `intel` and `prob`.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Running the model on men only
+
+
+```r
+# run a binomial general linear model on the male decision makers
+model_m &lt;- glm(dec ~ attr + intel + prob, 
+               data = speed_dating[speed_dating$gender == 1, ],
+               family = "binomial")
+
+# view a summary of the coefficients of the model
+(coefficients_m &lt;- summary(model_m)$coefficients |&gt; as.data.frame())
+```
+
+```
+##               Estimate Std. Error    z value      Pr(&gt;|z|)
+## (Intercept) -6.2537585 0.26346670 -23.736428 1.517359e-124
+## attr         0.7658699 0.02990211  25.612572 1.105090e-144
+## intel       -0.0688468 0.03020599  -2.279243  2.265262e-02
+## prob         0.3269378 0.02112880  15.473558  5.233269e-54
+```
+
+Recalling the meaning of `(P &gt; |z|)` - the p-value - we can determine that all three ratings play a significant role in the decision outcome of a date.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Interpreting the coefficients  
+
+Our coefficients indicate the linear impact on the log odds of a positive decision.  A negative coefficient decreases the log odds and a positive coefficient increases the log odds.  In this context we can see that physical attractiveness and sense of reciprocation both have a positive effect on likelihood of a positive decision when the decision maker is male, but intelligence has a negative impact.  
+
+We can easily extend the manipulations from a few slides back to get a formula for the odds of an event in terms of the coefficents `\(\beta_0, \beta_1, ..., \beta_p\)`:
+
+$$
+`\begin{align*}
+\frac{P(y = 1)}{P(y = 0)} &amp;= e^{\beta_0 + \beta_1x_1 + ... + \beta_px_p} \\
+&amp;= e^{\beta_0}(e^{\beta_1})^{x_1}...(e^{\beta_p})^{x_p}
+\end{align*}`
+$$
+
+* `\(e^{\beta_0}\)` is the odds of the event assuming zero from all input variables 
+* `\(e^{\beta_i}\)` is the multiplier of the odds associated with a one unit increase in `\(x_i\)` (for example, an extra point rating in physical attractiveness), assuming all else equal - because of the multiplicative effect, we call this the *odds ratio* for `\(x_i\)`.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Calculating and interpreting the odds ratios 
+
+Odds ratios are simply the exponent of the coefficient estimates.
+
+
+```r
+# add a column to our coefficients with odds ratios
+coefficients_m$odds_ratio &lt;- exp(coefficients_m[ ,"Estimate"])
+coefficients_m
+```
+
+```
+##               Estimate Std. Error    z value      Pr(&gt;|z|)  odds_ratio
+## (Intercept) -6.2537585 0.26346670 -23.736428 1.517359e-124 0.001923212
+## attr         0.7658699 0.02990211  25.612572 1.105090e-144 2.150864692
+## intel       -0.0688468 0.03020599  -2.279243  2.265262e-02 0.933469675
+## prob         0.3269378 0.02112880  15.473558  5.233269e-54 1.386715208
+```
+
+We interpret each of our odds ratios as follows (assuming all else equal):
+
+* An extra point in physical attractiveness increases the odds by 115%
+* An extra point in intelligence *decreases* the odds by 7%
+* An extra point in perceived reciprocation of interest increases the odds by 39%
+
+
+If you are concerned about the precision of these statements, you can also get the 95% confidence intervals for the odds ratios by using `exp(confint(model_m))`
+
+
+
+---
+
+class: left, middle, rstudio-logo
+
+## Warning:  odds &amp;#x2260; probabability
+
+Increases in odds have a diminishing effect on probability as the original probability increases.  So it is important to know the difference between the two.  Here is a graph showing the impact of a 10% increase in odds on the probability of an event, depending on the original probability.
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: left, middle, rstudio-logo
+
+## Are dynamics different with women?
+
+
+```r
+# run a binomial general linear model on the female decision makers
+model_f &lt;- glm(dec ~ attr + intel + prob, 
+               data = speed_dating[speed_dating$gender == 0, ],
+               family = "binomial")
+
+# view a summary of the coefficients of the model, incl odds_ratios
+coefficients_f &lt;- summary(model_f)$coefficients %&gt;% as.data.frame()
+coefficients_f$odds_ratio &lt;- exp(coefficients_f[ ,"Estimate"])
+coefficients_f
+```
+
+```
+##                Estimate Std. Error    z value      Pr(&gt;|z|)  odds_ratio
+## (Intercept) -5.84737044 0.25260132 -23.148614 1.501241e-118 0.002887482
+## attr         0.55142831 0.02506430  22.000546 2.845351e-107 1.735730416
+## intel        0.08757465 0.02880993   3.039738  2.367839e-03 1.091523740
+## prob         0.23149158 0.01979541  11.694207  1.364556e-31 1.260478710
+```
+
+Try interpreting these yourself.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Predicting using binomial logistic regression models
+
+Binomial logistic regression models play an important role in predictive analytics.  New data fed into the fitted logistic function can predict the probability of a positive outcome.
+
+
+```r
+new_dates &lt;- data.frame(
+  attr = c(1, 5, 9),
+  intel = c(2, 4, 8),
+  prob = c(5, 7, 9)
+)
+
+predict(model_m, new_dates, type = "response")
+```
+
+```
+##          1          2          3 
+## 0.01814777 0.39861688 0.95394355
+```
+
+In classification learning, the data is split into a training and test set, the model is fitted using a training set, a probability 'cutoff' is used to determine positive or negative classes (usually 0.5), and then the predictive accuracy is determined by testing on the test set.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Assessing the fit of a binomial logistic regression model
+
+Previously we looked at the fit of a linear regression model and determined a metric called `\(R^2\)`, which determined how much of the variance of `\(y\)` was explained by our model.  This is not so straightforward in binomial logistic regression, and is in fact still the subject of intense research.  
+
+Numerous variants of measures called *pseudo*- `\(R^2\)` exist to try to approximate something similar to an `\(R^2\)`.  The `DescTools` package provides easy access to these measures.  All have different definitions and should be handled carefully. Here are four of them.
+
+
+```r
+library(DescTools)
+DescTools::PseudoR2(model_m, 
+                    which = c("McFadden", "CoxSnell", "Nagelkerke", "Tjur"))
+```
+
+```
+##   McFadden   CoxSnell Nagelkerke       Tjur 
+##  0.2742679  0.3161661  0.4216450  0.3342360
+```
+
+The *Aikake Information Criterion*  is also valuable in directly comparing two competing models, with a lower AIC suggestion less information loss from the model.
+
+
+```r
+AIC(model_m)
+```
+
+```
+## [1] 4019.39
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Ordinal logistic regression modeling
+
+---
+
+class: left, middle, rstudio-logo
+
+## Ordinal data
+
+Ordinal data is a type of categorical data that is both discrete and ordered, e.g. survey results on a Likert scale from 1 to 3, where 1 is 'Low', 2 is 'Middle', and 3 is 'High'.  
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Outcome &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Model &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Continuous scale (eg money, height, weight) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Linear regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Binary scale (Yes/No) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Nominal category scale (eg A, B, C) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Multinomial logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Ordinal category scale (eg Low, Medium, High) &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Ordinal logistic regression &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Time dependent binary scale &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Survival/proportional hazard regression &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+class: left, middle, rstudio-logo
+
+## Modeling Ordinal Data
+
+We can't analyze ordinal data ('Low', 'Middle', 'High') as continuous data because we don't know that the distance between 'Low' and 'Middle' is the same as the distance between 'Middle' and 'High'.  It also isn't appropriate to model this purely as categorical data since that we would lose information.  Instead, we can partition the outcomes so that we are finding all of the probabilities that the outcome is less than or equal to each cutoff point.  So for our example, we want to consider P(Low) and P(Low or Middle), which are now just 2 binomial logistic regression models:
+
+  * Low vs Middle/High
+  * Low/Middle vs High
+  
+This will provide us with a different intercept relevant to each partition, but 1 coefficient for each independent variable that is consistent across the entire model.
+
+
+---
+
+class: left, middle, rstudio-logo
+
+## Proportional Odds Assumption
+
+The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is the same for all category cutoffs.
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: left, middle, rstudio-logo
+
+## Example using 'managers' dataset
+
+This dataset is a fictionalized dataset on the performance and other characteristics of a group of managers in a large company. For our example, we will pull a small subset of variables to use in a model.
+
+
+```r
+# get data
+url &lt;- "https://peopleanalytics-regression-book.org/data/managers.csv"
+managers &lt;- read.csv(url) |&gt;
+  # select a subset of the fields
+  dplyr::select(performance_group, test_score, group_size, yrs_employed, concern_flag)
+
+head(managers)
+```
+
+```
+##   performance_group test_score group_size yrs_employed concern_flag
+## 1            Bottom        205         10          4.6            N
+## 2            Middle        227         14          5.3            N
+## 3            Bottom        227         10          5.2            N
+## 4            Middle        273         19          4.9            N
+## 5            Bottom        227         17          4.9            Y
+## 6            Middle        159         10          4.3            N
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Data fields for `managers`
+
+* `performance_group` is each manager's most recent performance group (Bottom, Middle Top)
+* `yrs_employed` is the number of years employed by the company 
+* `test_score` score on test given to all managers
+* `concern_flag` whether or not a complaint has been filed against manager
+
+---
+
+class: left, middle, rstudio-logo
+
+## Structure of the data
+
+What do you notice?  Should we make any adjustments?
+
+
+```r
+str(managers)
+```
+
+```
+## 'data.frame':	571 obs. of  5 variables:
+##  $ performance_group: chr  "Bottom" "Middle" "Bottom" "Middle" ...
+##  $ test_score       : int  205 227 227 273 227 159 250 326 152 326 ...
+##  $ group_size       : int  10 14 10 19 17 10 13 13 10 11 ...
+##  $ yrs_employed     : num  4.6 5.3 5.2 4.9 4.9 4.3 4.8 5 4.4 4.5 ...
+##  $ concern_flag     : chr  "N" "N" "N" "N" ...
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Convert to logical datatypes
+
+
+```r
+# performance is ordinal
+managers$performance_group &lt;- ordered(managers$performance_group,
+                                      levels = c("Bottom","Middle","Top"))
+# a Y/N flag is a binary factor
+managers$concern_flag &lt;- as.factor(managers$concern_flag)
+
+str(managers)
+```
+
+```
+## 'data.frame':	571 obs. of  5 variables:
+##  $ performance_group: Ord.factor w/ 3 levels "Bottom"&lt;"Middle"&lt;..: 1 2 1 2 1 2 2 2 2 2 ...
+##  $ test_score       : int  205 227 227 273 227 159 250 326 152 326 ...
+##  $ group_size       : int  10 14 10 19 17 10 13 13 10 11 ...
+##  $ yrs_employed     : num  4.6 5.3 5.2 4.9 4.9 4.3 4.8 5 4.4 4.5 ...
+##  $ concern_flag     : Factor w/ 2 levels "N","Y": 1 1 1 1 2 1 1 1 1 1 ...
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Proportional odds logistic regression model
+
+Now that our data is structured properly, we can run a proportional odds logistic regression model using the `polr()` function in the `MASS` package.
+
+
+```r
+manager_mod &lt;- polr(performance_group ~ test_score + group_size + yrs_employed + concern_flag, data = managers)
+summary(manager_mod)
+```
+
+```
+## Call:
+## polr(formula = performance_group ~ test_score + group_size + 
+##     yrs_employed + concern_flag, data = managers)
+## 
+## Coefficients:
+##                   Value Std. Error t value
+## test_score     0.004298   0.001138   3.778
+## group_size     0.091593   0.031367   2.920
+## yrs_employed  -0.882717   0.179961  -4.905
+## concern_flagY -0.317585   0.300453  -1.057
+## 
+## Intercepts:
+##               Value   Std. Error t value
+## Bottom|Middle -3.3227  0.8817    -3.7685
+## Middle|Top     0.2155  0.8659     0.2488
+## 
+## Residual Deviance: 929.1206 
+## AIC: 941.1206
+```
+
+
+---
+
+class: left, middle, rstudio-logo
+
+## Understanding Coefficients
+
+We interpret our coefficients similarly to how we interpret in a binary model.
+
+```r
+# get coefficients (it's in matrix form)
+coefficients &lt;- summary(manager_mod)$coefficients
+# calculate p-values
+p_value &lt;- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients &lt;- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio &lt;- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients &lt;- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+```
+
+```
+##                      Value      p_value odds_ratio
+## test_score     0.004298353 1.582800e-04 1.00430760
+## group_size     0.091593276 3.500009e-03 1.09591899
+## yrs_employed  -0.882717288 9.340653e-07 0.41365736
+## concern_flagY -0.317585209 2.905024e-01 0.72790465
+## Bottom|Middle -3.322720528 1.642038e-04 0.03605461
+## Middle|Top     0.215476282 8.034798e-01 1.24045256
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+## Diagnostics
+We can use Psuedo `\(R^2\)`, just like with our binary model to assess model fit.
+
+```r
+DescTools::PseudoR2(
+  manager_mod, 
+  which = c("McFadden", "CoxSnell", "Nagelkerke", "AIC")
+)
+```
+
+```
+##     McFadden     CoxSnell   Nagelkerke          AIC 
+##   0.05462018   0.08972806   0.10927156 941.12062947
+```
+
+There is also the Lipsitz goodness of fit test, and others.
+
+```r
+generalhoslem::lipsitz.test(manager_mod)
+```
+
+```
+## 
+## 	Lipsitz goodness of fit test for ordinal response models
+## 
+## data:  formula:  performance_group ~ test_score + group_size + yrs_employed + formula:      concern_flag
+## LR statistic = 7.5988, df = 9, p-value = 0.575
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Verifying the proportional odds assumption
+
+Make two binary models...
+
+
+```r
+# convert performance group into 2 binary variables
+managers$middlehigh &lt;- ifelse(managers$performance_group  == "Bottom", 0, 1)
+managers$high &lt;- ifelse(managers$performance_group  == "High", 1,0 )
+
+# make 2 binomial models for these new binary outcomes
+middlehigh_mod &lt;- glm(
+  middlehigh ~ test_score + group_size + yrs_employed + concern_flag,
+  data = managers,
+  family = "binomial"
+)
+
+high_mod &lt;- glm(
+  high ~ test_score + group_size + yrs_employed + concern_flag,
+  data = managers,
+  family = "binomial"
+)
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Verifying the proportional odds assumption
+
+...and compare the model results.  Using our best judgement, "small" differences mean we can feel confident that the proportional odds assumption has been met.
+
+```r
+(coefficient_comparison &lt;- data.frame(
+  middlehigh = summary(middlehigh_mod)$coefficients[ , "Estimate"],
+  high= summary(high_mod)$coefficients[ ,"Estimate"],
+  diff = summary(high_mod)$coefficients[ ,"Estimate"] - 
+    summary(middlehigh_mod)$coefficients[ , "Estimate"]
+))
+```
+
+```
+##                middlehigh          high         diff
+## (Intercept)    3.30025975 -2.656607e+01 -29.86632828
+## test_score     0.00415042 -7.963046e-17  -0.00415042
+## group_size     0.07844190 -4.340105e-15  -0.07844190
+## yrs_employed  -0.84044257  4.898815e-15   0.84044257
+## concern_flagY -0.31164157 -2.224531e-14   0.31164157
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+# Verifying proportional odds assumption, method 2
+
+Another option is to use the Brant-Wald test, which compares the proportional odds model to an approximated generalized ordinal logistic regression model using a chi-squared test. A low p-value can indicate that the coefficinet does not satisfy the proportional odds assumption.
+
+
+```r
+library(brant)
+brant::brant(manager_mod)
+```
+
+```
+## -------------------------------------------- 
+## Test for	X2	df	probability 
+## -------------------------------------------- 
+## Omnibus		0.56	4	0.97
+## test_score	0.09	1	0.77
+## group_size	0.39	1	0.53
+## yrs_employed	0.04	1	0.84
+## concern_flagY	0.01	1	0.91
+## -------------------------------------------- 
+## 
+## H0: Parallel Regression Assumption holds
+```
+
+---
+
+class: left, middle, rstudio-logo
+
+# &amp;#9749; Let's have a break! &amp;#128524;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

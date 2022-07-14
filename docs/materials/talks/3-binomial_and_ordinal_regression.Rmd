@@ -185,7 +185,7 @@ class: left, middle, rstudio-logo
 
 ## The speed dating dataset
 
-This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions where individuals met partners of the opposite sex.  
+This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this dataset only includes participants who identify as Male and Female and partners were formed only as Male-Female pairings.
 
 ```{r}
 # get data
@@ -469,6 +469,7 @@ class: left, middle, rstudio-logo
 * `yrs_employed` is the number of years employed by the company 
 * `test_score` score on test given to all managers
 * `concern_flag` whether or not a complaint has been filed against manager
+* `group_size` is the number of employees in the group they are responsible for
 
 ---
 
@@ -516,7 +517,7 @@ summary(manager_mod)
 
 class: left, middle, rstudio-logo
 
-## Understanding Coefficients
+## Understanding Coefficients (1/2)
 
 We interpret our coefficients similarly to how we interpret in a binary model.
 ```{r}
@@ -532,6 +533,30 @@ odds_ratio <- exp(coefficients[ ,"Value"])
 (coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
 ```
 
+---
+
+class: left, middle, rstudio-logo
+
+## Understanding Coefficients (2/2)
+
+We interpret our coefficients similarly to how we interpret in a binary model.
+```{r, echo = FALSE}
+# get coefficients (it's in matrix form)
+coefficients <- summary(manager_mod)$coefficients
+# calculate p-values
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio <- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+```
+
+  - Each additional point earned on the manager test **increases** the odds of being in the next highest performance group by 0.4%.
+  - Each additional person in your group **increases** the odds of being in the next highest performance group by 10%
+  - Each additional year of employment **decreases** the odds of being in the next highest performance group by 59%.
+  
 ---
 
 class: left, middle, rstudio-logo
