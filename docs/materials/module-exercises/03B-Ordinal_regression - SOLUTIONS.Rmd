@@ -8,7 +8,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In this document we will conduct ordinal logistic regression on data related to employee performance.
+In this document we will conduct ordinal logistic regression on fictional data on employee performance evaluation metrics for a group of salespeople. 
+
+  - sales: annual sales of the individual in millions of dollars
+  - new_customers: number of new customers acquired by individual
+  - region: region individual works in (North, South, East, West)
+  - gender: gender of individual
+  - rating: performance rating of individual (1 = Low, 2 = Middle, 3 = High)
 
 ## Exercise 1 - Running a simple ordinal logistic regression model
 
@@ -22,15 +28,17 @@ perf <- read.csv(url)
 ```{r}
 # view the first few rows in the data set to acquaint yourself with the data
 head(perf)
+
+summary(perf)
 ```
 
 ```{r}
 # What do you think the datatypes are?
-# sales:
-# new_customers:
-# region:
-# gender:
-# rating:
+# sales: numeric
+# new_customers: numeric
+# region: factor
+# gender: factor
+# rating: ordered factor
 ```
 
 
@@ -44,8 +52,11 @@ perf$rating <- ordered(perf$rating,
 
 ```{r}
 # Take a look at the pairs plot. What do you notice?
-GGally::ggpairs(recruiting)
+GGally::ggpairs(perf)
 
+# Things you might notice are:
+# rating seems to be pretty well aligned with sales amount and new customer count
+# looks like a lower proportion of women in North and West?
 ```
 
 ```{r}
@@ -78,15 +89,22 @@ odds_ratio <- exp(coefficients[ ,"Value"])
 # combine with coefficient and p_value
 (coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
 
+
 ```
+Write a sentence on the model results above.
+
+Each additional million dollars in sales leaders to a 55% increase in odds of being in the next highest performance group.
+
 
 ```{r}
-# Do you think this is a good model?
+# Do you think this is a good model?  Use the lipsitz test.
 DescTools::PseudoR2(model)
 
-# looks like it is not
 generalhoslem::lipsitz.test(model)
 ```
+Write a sentence on the results of this test.
+
+Since the null hypothesis is the model is a good fit and our p-value is very low, we can conclude that this model isn't a good fit for our data.
 
 ## Exercise 3 - Add more information to the model
 
@@ -111,13 +129,22 @@ odds_ratio <- exp(coefficients[ ,"Value"])
 (coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
 ```
 
+Write a few sentences on the results of the model.
+
+Each additional $1 million in sales results in a 46% increase in odds of being in the next highest performance group.
+Each additional new customer results in a 48% increase in odds of being in the next highest performance group.
+
 ```{r}
 # Do you think this is a good model?
 DescTools::PseudoR2(model2)
 
-# looks like this one is better
 generalhoslem::lipsitz.test(model2)
 ```
+
+Write a sentence on the results of the Lipsitz test.
+
+Our p-values is now > 0.05, so we do not reject the null hypothesis and conclude that the model is a good fit.
+
 
 # Exercise 4: Test the proportional odds assumption
 
@@ -143,6 +170,10 @@ mod_3 <-glm(
 ))
 ```
 
+Using your best judgement, do you think the proportional odds assumption is met?
+
+These differences seem quite small, I would say that the assumption is met.
+
 ```{r}
 # Alternatively with the Brant-Wald test
 # What do you  notice?
@@ -150,3 +181,7 @@ library(brant)
 brant::brant(model2)
 
 ```
+
+Write your interpretation of the brant-wald test results.
+
+The test shows that the assumption holds.  Sales is the only potentially problematic variable.  We could try removing that from our model.
