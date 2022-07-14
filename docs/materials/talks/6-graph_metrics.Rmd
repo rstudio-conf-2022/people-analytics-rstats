@@ -312,6 +312,18 @@ length(cliques(d1, min = 2, max = 3))
 
 ```
 
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - practicing overall network metrics
+
+Using a dataset on a network of dolphins, you will work through calculating various network metrics
+
+<link>
+
+Please work on exercise 1.
+
 ---
 class: left, middle, rstudio-logo
 
@@ -411,9 +423,21 @@ c_vals
 ```
 
 ---
+class: left, middle, rstudio-logo
+
+## Exercise - centrality measures
+
+Using the same dolphin network dataset, you will work through calculating centrality measures.
+
+<link>
+
+Please work on exercise 2.
+
+
+---
 class: left, middle, rstudio-logo, bigfont
 
-## The Formation of Organziational Networks
+## The Formation of Organizational Networks
 
 We can only measure the structure of networks that we already know exist. Oftentimes, within a formal organizational network, smaller informal networks may exist and the firm may not know about them. 
 
@@ -467,6 +491,17 @@ ggraph(sf_gr, layout = "fr") +
                   show.legend = FALSE) +
   theme_void()
 ```
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - community detection measures
+
+Using the dolphin network dataset, you will work through finding a plotting communities.
+
+<link>
+
+Please work on exercise 3.
 
 ---
 class: left, middle, rstudio-logo, bigfont
@@ -592,6 +627,18 @@ gr <- workfrance_edgelist[1:2] |>
 assortativity_nominal(gr, factor(V(gr)$dept))
 
 ```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Assortativity
+
+Using a dataset related to emails, we will work through calculating an assortativity example.
+
+<link>
+
+Please work on exercise 4.
 
 ---
 class: left, middle, rstudio-logo
