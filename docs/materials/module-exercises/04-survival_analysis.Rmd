@@ -12,12 +12,16 @@ In this document we will conduct survival analysis on a data set relating employ
 ## Exercise 1 - Load, explore, and structure the survival data
 
 ```{r}
-# Read the survival_analysis_data.RDS file
+# Load the survival analysis data file from the url provided
+url <- "https://rstudio-conf-2022.github.io/people-analytics-rstats/data/survival_analysis_data.csv"
 
 ```
 
 ```{r}
 # view the first few rows in the data set to acquaint yourself with the data
+
+
+# convert columns ending in 'DATE' to date format
 
 ```
 

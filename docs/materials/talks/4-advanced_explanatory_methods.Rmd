@@ -107,7 +107,12 @@ class: left, middle, rstudio-logo
 ## A Glimpse of the Data
 
 ```{r, echo = FALSE, fig.align = "center"}
-surv_data <- readRDS("survival_analysis_data.RDS")
+url <- here::here("docs/data/survival_analysis_data.csv")
+surv_data <- read.csv(url) |> 
+    dplyr::mutate(
+    across(ends_with("DATE"), as.Date)
+  ) 
+  
 surv_data |> 
   dplyr::select(
     EID,
@@ -118,7 +123,7 @@ surv_data |>
     PRIOR_EXP,
     HIRE_REC
   ) |>
-  head(6)
+  head()
 ```
 
 ---
@@ -166,7 +171,7 @@ class: left, middle, rstudio-logo
 
   - We have employees in our data who have not yet left the firm. 
 
-  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>/
+  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>.
 
 ---
 class: left, middle, rstudio-logo

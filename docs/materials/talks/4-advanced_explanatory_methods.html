@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Advanced Explanatory Methods</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="rstudio::conf(2022)" />
+    <script src="4-advanced_explanatory_methods_files/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Advanced Explanatory Methods
+]
+.subtitle[
+## Survival Analysis
+]
+.author[
+### <b>rstudio::</b>conf(2022)
+]
+
+---
+
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aims of this module
+
+&amp;#9989; Understand the basics of Survival Analysis
+  - Overview of survival analysis
+  - Learn how to estimate survival functions
+  - Learn how to specify, test, and interpret proportional hazard models
+
+&amp;#9989; An Overview of Other Key Methods
+  - Mixed Effects Models
+  - Multinomial Models
+---
+class: left, middle, rstudio-logo
+
+# Survival Analysis 
+
+---
+class: left, middle, rstudio-logo
+
+## What is Survival Analysis?
+
+Survival analysis is "a collection of statistical procedures for the analysis of data in which the outcome variable of interest is time until an event occurs" (Kleinbaum &amp; Klein, 2012).
+
+Key things to note from the above definition: 
+
+  - Survival analysis is a set of statistical methods, not a single method
+  - The outcome variable in a survival analysis is either discrete or continuous *time*
+  - Survival analysis requires a clearly defined event
+
+---
+class: left, middle, rstudio-logo
+
+## Survival Analysis in People Analytics
+
+What People Analytic questions can survival analysis help answer?
+
+--
+
+  - When will an employee leave the firm? 
+  
+--
+
+  - When will an employee be first promoted? 
+  
+--
+
+  - When will a hiring decision be made? 
+
+---
+class: left, middle, rstudio-logo
+
+## How do we begin a survival analysis?
+
+To begin a survival analysis, you need to start with the following:
+
+- &lt;b&gt;Define the Event&lt;/b&gt;
+- &lt;b&gt;Clarify how time will be used&lt;/b&gt;
+  - Beginning of time
+  - Metric of time
+- &lt;b&gt;Understand Censoring&lt;/b&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Our Working Example
+
+You are a data scientist working in a People Analytics team at a large tech firm. You have been asked to understand if any of the hiring data the firm collects on its entry level software engineers is predictive of turnover later on. You have access to the firm's Human Resource Information System, which includes:
+
+  - `HIRE_DATE`: The month and year an employee was hired
+  - `TURNOVER_DATE`: The month and year an employee left the firm 
+  - `TURNOVER`: Indicates if an employee left the firm
+  - `REFERRAL`: Employee was referred for hire by an existing employee
+  - `PROG_EXER_RATE`: Performance on pre-employment programming exercise
+  - `INTPER_RATE`: Score on an interpersonal personality scale
+  - `PRIOR_EXP`: Prior software engineer experience
+  - `NUMBER_JOBS`: Number of jobs held in the year before hire
+  - `HIRE_REC`: Number of interviewers who recommended employee be hired
+
+You restrict your analysis to employees who were hired between January 2016 and December 2017.
+
+---
+class: left, middle, rstudio-logo
+
+## A Glimpse of the Data
+
+
+```
+     EID  HIRE_DATE TURNOVER_DATE TURNOVER NUMBER_JOBS PRIOR_EXP HIRE_REC
+1 453921 2017-02-01          &lt;NA&gt;       No           2       Yes        2
+2 732470 2016-02-01    2017-12-01      Yes          3+        No        2
+3 169619 2016-02-01          &lt;NA&gt;       No          3+        No        1
+4 953421 2017-02-01    2017-07-01      Yes         0-1        No        2
+5 363973 2016-02-01          &lt;NA&gt;       No           2       Yes        3
+6 779914 2017-01-01    2021-01-01      Yes         0-1        No        2
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Defining the Event 
+
+An event "represents an individual's transition from one 'state' to another 'state'" (Singer &amp; Willett, 2003).
+
+Events must be: 
+  - &lt;b&gt;Mutually exclusive&lt;/b&gt;
+  - &lt;b&gt;Exhaustive&lt;/b&gt; 
+
+In our example, the event is &lt;b&gt;employee turnover&lt;/b&gt;, which meets the above criteria as an employee is either employed at a given firm or not.
+
+---
+class: left, middle, rstudio-logo
+
+## Clarifying Time
+
+Time plays a major role in survival analysis, so we need to be very clear on two aspects of time: 
+
+  - &lt;b&gt;The Beginning of Time&lt;/b&gt;: The time 0 of the survival analysis.  
+  - &lt;b&gt;The Metric of Time&lt;/b&gt;: The unit of time in a survival analysis. You should choose the smallest unit possible that is still relevant to your analysis.
+
+For our example:
+  - Beginning of Time: Employees hire date
+  - Metric of Time: Months (if the data were available, we could consider weeks)
+
+---
+class: left, middle, rstudio-logo
+
+## What is censoring?
+
+Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly. 
+
+There are two types of censoring: 
+  - Right Censoring occurs when an individual's true event time is greater than their observed time.
+  - Left Censoring occurs when an individual's true event time is less than their observed time. 
+
+---
+class: left, middle, rstudio-logo
+
+## Do we have censored data?
+
+  - We have employees in our data who have not yet left the firm. 
+
+  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or &lt;b&gt;right censoring&lt;/b&gt;.
+
+---
+class: left, middle, rstudio-logo
+
+## Impact of Censoring
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-2-1.png" width="75%" height="75%" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## The Survival Distribution
+
+The methods of survival analysis all try to estimate and summarize the survival distribution. 
+
+There are two interrelated ways to specify the survival distribution:
+
+1. The Survival Function
+2. The Hazard Function
+
+---
+class: left, middle, rstudio-logo
+
+## The Survival Function
+
+The Survival Function defines the probability of surviving up to some point in time, `\(t\)`:
+
+`$$S(t) = pr(T &gt; t)$$`
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-3-1.png" width="60%" height="60%" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## The Hazard Function 
+
+The hazard function, `\(h(t)\)`, is the instantaneous rate at which the events occur, given that the event has not already occurred. 
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-4-1.png" width="60%" height="60%" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## A Workflow for Survival Analysis
+
+1. Structure your data frame for a survival analysis
+2. Create a survival object using `survival::Surv()`
+3. Exploratory Data Analysis using the Kaplan-Meier Estimator
+4. Specify and test Cox Proportional Hazards (Cox PH) Model 
+5. Check the proportional hazards assumption of the Cox PH Model
+6. Use the Cox PH Model to aid business decisions 
+
+---
+class: left, middle, rstudio-logo
+
+## Structuring Your Data
+
+You will want to create: 
+  - a censor indicator, `CENSOR`
+  - an event time variable, `EVENT_TIME`
+
+
+```r
+surv_data &lt;-
+  surv_data |&gt;
+    dplyr::mutate(
+    TURNOVER_DATE = dplyr::case_when(
+      TURNOVER == "Yes" ~ TURNOVER_DATE,
+      TRUE ~ as.Date("2022-07-01")
+    ),
+    CENSOR = dplyr::case_when(
+      TURNOVER == "No" ~ 0,
+      TRUE ~ 1
+    ),
+    EVENT_TIME = lubridate::interval(HIRE_DATE, TURNOVER_DATE) %/% months(1)
+  )
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Structuring Your Data: `CENSOR` and `EVENT_TIME`
+
+
+```
+     EID  HIRE_DATE TURNOVER_DATE TURNOVER CENSOR EVENT_TIME
+1 453921 2017-02-01    2022-07-01       No      0         65
+2 732470 2016-02-01    2017-12-01      Yes      1         22
+3 169619 2016-02-01    2022-07-01       No      0         77
+4 953421 2017-02-01    2017-07-01      Yes      1          5
+5 363973 2016-02-01    2022-07-01       No      0         77
+6 779914 2017-01-01    2021-01-01      Yes      1         48
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Creating a Survival Object
+ 
+The survival object is created by the function `survival::Surv`, which typically requires two arguments: `event` and `time`. The survival object will be used as the outcome by the survival analysis methods we explore. 
+
+
+```r
+surv_object &lt;- survival::Surv(
+  event = surv_data$CENSOR,
+  time = surv_data$EVENT_TIME
+)
+
+head(surv_object, 10)
+```
+
+```
+ [1] 65+ 22  77+  5  77+ 48  65+  4   1   2 
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Estimating the Survival Function: Kaplan-Meier Estimator
+
+The Kaplan-Meier (KM) Estimator is a non-parametric method that estimates the survival probabilities at each time an event occurs. We will use the function `survival::survfit()`, which uses the KM Estimator, to estimate survival probabilities from our data. 
+
+`survfit` requires two arguments:
+
+1. A formula object where the outcome is a survival object
+2. A data frame
+
+
+```r
+km_result &lt;- survival::survfit(
+  surv_object ~ 1,
+  data = surv_data
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## The Output of survfit
+
+
+```
+# A tibble: 6 × 5
+   TIME N_RISK N_EVENT CENSOR SURVIVAL
+  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;
+1     1   8000     182      0    0.977
+2     2   7818     181      0    0.955
+3     3   7637     187      0    0.931
+4    70   1445      10     32    0.362
+5    71   1403      13     42    0.359
+6    72   1348       9     35    0.356
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Plotting the Survival Function
+
+
+```r
+survminer::ggsurvplot(
+  km_result,
+  pval = TRUE,
+  conf.int = TRUE,
+  xlab = "Months since Hire",
+  ylab = "Probability of Staying at the Firm"
+)
+```
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-10-1.png" width="50%" height="50%" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Using the KM Estimator to Plot Multiple Survival Functions
+
+
+```r
+km_result_jobs &lt;- survival::survfit(surv_object ~ NUMBER_JOBS, data = surv_data)
+
+survminer::ggsurvplot(km_result_jobs, pval = TRUE, xlab = "Months Since Hire", ylab = "Probability of Staying")
+```
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-11-1.png" width="60%" height="60%" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise -- Exploring Survival Data
+
+For our next short exercise, we will do some practice structuring and exploring our turnover data and estimating survival functions. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 1 and 2**.
+
+---
+class: left, middle, rstudio-logo
+
+## The Cox Proportional Hazards Model
+
+The Cox Proportional Hazards Model is a semi-parametric regression model that lets us estimate the impact that one or more predictors has on an individual's turnover likelihood. 
+
+The proportional hazards model estimates the effects a set of predictors has on an individual's hazard function: 
+
+`$$h_{i}(t)=h_{0}(t)e^{x\beta}$$`
+---
+class: left, middle, rstudio-logo
+
+## Fitting a Cox Proportional Hazards Model
+
+The `coxph` function requires: 
+
+  - A survival object, `surv_object`
+  - A formula that regresses the survival object on the predictors
+  - A data frame
+
+
+```r
+mod &lt;- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC,
+  data = surv_data
+)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Testing the Cox PH Model
+
+
+```r
+summary(mod)$coefficients |&gt; round(3)
+```
+
+```
+                      coef exp(coef) se(coef)       z Pr(&gt;|z|)
+REFERRALYes         -0.962     0.382    0.063 -15.363    0.000
+NUMBER_JOBS2         0.012     1.012    0.032   0.374    0.709
+NUMBER_JOBS3+        0.404     1.498    0.044   9.194    0.000
+PROG_EXER_RATEPass  -0.236     0.789    0.034  -6.929    0.000
+PROG_EXER_RATEPass+ -0.317     0.728    0.056  -5.701    0.000
+INTPER_RATE         -0.095     0.910    0.007 -13.607    0.000
+PRIOR_EXPYes        -0.016     0.984    0.032  -0.489    0.625
+HIRE_REC            -0.085     0.918    0.019  -4.420    0.000
+```
+
+  - `z`: The ratio of `coef` to `se(coef)`, a Wald or z-test
+  - `Pr(&gt;|z|)`: The p-value associated with each `z`
+  - `exp(coef)`: The multiplicative effects on the hazard (e.g. `\(e^{\beta_{1}}\)`)
+  
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Model Coefficients: `INTPER_RATE`
+
+
+To interpret the effect that an individual's interpersonal skills at hiring, `INTPER_RATE`, has on turnover, we will use the `exp(coef)` column:
+  - Adjusting for all other variables, a &lt;b&gt;unit increase&lt;/b&gt; in `INTPER_RATE` reduces the monthly risk of turnover (i.e. baseline hazard) by a factor of 0.91 or by 9%. 
+  - Adjusting for all other variables, a &lt;b&gt;unit decrease&lt;/b&gt; in `INTPER_RATE` increases the monthly risk of turnover by a factor of 1.099 or by 9.9%. This is calculated by inverting `exp(coef)` ( `\(\frac{1}{e^{\beta}}=\)` 1.099).
+
+---
+class: left, middle, rstudio-logo
+
+## Interpreting Coefficients: Things to Know
+
+Important things to know about interpreting model coefficients: 
+  - `\(\beta &lt; 0\)`: a reduction in the hazard function (less chance of turnover)
+  - `\(\beta &gt; 0\)`: an increase in the hazard function (more chance of turnover)
+  - `\(e^{\beta}\)`: a hazards ratio, where values less than 1 reduce the hazard and values greater than 1 increase the hazard
+  
+---
+class: left, middle, rstudio-logo
+
+## Testing the Proportional Hazards Assumption
+
+The proportional hazards assumption is important as it allows us to completely ignore the baseline hazard &lt;b&gt;and&lt;/b&gt; interpret the effects of our predictors as being independent of time. 
+
+```r
+survival::cox.zph(mod)
+```
+
+```
+               chisq df     p
+REFERRAL       0.174  1 0.677
+NUMBER_JOBS    2.461  2 0.292
+PROG_EXER_RATE 1.294  2 0.523
+INTPER_RATE    0.129  1 0.720
+PRIOR_EXP      3.790  1 0.052
+HIRE_REC       1.542  1 0.214
+GLOBAL         9.414  8 0.309
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Correcting for Proportional Hazards Violations
+
+What do we do if one or more of our variables violates the proportional hazards assumption?
+  - Remove the variable if it is not a significant predictor and refit the model
+  - Stratify by the variable--each level of the variable gets its own baseline hazard function 
+  - Interact the levels of the variable with time 
+
+---
+class: left, middle, rstudio-logo
+
+## Using the Cox PH Model for Decisions 
+
+The `survival::survfit()` function allows us to generate estimated survival probabilities from our fitted model and the `survminer::ggadjustedcurves()` function allows us to nicely plot these probabilities as a survival function.
+
+---
+class: left, middle, rstudio-logo
+
+## Using the Cox PH Model for Decisions 
+
+
+```r
+# Remove PRIOR_EXP as its non-sig and almost violates PH assump.
+mod &lt;- survival::coxph(
+  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + HIRE_REC,
+  data = surv_data
+)
+
+# Create a new data frame holding constant all vars 
+# except the effect of interest
+new_data &lt;- data.frame(REFERRAL = c("No", "Yes"), 
+                       NUMBER_JOBS = c("3+", "3+"), 
+                       PROG_EXER_RATE = c("Concerns", "Concerns"), 
+                       INTPER_RATE = c(1, 1), 
+                       PRIOR_EXP = c("No", "No"), 
+                       HIRE_REC = c(0, 0))
+
+# Plot the predicted survival functions
+survminer::ggadjustedcurves(mod, 
+                            data = new_data, variable = "REFERRAL", 
+                            ylab = "Probability of Staying",
+                            xlab = "Months Since Hire",
+                            ggtheme = ggplot2::theme_minimal()) +
+  ggplot2::labs(color = "Referral")
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Predicted Survival Functions
+
+&lt;img src="4-advanced_explanatory_methods_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+&lt;!-- ## Cox PH Extensions --&gt;
+
+&lt;!-- There are several different ways to extend the Cox PH Model:  --&gt;
+&lt;!--   - Time varying predictors  --&gt;
+&lt;!--   - Fraility Models --&gt;
+&lt;!--   - Survival Trees --&gt;
+&lt;!--   - Competing Risks --&gt;
+
+&lt;!-- --- --&gt;
+&lt;!-- class: left, middle, rstudio-logo --&gt;
+
+## Exercise
+
+For our next short exercise, we will do some practice fitting and interpreting the output of a Cox proportional hazard regression model. 
+
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 04-survival_analysis**.
+
+Let's work on **Exercises 3 through 5**.
+
+---
+class: left, middle, rstudio-logo
+
+# Other Advanced Methods
+
+---
+class: left, middle, rstudio-logo
+
+## What are Mixed-Effect Regression Models
+
+Mixed-Effect Regression (MER) models as a more flexible class of generalized linear regression models (GLMs). 
+
+The advantage they have over GLMs (both simple and multiple) is that they allow you to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
+
+Common designs that lead to dependent residuals: 
+  - Clustered Data (Our focus today)
+  - Crossed Data
+
+---
+class: left, middle, rstudio-logo
+
+## The MER Model: A Conceptual Look 
+The MER model is:
+`$$Y_{ij} = \underbrace{\gamma_{00} + \gamma_{01}z_{1j} + \gamma_{10}x_{1ij}+\gamma_{11}x_{1ij}z_{1j}}_{\text{Fixed Part}} + \underbrace{R_{ij} + U_{0j}}_{\text{Random Part}}$$`
+  - The fixed part of the model includes the effects of your predictors (identical to GLMs)
+  - The random part of the model includes the residual terms: 
+    - `\(R_{ij}\)`: The within-cluster residual 
+    - `\(U_{0j}\)`: The between-cluster intercept residual
+  - The cluster-level residuals are referred to as random-effects
+  
+---
+class: left, middle, rstudio-logo
+
+## R Packages for Mixed-Effect Regression Models
+
+I recommend using the following packages (ordered by preference):
+1. `lme4`: Best for crossed random-effects
+2. `nlme`: Best for growth models 
+
+---
+class: left, middle, rstudio-logo
+
+## What are Multinomial Logistic Regression Models?
+
+Multinomial logistic regression is an extension of logistic regression when the outcome variable has more than two unordered categories. 
+
+It has a variety of uses such as: 
+
+  - Modeling voting choice in elections with multiple candidates
+  - Modeling choice of career options by students
+  - Modeling choice of benefit options by employees
+
+---
+class: left, middle, rstudio-logo
+
+## Multinomial Logistic Regression Models: A Conceptual Understanding
+
+Your firm offers three different health insurance plans (A, B, and C) and would like to understand what motivates an employee to choose one plan over another. To answer this question, you could use multinomial logistic regression, which allows you to fit a single model that estimates the effects of one or more predictors on choosing B over A (reference category) and C over A (reference category).
+
+`$$\ln(\frac{P(y = B)}{P(y = A)}) = X\beta$$`
+`$$\ln(\frac{P(y = C)}{P(y = A)}) = X\alpha$$`
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
