@@ -71,11 +71,11 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 |               | - Statistical inference and hypothesis testing   | |
 |               | - Linear regression | |
 | 12:30 - 13:30 | *Lunch break*    | |
-| 13:30 - 15:00 | Explanatory Methods II | Liz Romero |
+| 13:30 - 15:00 | [Explanatory Methods II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/3-binomial_and_ordinal_regression.html) | Liz Romero |
 |               | - Binomial logistic regression | |
 |               | - Ordinal regression | |
 | 15:00 - 15:30 | *Coffee break*   | |
-| 15:30 - 17:00 | Advanced Explanatory Methods | Alex LoPilato |
+| 15:30 - 17:00 | [Advanced Explanatory Methods](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/4-advanced_explanatory_methods.html) | Alex LoPilato |
 |               | - Survival analysis                     | |
 |               | - Important methods we couldn't cover              | |
 
@@ -88,7 +88,7 @@ RSTUDIO.CLOUD ACCOUNT, ETC.\]
 |               | - Working with graphs in R  | |
 |               | - Visualizing graphs in R | |
 | 10:30 - 11:00 | *Coffee break*   | |
-| 11:00 - 12:30 | Network Analysis II       | Liz Romero/Alex Lo Pilato |
+| 11:00 - 12:30 | [Network Analysis II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/6-graph_metrics.html)       | Liz Romero/Alex Lo Pilato |
 |               | - Paths and distance  | |
 |               | - Vertex importance and centrality | |
 |               | - Community detection  | |
