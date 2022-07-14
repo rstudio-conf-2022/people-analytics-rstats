@@ -22,12 +22,11 @@ class: left, middle, rstudio-logo, bigfont
 
 ## Aim of this module
 
-&#9989; Review basic network metrics
-  - Learn about paths and distance
-  - Review network summary metrics
+&#9989; Review basic network structure metrics
+  - Measures of the overall network structure
+  - Measures of structural positions in a network
   
 &#9989; Understand relationships between nodes
-  - Vertex importance and centrality
   - Community detection methods
   - Assortativity and Similarity
   
@@ -35,7 +34,31 @@ class: left, middle, rstudio-logo, bigfont
 ---
 class: left, middle, rstudio-logo
 
-## Paths
+## The Structure of Organizational Networks
+
+Organizational network structure can be characterized by the pattern of relationships among people that provide both opportunities and constraints. 
+
+There are two broad ways to measure network structure:
+  1. <b>Overall Network Structure</b>: Allows us look at structural differences between two or more organizational networks.
+  2. <b>Structural Position of Nodes</b>: Allows us to quantify and describe a node's relationship within a single network.
+
+---
+class: left, middle, rstudio-logo 
+
+## Overall Organizational Network Structure 
+
+Measures of overall network structure can answer many different questions in People Analytics: 
+
+  - How do differences of connectivity across offices relate to office-level turnover?
+  - How does the size of different work groups impact their overall performance? 
+  - Does your finance department share information with your HR department? 
+
+These are all questions that measures of overall network structure can help answer. 
+
+---
+class: left, middle, rstudio-logo
+
+## Overall Network Structure: Path Metrics
 
 Paths can help us understand how people are connection and how information is spread. Consider the below graphs and suppose the nodes are people. Person A wants to be introduced to Person C.  How can we facilitate that introduction, i.e., how can we get from A to C?  
 
@@ -68,7 +91,7 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 ---
 class: left, middle, rstudio-logo
 
-## Paths, continued
+## Overall Network Structure: Directed and Undirected Paths
 
 There is only 1 way in the directed graph, but many in the undirected graph.
 
@@ -98,7 +121,7 @@ kbl(d) |>
 ---
 class: left, middle, rstudio-logo
 
-## Distance
+## Overall Network Structure: Distance
 
 The distance between two nodes is the sum of the weights of the edges traversed in the path. For graphs without a weight property, every edge is assumed to have weight 1.  Suppose these weights are the strength of the relationship.  Now which path would you choose to introduce Person A to Person C?
 
@@ -125,7 +148,7 @@ distances(d1,weights = NULL)
 ---
 class: left, middle, rstudio-logo
 
-## Network size
+## Overall Network Structure: Network size
 
 It is often useful to simply understand how large the network is.  How many nodes and edges are we dealing with?
 
@@ -156,7 +179,7 @@ ecount(sg)
 ---
 class: left, middle, rstudio-logo
 
-## Network density
+## Overall Network Structure: Network density
 
 Network density is defined as the number of actual edges divided by the number of possible edges. A graph with density of 1 is a *complete* graph, and a graph with low density is considered *sparse*.  A network with high density will be able to disperse information faster than a graph with network density.
 
@@ -179,7 +202,7 @@ edge_density(sg)
 ---
 class: left, middle, rstudio-logo
 
-## Components
+## Overall Network Structure: Components
 
 It can be useful to know the number of **components** in a network.  A component is defined as the number of disconnected groups in a network.  In a people network, is of particular interest to understand and minimize the number of small components, or "islands", of people who feel disconnected from the broader population.
 
@@ -199,7 +222,7 @@ components(sg)
 ---
 class: left, middle, rstudio-logo
 
-## Network diameter (1/2)
+## Overall Network Structure: Network diameter 
 
 Network diameter is defined as the longest of the shortest paths in a network.  This metric only makes sense in a *connected* graph, because in a *disconnected* graph it is simply $\infty$. For the graph below, what is the diameter of the network?
 
@@ -235,7 +258,7 @@ df
 ---
 class: left, middle, rstudio-logo
 
-## Network diameter (2/2)
+## Overall Network Structure: Network diameter 
 
 ```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
 
@@ -253,9 +276,50 @@ diameter(sg2)
 ---
 class: left, middle, rstudio-logo, bigfont
 
-## Vertex importance and centrality
+## Overall Network Structure: Cliques
 
-In networks involving people, understanding vertex imporance (a person's importance) is of significant interest.  Questions you might consider:
+Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1). Cliques can help us identify tightly connected groups of people.
+
+How many cliques are in our network?
+
+```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center"}
+ggraph::ggraph(d1) +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Overall Network Structure: Cliques
+
+```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+ggraph::ggraph(d1) +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r}
+# Size of the largest clique
+clique_num(d1)
+
+# Number of cliques between size 2 and 3
+length(cliques(d1, min = 2, max = 3))
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Structural Position of People
+
+In networks involving people, understanding their structural position within the network is of significant interest. We can use these metrics as a way to undestand who is important or central within a givin network.  
+
+Questions you might consider:
 
   - Who serves as a "bridge" between various parts of an organization?  If these people depart, you can end up with "islands" of people who feel disconnected.
   - Who has the highest number of connections?  This might be a good person to consider for a leadership role, assuming they are viewed positively by their connections.
@@ -264,7 +328,7 @@ In networks involving people, understanding vertex imporance (a person's importa
 ---
 class: left, middle, rstudio-logo, bigfont
 
-## Types of centrality (1/2)
+## Structural Position: Node Centrality
 
 **Degree centrality** is simply the count of connections for each node.
 
@@ -275,7 +339,7 @@ class: left, middle, rstudio-logo, bigfont
 
 ---
 class: left, middle, rstudio-logo, bigfont
-## Types of centrality (2/2)
+## Structural Position: Node Centrality
 
 **Betweenness centrality** is a measure of how important a node is in the overall connectedness of the network.  To derive the betweenness centrality of a node $v$:
 
@@ -287,7 +351,7 @@ class: left, middle, rstudio-logo, bigfont
 ---
 class: left, middle, rstudio-logo
 
-## Back to our undirected graph (1/2)
+## Back to our undirected graph
 
 Let's create the graph together and learn how to work with it in R. We'll use the `tidygraph` package for a more convenient way to work with `igraph`.
 
@@ -298,7 +362,7 @@ edges_gr <- data.frame(
   to = c("B","D","E","C","D","D","F","A")
 )
 
-# create a graph from the datafram using igraph
+# create a graph from the dataframe using igraph
 gr <- igraph::graph_from_data_frame(edges_gr, directed = FALSE)
 
 # the tidygraph package gives us a really simple way to work with 
@@ -310,7 +374,7 @@ gr_tidy <- igraph::simplify(gr) |> # remove the A->B/B->A duplication
 ---
 class: left, middle, rstudio-logo
 
-## Back to our undirected graph (1/2)
+## Back to our undirected graph
 
 ```{r}
 gr_tidy
@@ -318,7 +382,7 @@ gr_tidy
 ---
 class: left, middle, rstudio-logo
 
-## Centrality of our undirected graph (2/2)
+## Centrality of our undirected graph
 
 Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
 
@@ -338,7 +402,7 @@ c_vals <-
 ---
 class: left, middle, rstudio-logo
 
-## Centrality of our undirected graph (2/2)
+## Centrality of our undirected graph
 
 Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
 
@@ -349,42 +413,14 @@ c_vals
 ---
 class: left, middle, rstudio-logo, bigfont
 
-## Cliques (1/2)
+## The Formation of Organziational Networks
 
-Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1). Cliques can help us identify tightly connected groups of people.
+We can only measure the structure of networks that we already know exist. Oftentimes, within a formal organizational network, smaller informal networks may exist and the firm may not know about them. 
 
-How many cliques are in our network?
-
-```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center"}
-ggraph::ggraph(d1) +
-  geom_edge_link(color = "grey") +
-  geom_node_label(fill = "lightblue", aes(label = name)) +
-  theme_void()
-
-```
-
----
-class: left, middle, rstudio-logo
-
-## Cliques (2/2)
-
-```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
-
-ggraph::ggraph(d1) +
-  geom_edge_link(color = "grey") +
-  geom_node_label(fill = "lightblue", aes(label = name)) +
-  theme_void()
-```
-
-```{r}
-# Size of the largest clique
-clique_num(d1)
-
-# Number of cliques between size 2 and 3
-length(cliques(d1, min = 2, max = 3))
-
-```
-
+Network analysis provides us with techniques that not only allow us to find these hidden networks, but also to understand what led to their formation: 
+  - Community Detection
+  - Assortativity
+  
 ---
 class: left, middle, rstudio-logo
 
