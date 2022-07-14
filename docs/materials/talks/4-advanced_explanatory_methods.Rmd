@@ -171,7 +171,7 @@ class: left, middle, rstudio-logo
 
   - We have employees in our data who have not yet left the firm. 
 
-  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>/
+  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be less than their observed time or <b>right censoring</b>.
 
 ---
 class: left, middle, rstudio-logo
