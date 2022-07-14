@@ -286,6 +286,18 @@ length(cliques(d1, min = 2, max = 3))
 ## [1] 9
 ```
 
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - practicing overall network metrics
+
+Using a dataset on a network of dolphins, you will work through calculating various network metrics
+
+&lt;link&gt;
+
+Please work on exercise 1.
+
 ---
 class: left, middle, rstudio-logo
 
@@ -456,9 +468,21 @@ Now we can use convenient `tidyverse` functions and create a quick table of cent
 &lt;/table&gt;
 
 ---
+class: left, middle, rstudio-logo
+
+## Exercise - centrality measures
+
+Using the same dolphin network dataset, you will work through calculating centrality measures.
+
+&lt;link&gt;
+
+Please work on exercise 2.
+
+
+---
 class: left, middle, rstudio-logo, bigfont
 
-## The Formation of Organziational Networks
+## The Formation of Organizational Networks
 
 We can only measure the structure of networks that we already know exist. Oftentimes, within a formal organizational network, smaller informal networks may exist and the firm may not know about them. 
 
@@ -496,8 +520,8 @@ sizes(communities)
 
 ```
 ## Community sizes
-##  1  2  3  4  5  6  7  8  9 
-## 37 39  3 32 39 28 24  3  3
+##  1  2  3  4  5  6  7  8  9 10 
+## 39  3 40 37 26 20  8 29  3  3
 ```
 
 ---
@@ -516,6 +540,17 @@ ggraph(sf_gr, layout = "fr") +
 ```
 
 &lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-24-1.png" width="400" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - community detection measures
+
+Using the dolphin network dataset, you will work through finding a plotting communities.
+
+&lt;link&gt;
+
+Please work on exercise 3.
 
 ---
 class: left, middle, rstudio-logo, bigfont
@@ -683,6 +718,18 @@ assortativity_nominal(gr, factor(V(gr)$dept))
 ```
 ## [1] 0.684411
 ```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Exercise - Assortativity
+
+Using a dataset related to emails, we will work through calculating an assortativity example.
+
+&lt;link&gt;
+
+Please work on exercise 4.
 
 ---
 class: left, middle, rstudio-logo

@@ -16,6 +16,8 @@ In this document we will practice various types of network analyses using an edg
 url <- "https://ona-book.org/data/dolphins.csv"
 
 dolphin_edgelist <- read.csv(url)
+
+# look at the data to see what you're dealing with
 ```
 
 ```{r}
@@ -60,11 +62,18 @@ components(dolphin_graph)
 ```
 
 ```{r}
-# What is the network diameter?
+# What is the network diameter? What does this mean?
 diameter(dolphin_graph)
 
 ```
 
+```{r}
+# how large is the largest clique?
+clique_num(dolphin_graph)
+
+# how many cliques are between size 3 and 5?
+length(cliques(dolphin_graph, min = 3, max = 5))
+```
 
 ## Exercise 2 - Centrality measures
 
@@ -112,13 +121,6 @@ ggraph::ggraph(dolphin_graph) +
 
 ```
 
-```{r}
-# how large is the largest clique?
-clique_num(dolphin_graph)
-
-# how many cliques are between size 3 and 5?
-length(cliques(dolphin_graph, min = 3, max = 5))
-```
 
 ## Exercise 3: Community detection
 
@@ -155,6 +157,8 @@ email_edgelist <- read.csv(url)
 url_v <- "https://ona-book.org/data/email_vertices.csv"
 
 email_dept <- read.csv(url_v)
+
+# look through the edges and vertices to understand the data source
 ```
 
 ```{r}
@@ -215,7 +219,9 @@ c_vals |>
 ```
 
 ```{r}
-# Are the friends part of the same community?
+# Are the friends part of the same community?  Who else is in the community?  
+# Does it make intuitive sense (if you're a friends fan :-) )
+
 set.seed(123)
 communities <- cluster_louvain(friends_graph, weights = NULL)
 V(friends_graph)$community <- membership(communities)
