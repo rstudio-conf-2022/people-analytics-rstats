@@ -1,0 +1,128 @@
+---
+title: "03A - Binomial Logistic Regression Solutions"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct binomial logistic regression modeling on a data set relating to recruiting data and whether a person is hired or not hired based on test scores, interviews, and gender.  Data fields: 
+
+  - gender: gender
+  - sat: SAT test score of applicant
+  - gpa: GPA of applicant
+  - apttest: Score on an aptitude test given to applicant
+  - int1: applicant rating given by one of two line manager interviewers (1-5 where high is positive)
+  - int2: applicant rating given by second of two line manager interviewers (1-5 where high is positive)
+  - int3: applicant rating given by HR interviewer (1-5 where high is positive)
+  - hired: hired (1) or not hired (0)
+
+## Exercise 1 - Running a simple binomial logistic regression model
+
+```{r}
+# Download the recruiting dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/recruiting.csv"
+recruiting <- read.csv(url)
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+head(recruiting)
+```
+
+```{r}
+# What do you think the datatypes are?
+# gender: binary factor
+# sat: numeric
+# gpa: numeric
+# apttest: numeric
+# int1: ordered factor
+# int2: ordered factor
+# int3: ordered factor
+# hired: binary factor
+```
+
+
+```{r}
+# Perform any necessary datatype adjustments
+recruiting$gender <- as.factor(recruiting$gender)
+recruiting$hired <- as.factor(recruiting$hired)
+recruiting$int1 <- ordered(recruiting$int1,
+                           levels = 1:5)
+recruiting$int2 <- ordered(recruiting$int2,
+                           levels = 1:5)
+recruiting$int3 <- ordered(recruiting$int3,
+                           levels = 1:5)
+```
+
+```{r}
+# get to the know the data a bit.  what is the split of hired/not hired,
+# do you notice differences between the interviewers, etc
+summary(recruiting)
+GGally::ggpairs(recruiting)
+```
+
+```{r}
+# Run a simple binomial logistic regression model to estimate the influence of SAT scores
+# on hire success, saving your model using a name of your choice
+model <- glm(data = recruiting, formula = hired ~  sat, family = "binomial")
+
+```
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+summary(model)$coefficients
+
+```
+
+```{r}
+# Take a look at the odds ratio for our independent variable. How do you interpret this?
+exp(model$coefficients)
+
+```
+
+```{r}
+# Do you think this is a good model?
+DescTools::PseudoR2(model)
+```
+
+## Exercise 3 - Running a multiple binomial logistic regression model
+
+```{r}
+# What variables look like they might be interesting to include?
+GGally::ggpairs(recruiting)
+
+```
+
+```{r}
+# make a new model with gender and apttest
+model2 <- glm(hired ~ apttest + gender,  data = recruiting, family = "binomial")
+```
+
+```{r}
+# View the coefficients and log odds.
+summary(model2)$coefficients
+exp(model2$coefficients)
+```
+
+
+```{r}
+# Assess model fit - is this better than the simple model?
+DescTools::PseudoR2(model2)
+AIC(model)
+AIC(model2)
+```
+
+Write a few sentences on the data and the results of your model.  Odds can be difficult to explain - can you try to 
+explain to a stakeholder what this means for a candidate with a 60 on their aptitude test vs a candidate with a 70?
+
+Each additional point in the aptitude tests results in a ~6.5% increase in the odds of being hired.
+The low Pseudo R^2 value means that we are only explaining a small amount of what leads to a person being hired.
+
+A candidate with a 70 has 10 more points than a candidate with 60.  Each point relates to a 6.5% increase in odds, so all
+else being equal, the person with a 70 has 1.065^10 = ~88% increased odds of being hired vs the candidate with a 60.

@@ -1,0 +1,187 @@
+---
+title: "03B-Ordinal_regression - SOLUTIONS"
+output: html_document
+---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct ordinal logistic regression on fictional data on employee performance evaluation metrics for a group of salespeople. 
+
+  - sales: annual sales of the individual in millions of dollars
+  - new_customers: number of new customers acquired by individual
+  - region: region individual works in (North, South, East, West)
+  - gender: gender of individual
+  - rating: performance rating of individual (1 = Low, 2 = Middle, 3 = High)
+
+## Exercise 1 - Running a simple ordinal logistic regression model
+
+```{r}
+# Download the employee performance dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/employee_performance.csv"
+perf <- read.csv(url)
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+head(perf)
+
+summary(perf)
+```
+
+```{r}
+# What do you think the datatypes are?
+# sales: numeric
+# new_customers: numeric
+# region: factor
+# gender: factor
+# rating: ordered factor
+```
+
+
+```{r}
+# Perform any necessary datatype adjustments
+perf$region <- as.factor(perf$region)
+perf$gender <- as.factor(perf$gender)
+perf$rating <- ordered(perf$rating,
+                       levels = 1:3)
+```
+
+```{r}
+# Take a look at the pairs plot. What do you notice?
+GGally::ggpairs(perf)
+
+# Things you might notice are:
+# rating seems to be pretty well aligned with sales amount and new customer count
+# looks like a lower proportion of women in North and West?
+```
+
+```{r}
+# Run a simple ordinal logistic regression model to understand sales influence
+# on rating, saving your model using a name of your choice
+model <- polr(formula = rating ~ sales, data = perf)
+model
+```
+
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+summary(model)$coefficients
+
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+coefficients <- summary(model)$coefficients
+# calculate p-values
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio <- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+
+
+```
+Write a sentence on the model results above.
+
+Each additional million dollars in sales leaders to a 55% increase in odds of being in the next highest performance group.
+
+
+```{r}
+# Do you think this is a good model?  Use the lipsitz test.
+DescTools::PseudoR2(model)
+
+generalhoslem::lipsitz.test(model)
+```
+Write a sentence on the results of this test.
+
+Since the null hypothesis is the model is a good fit and our p-value is very low, we can conclude that this model isn't a good fit for our data.
+
+## Exercise 3 - Add more information to the model
+
+```{r}
+# Let's try a model to see how sales, new_customers, and gender impact rating
+model2 <- polr(rating ~ sales + gender + new_customers, data = perf)
+
+summary(model2)
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+coefficients <- summary(model2)$coefficients
+# calculate p-values
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+# take exponents of coefficients to find odds
+odds_ratio <- exp(coefficients[ ,"Value"])
+# combine with coefficient and p_value
+(coefficients <- cbind(coefficients[ ,c("Value", "p_value")],odds_ratio))
+```
+
+Write a few sentences on the results of the model.
+
+Each additional $1 million in sales results in a 46% increase in odds of being in the next highest performance group.
+Each additional new customer results in a 48% increase in odds of being in the next highest performance group.
+
+```{r}
+# Do you think this is a good model?
+DescTools::PseudoR2(model2)
+
+generalhoslem::lipsitz.test(model2)
+```
+
+Write a sentence on the results of the Lipsitz test.
+
+Our p-values is now > 0.05, so we do not reject the null hypothesis and conclude that the model is a good fit.
+
+
+# Exercise 4: Test the proportional odds assumption
+
+```{r}
+# First try the method where we compare the binary models to each other and use
+# our judgement
+perf$rating23 <- ifelse(perf$rating %in% c(2,3), 1, 0)
+perf$rating3 <- ifelse(perf$rating == 3, 1, 0)
+
+mod_23 <- glm(
+  rating23 ~ sales + gender + new_customers, data = perf, family = "binomial"
+)
+
+mod_3 <-glm(
+  rating3 ~ sales + gender + new_customers, data = perf, family = "binomial"
+)
+
+(coefficient_comparison <- data.frame(
+  mod_23 = summary(mod_23)$coefficients[ , "Estimate"],
+  mod_2 = summary(mod_3)$coefficients[ ,"Estimate"],
+  diff = summary(mod_3)$coefficients[ ,"Estimate"] - 
+    summary(mod_23)$coefficients[ , "Estimate"]
+))
+```
+
+Using your best judgement, do you think the proportional odds assumption is met?
+
+These differences seem quite small, I would say that the assumption is met.
+
+```{r}
+# Alternatively with the Brant-Wald test
+# What do you  notice?
+library(brant)
+brant::brant(model2)
+
+```
+
+Write your interpretation of the brant-wald test results.
+
+The test shows that the assumption holds.  Sales is the only potentially problematic variable.  We could try removing that from our model.

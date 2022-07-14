@@ -1,0 +1,130 @@
+---
+title: "03B-Ordinal_regression"
+output: html_document
+---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this document we will conduct ordinal logistic regression on fictional data on employee performance evaluation metrics for a group of salespeople. 
+
+  - sales: annual sales of the individual in millions of dollars
+  - new_customers: number of new customers acquired by individual
+  - region: region individual works in (North, South, East, West)
+  - gender: gender of individual
+  - rating: performance rating of individual (1 = Low, 2 = Middle, 3 = High)
+
+## Exercise 1 - Running a simple ordinal logistic regression model
+
+```{r}
+# Download the employee performance dataset from the URL provided
+url <- "https://peopleanalytics-regression-book.org/data/employee_performance.csv"
+perf <- read.csv(url)
+
+```
+
+```{r}
+# view the first few rows in the data set to acquaint yourself with the data
+
+```
+
+```{r}
+# What do you think the datatypes are?
+# sales:
+# new_customers:
+# region:
+# gender: 
+# rating: 
+```
+
+
+```{r}
+# Perform any necessary datatype adjustments
+
+```
+
+```{r}
+# Take a look at the pairs plot. What do you notice?
+
+```
+
+```{r}
+# Run a simple ordinal logistic regression model to understand sales influence
+# on rating, saving your model using a name of your choice
+
+```
+
+
+
+## Exercise 2 - Interpreting the coefficients
+
+```{r}
+# Examine the coefficients of your saved model
+
+
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+
+
+
+```
+
+Write a sentence on the model results above.
+
+
+```{r}
+# Do you think this is a good model?  Use the lipsitz test.
+
+```
+Write a sentence on the results of this test.
+
+
+## Exercise 3 - Add more information to the model
+
+```{r}
+# Let's try a model to see how sales, new_customers, and gender impact rating
+
+```
+
+```{r}
+# Add p-alues and odds rations, and view
+# What do you notice?
+
+```
+
+Write a few sentences on the results of the model.
+
+
+```{r}
+# Do you think this is a good model?
+
+```
+
+Write a sentence on the results of the Lipsitz test.
+
+
+# Exercise 4: Test the proportional odds assumption
+
+```{r}
+# First try the method where we compare the binary models to each other and use
+# our judgement
+
+```
+
+Using your best judgement, do you think the proportional odds assumption is met?
+
+
+
+```{r}
+# Alternatively with the Brant-Wald test
+
+
+```
+
+Write your interpretation of the brant-wald test results.
+

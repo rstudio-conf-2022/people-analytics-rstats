@@ -1,0 +1,563 @@
+---
+title: "Network Analysis II"
+author: "<b>rstudio::</b>conf(2022)"
+output:
+  xaringan::moon_reader:
+    css: "style.css"
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+options(knitr.kable.NA = '')
+library(ggraph)
+library(igraph)
+```
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aim of this module
+
+&#9989; Review basic network metrics
+  - Learn about paths and distance
+  - Review network summary metrics
+  
+&#9989; Understand relationships between nodes
+  - Vertex importance and centrality
+  - Community detection methods
+  - Assortativity and Similarity
+  
+  
+---
+class: left, middle, rstudio-logo
+
+## Paths
+
+Paths can help us understand how people are connection and how information is spread. Consider the below graphs and suppose the nodes are people. Person A wants to be introduced to Person C.  How can we facilitate that introduction, i.e., how can we get from A to C?  
+
+```{r, echo = FALSE, fig.align = "center", out.height = 400}
+g <- data.frame(
+  from = c("A","A","A","B","B","C","E","B"),
+  to = c("B","D","E","C","D","D","F","A")
+)
+d1 <- igraph::graph_from_data_frame(g, directed = TRUE)
+
+d2 <- igraph::graph_from_data_frame(g, directed = FALSE)
+
+p1 <-
+  ggraph::ggraph(d1, layout = "kk") +
+  geom_edge_link(color = "black", arrow = arrow()) +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  ggtitle("Directed") +
+  theme_void()
+
+p2 <-
+  ggraph::ggraph(d2, layout = "kk") +
+  geom_edge_link(color = "black", alpha = 0.7) +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  ggtitle("Undirected") +
+  theme_void()
+
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Paths, continued
+
+There is only 1 way in the directed graph, but many in the undirected graph.
+
+```{r, echo = FALSE, fig.align = "right", out.width = "50%"}
+library(kableExtra)
+
+d <- data.frame(
+  Directed = c(
+    "A->B, B->C",
+    " ",
+    " ",
+    " "
+  ),
+  Undirected = c(
+    "A->B, B->C",
+    "A->D, D->C",
+    "A->B, B->D, D->C",
+    "A->D, D->B, B->C"
+  )
+)
+
+kbl(d) |>
+  kable_minimal()
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Distance
+
+The distance between two nodes is the sum of the weights of the edges traversed in the path. For graphs without a weight property, every edge is assumed to have weight 1.  Suppose these weights are the strength of the relationship.  Now which path would you choose to introduce Person A to Person C?
+
+```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+g <- data.frame(
+  from = c("A","A","A","B","B","C","E"),
+  to = c("B","D","E","C","D","D","F"),
+  weight = c(3,4,2,1,6,5,4)
+)
+
+d1 <- igraph::graph_from_data_frame(g, directed = FALSE)
+
+ggraph::ggraph(d1) +
+  geom_edge_link(color = "grey", aes(label = weight)) +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r, echo = TRUE, fig.align = "center", out.extra='style="float:right"'}
+distances(d1,weights = NULL)
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Network size
+
+It is often useful to simply understand how large the network is.  How many nodes and edges are we dealing with?
+
+```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+sge <- data.frame(
+  from = c("A","B","B","C","E"),
+  to = c("B","C","D","D","F")
+)
+
+sg <- igraph::graph_from_data_frame(sge, directed = FALSE)
+
+ggraph::ggraph(sge, layout = "kk") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r, echo = TRUE, fig.align = "center", out.extra='style="float:right"'}
+# Number of nodes
+vcount(sg)
+
+# Number of edges
+ecount(sg)
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Network density
+
+Network density is defined as the number of actual edges divided by the number of possible edges. A graph with density of 1 is a *complete* graph, and a graph with low density is considered *sparse*.  A network with high density will be able to disperse information faster than a graph with network density.
+
+
+```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+ggraph::ggraph(sge, layout = "kk") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+  -  Actual Ties: 5
+  -  Possible Ties = $\frac{N(N-1)}{2} = 15$
+```{r, echo = TRUE, fig.align = "center", out.extra='style="float:right"'}
+# Network density
+edge_density(sg)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Components
+
+It can be useful to know the number of **components** in a network.  A component is defined as the number of disconnected groups in a network.  In a people network, is of particular interest to understand and minimize the number of small components, or "islands", of people who feel disconnected from the broader population.
+
+```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+ggraph::ggraph(sge, layout = "kk") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r}
+# Number of components
+components(sg)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Network diameter (1/2)
+
+Network diameter is defined as the longest of the shortest paths in a network.  This metric only makes sense in a *connected* graph, because in a *disconnected* graph it is simply $\infty$. For the graph below, what is the diameter of the network?
+
+```{r, echo = FALSE, out.height = "300", out.width = "300", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+sge2 <- data.frame(
+  from = c("E","B","C","E","A"),
+  to = c("C","D","D","D","E")
+)
+
+sg2 <- igraph::graph_from_data_frame(sge2, directed = FALSE)
+
+set.seed(123)
+ggraph::ggraph(sge2, layout = "fr") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r, echo = FALSE}
+df <- data.frame(
+  From = c("A","A","A","A","B","B","B","C","C","D"),
+  To = c("B","C","D","E","C","D","E","D","E","E"),
+  `Shortest Path` = c("{A,E,D,B}", "{A,E,C}","{A,E,D}",
+                      "{A,E}","{B,D,C}","{B,D}","{B,D,E}",
+                      "{C,D}","{C,E}","{D,E}"),
+  Distance = c(3,2,2,1,2,1,2,1,1,1)
+)
+
+df
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Network diameter (2/2)
+
+```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+set.seed(123)
+ggraph::ggraph(sge2, layout = "fr") +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r}
+diameter(sg2)
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Vertex importance and centrality
+
+In networks involving people, understanding vertex imporance (a person's importance) is of significant interest.  Questions you might consider:
+
+  - Who serves as a "bridge" between various parts of an organization?  If these people depart, you can end up with "islands" of people who feel disconnected.
+  - Who has the highest number of connections?  This might be a good person to consider for a leadership role, assuming they are viewed positively by their connections.
+  - Who is connected to a lot of well-connected people?  These people can be helpful for facilitating introductions.
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Types of centrality (1/2)
+
+**Degree centrality** is simply the count of connections for each node.
+
+**Closeness centrality** is a measure of how central or close a node is to other nodes.  Information spreads quickly through a network if it starts with those with high closeness centrality.  To calculate closeness centrality for a node $v$:
+
+1.  Take all nodes connected to $v$ and calculate the distance between each node and $v$. 
+2.  Take the average and invert it (so that higher means closer)
+
+---
+class: left, middle, rstudio-logo, bigfont
+## Types of centrality (2/2)
+
+**Betweenness centrality** is a measure of how important a node is in the overall connectedness of the network.  To derive the betweenness centrality of a node $v$:
+
+1.  Take any pairs of nodes that are not $v$ and calculate the number of shortest paths between them.
+2.  Determine how many of those paths pass through $v$.
+3.  Divide 2 by 1 and sum across all pairs of nodes in the network.
+  
+  
+---
+class: left, middle, rstudio-logo
+
+## Back to our undirected graph (1/2)
+
+Let's create the graph together and learn how to work with it in R. We'll use the `tidygraph` package for a more convenient way to work with `igraph`.
+
+```{r}
+# our edgelist
+edges_gr <- data.frame(
+  from = c("A","A","A","B","B","C","E","B"),
+  to = c("B","D","E","C","D","D","F","A")
+)
+
+# create a graph from the datafram using igraph
+gr <- igraph::graph_from_data_frame(edges_gr, directed = FALSE)
+
+# the tidygraph package gives us a really simple way to work with 
+gr_tidy <- igraph::simplify(gr) |> # remove the A->B/B->A duplication
+  tidygraph::as_tbl_graph()
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Back to our undirected graph (1/2)
+
+```{r}
+gr_tidy
+```
+---
+class: left, middle, rstudio-logo
+
+## Centrality of our undirected graph (2/2)
+
+Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
+
+```{r, echo = TRUE, fig.align = "center"}
+c_vals <-
+  gr_tidy |>
+  dplyr::rename(NODE = name) |>
+  dplyr::mutate(
+    DEGREE_CENT = tidygraph::centrality_degree(),
+    BTWN_CENT = tidygraph::centrality_betweenness(),
+    CLOSE_CENT = tidygraph::centrality_closeness()
+  ) |>
+  kbl() |>
+  kable_minimal()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Centrality of our undirected graph (2/2)
+
+Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
+
+```{r, echo = FALSE, fig.align = "center"}
+c_vals
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Cliques (1/2)
+
+Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1). Cliques can help us identify tightly connected groups of people.
+
+How many cliques are in our network?
+
+```{r, echo = FALSE, out.height = "300", out.width = "400", fig.align = "center"}
+ggraph::ggraph(d1) +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Cliques (2/2)
+
+```{r, echo = FALSE, out.height = "400", out.width = "400", fig.align = "center", out.extra='style="float:left; padding-right:40px"'}
+
+ggraph::ggraph(d1) +
+  geom_edge_link(color = "grey") +
+  geom_node_label(fill = "lightblue", aes(label = name)) +
+  theme_void()
+```
+
+```{r}
+# Size of the largest clique
+clique_num(d1)
+
+# Number of cliques between size 2 and 3
+length(cliques(d1, min = 2, max = 3))
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Community detection
+
+Network communities are "hidden" subsets that exist within a network.  Through community detection methods, we can sometimes uncover interesting similarities between nodes that we wouldn't have otherwise noticed.  
+
+---
+class: left, middle, rstudio-logo
+
+## Louvain algorithm (1/2)
+
+One commonly used community detection algorithm is the Louvain algorithm, which partitions the graph into subsets of vertices by trying to maximize the *modularity* of the graph. Modularity measures how dense the connections are within subsets of vertices in a graph by comparing the density to that which would be expected by a random graph.  Modularity ranges from -0.5 to 1 and any positive value indicates the vertices inside the subgroups are more densely connected than would be expected by chance.
+
+```{r, echo = FALSE}
+
+url <- "https://ona-book.org/data/schoolfriends_edgelist.csv"
+schoolfriends <- read.csv(url)
+
+sf_gr <- igraph::graph_from_data_frame(schoolfriends, directed = FALSE)
+```
+
+```{r}
+# find Louvain communities
+communities <- cluster_louvain(sf_gr)
+
+# assign as a vertex property
+V(sf_gr)$community <- membership(communities)
+
+# How large are they?
+sizes(communities)
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Louvain algorithm (2/2)
+
+```{r, out.height = "400", out.width = "400", fig.align = "center"}
+set.seed(123)
+ggraph(sf_gr, layout = "fr") +
+  geom_edge_link(color =  "grey") +
+  geom_node_point(aes(color = as.factor(community)),
+                  show.legend = FALSE) +
+  theme_void()
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity
+
+Homophily is the tendency for similar people to be connected to each other, i.e., "birds of a feather flock together". When people share common traits, it is sometimes easier to form relationships. Examples include
+
+- education
+- political beliefs
+- social class
+- hobbies
+- age
+- gender
+
+We can measure homophily in a network using assortativity.
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity for nominal data
+
+For undirected graphs:
+
+$$
+\begin{equation}
+r = \frac{\sum_{i}e_{ii} - \sum_{i}a_i^2}{1-\sum_{i}a_i^2}
+\end{equation}
+$$
+
+where:
+
+- $e_{ii}$ is the fraction of edges between nodes node of type $i$ to one of type $i$.
+- $a_i$ is the fraction of each type of edge that is connected to a node of type $i$
+
+Assortativity ranges from -1 to 1, 1 meaning people only connect with people like them, 0 meaning people connect with all sorts of people equally, and -1 meaning people only connect with people unlike them.
+
+---
+class: left, middle, rstudio-logo
+
+## Example
+
+Suppose we want to understand if dog owners tend to be connected to other dog owners, and if non-dog owners tend to be connected to other non-dog owners.
+
+```{r, echo = FALSE}
+t <- data.frame(
+  A = c(0.34, 0.2, 0.54),
+  B = c(0.2, 0.26, 0.46),
+  C = c(0.54, 0.46, NA)
+)
+
+row.names(t) <- c("Dog","No dog","$a_i$")
+knitr::kable(t,
+             row.names = TRUE,
+             col.names =  c("Dog","No dog","$a_i$")) |>
+    kable_minimal()
+
+```
+
+$$
+\begin{equation}
+r = \frac{(0.34+0.26)-(0.54^2+0.46^2)}{1-(0.54^2+0.46^2)} = 0.195
+\end{equation}
+$$
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity for numeric data
+
+$$
+\begin{equation}
+r = \frac{\sum_{xy}xy(e_{xy}-a_xb_y)}{\sigma_a\sigma_b}
+\end{equation}
+$$
+
+where:
+
+- $e_{xy}$ is the fraction of edges joining nodes with values $x$ and $y$
+- $a_x$ is the fraction of edges that start and end at nodes with values of $x$
+- $b_y$ is the fraction of edges that start and end at nodes with values of $y$
+- $\sigma_a$ is the standard deviation of the distribution of $a_x$
+- $\sigma_b$ is the standard deviation of the distribution of $b_y$
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Using `igraph` to calculate assortativity
+
+Let's use the workfrance edgelist. Suppose we want to know if people tend to work with people in their same department.
+
+```{r}
+url <- "https://ona-book.org/data/workfrance_edgelist.csv"
+workfrance_edgelist <- read.csv(url)
+head(workfrance_edgelist)
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Adding relevant feature
+
+We'll need to pull in department in order to add this to the graph we will be creating.
+
+```{r}
+url <- "https://ona-book.org/data/workfrance_vertices.csv"
+workfrance_vertices <- read.csv(url)
+head(workfrance_vertices)
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Create graph and calculate assortativity
+
+```{r}
+gr <- workfrance_edgelist[1:2] |>
+  igraph::graph_from_data_frame(
+    directed = F,
+    vertices = workfrance_vertices
+  )
+
+assortativity_nominal(gr, factor(V(gr)$dept))
+
+```
+
+---
+class: left, middle, rstudio-logo
+
+# &#127857; Lunchtime!  &#128523; 

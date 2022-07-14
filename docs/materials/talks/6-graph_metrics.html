@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Network Analysis II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="rstudio::conf(2022)" />
+    <script src="6-graph_metrics_files/header-attrs/header-attrs.js"></script>
+    <script src="6-graph_metrics_files/kePrint/kePrint.js"></script>
+    <link href="6-graph_metrics_files/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Network Analysis II
+]
+.author[
+### <b>rstudio::</b>conf(2022)
+]
+
+---
+
+
+
+
+class: left, middle, rstudio-logo, bigfont
+
+## Aim of this module
+
+&amp;#9989; Review basic network metrics
+  - Learn about paths and distance
+  - Review network summary metrics
+  
+&amp;#9989; Understand relationships between nodes
+  - Vertex importance and centrality
+  - Community detection methods
+  - Assortativity and Similarity
+  
+  
+---
+class: left, middle, rstudio-logo
+
+## Paths
+
+Paths can help us understand how people are connection and how information is spread. Consider the below graphs and suppose the nodes are people. Person A wants to be introduced to Person C.  How can we facilitate that introduction, i.e., how can we get from A to C?  
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-1-1.png" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Paths, continued
+
+There is only 1 way in the directed graph, but many in the undirected graph.
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Directed &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Undirected &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; A-&amp;gt;B, B-&amp;gt;C &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A-&amp;gt;B, B-&amp;gt;C &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A-&amp;gt;D, D-&amp;gt;C &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A-&amp;gt;B, B-&amp;gt;D, D-&amp;gt;C &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A-&amp;gt;D, D-&amp;gt;B, B-&amp;gt;C &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+class: left, middle, rstudio-logo
+
+## Distance
+
+The distance between two nodes is the sum of the weights of the edges traversed in the path. For graphs without a weight property, every edge is assumed to have weight 1.  Suppose these weights are the strength of the relationship.  Now which path would you choose to introduce Person A to Person C?
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-3-1.png" width="400" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```r
+distances(d1,weights = NULL)
+```
+
+```
+##   A B  C E  D  F
+## A 0 3  4 2  4  6
+## B 3 0  1 5  6  9
+## C 4 1  0 6  5 10
+## E 2 5  6 0  6  4
+## D 4 6  5 6  0 10
+## F 6 9 10 4 10  0
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Network size
+
+It is often useful to simply understand how large the network is.  How many nodes and edges are we dealing with?
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-5-1.png" width="400" height="400" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```r
+# Number of nodes
+vcount(sg)
+```
+
+```
+## [1] 6
+```
+
+```r
+# Number of edges
+ecount(sg)
+```
+
+```
+## [1] 5
+```
+
+
+---
+class: left, middle, rstudio-logo
+
+## Network density
+
+Network density is defined as the number of actual edges divided by the number of possible edges. A graph with density of 1 is a *complete* graph, and a graph with low density is considered *sparse*.  A network with high density will be able to disperse information faster than a graph with network density.
+
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-7-1.png" width="400" height="400" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+  -  Actual Ties: 5
+  -  Possible Ties = `\(\frac{N(N-1)}{2} = 15\)`
+
+```r
+# Network density
+edge_density(sg)
+```
+
+```
+## [1] 0.3333333
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Components
+
+It can be useful to know the number of **components** in a network.  A component is defined as the number of disconnected groups in a network.  In a people network, is of particular interest to understand and minimize the number of small components, or "islands", of people who feel disconnected from the broader population.
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-9-1.png" width="400" height="400" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```r
+# Number of components
+components(sg)
+```
+
+```
+## $membership
+## A B C E D F 
+## 1 1 1 2 1 2 
+## 
+## $csize
+## [1] 4 2
+## 
+## $no
+## [1] 2
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Network diameter (1/2)
+
+Network diameter is defined as the longest of the shortest paths in a network.  This metric only makes sense in a *connected* graph, because in a *disconnected* graph it is simply `\(\infty\)`. For the graph below, what is the diameter of the network?
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-11-1.png" width="300" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```
+##    From To Shortest.Path Distance
+## 1     A  B     {A,E,D,B}        3
+## 2     A  C       {A,E,C}        2
+## 3     A  D       {A,E,D}        2
+## 4     A  E         {A,E}        1
+## 5     B  C       {B,D,C}        2
+## 6     B  D         {B,D}        1
+## 7     B  E       {B,D,E}        2
+## 8     C  D         {C,D}        1
+## 9     C  E         {C,E}        1
+## 10    D  E         {D,E}        1
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Network diameter (2/2)
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-13-1.png" width="400" height="300" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```r
+diameter(sg2)
+```
+
+```
+## [1] 3
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Vertex importance and centrality
+
+In networks involving people, understanding vertex imporance (a person's importance) is of significant interest.  Questions you might consider:
+
+  - Who serves as a "bridge" between various parts of an organization?  If these people depart, you can end up with "islands" of people who feel disconnected.
+  - Who has the highest number of connections?  This might be a good person to consider for a leadership role, assuming they are viewed positively by their connections.
+  - Who is connected to a lot of well-connected people?  These people can be helpful for facilitating introductions.
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Types of centrality (1/2)
+
+**Degree centrality** is simply the count of connections for each node.
+
+**Closeness centrality** is a measure of how central or close a node is to other nodes.  Information spreads quickly through a network if it starts with those with high closeness centrality.  To calculate closeness centrality for a node `\(v\)`:
+
+1.  Take all nodes connected to `\(v\)` and calculate the distance between each node and `\(v\)`. 
+2.  Take the average and invert it (so that higher means closer)
+
+---
+class: left, middle, rstudio-logo, bigfont
+## Types of centrality (2/2)
+
+**Betweenness centrality** is a measure of how important a node is in the overall connectedness of the network.  To derive the betweenness centrality of a node `\(v\)`:
+
+1.  Take any pairs of nodes that are not `\(v\)` and calculate the number of shortest paths between them.
+2.  Determine how many of those paths pass through `\(v\)`.
+3.  Divide 2 by 1 and sum across all pairs of nodes in the network.
+  
+  
+---
+class: left, middle, rstudio-logo
+
+## Back to our undirected graph (1/2)
+
+Let's create the graph together and learn how to work with it in R. We'll use the `tidygraph` package for a more convenient way to work with `igraph`.
+
+
+```r
+# our edgelist
+edges_gr &lt;- data.frame(
+  from = c("A","A","A","B","B","C","E","B"),
+  to = c("B","D","E","C","D","D","F","A")
+)
+
+# create a graph from the datafram using igraph
+gr &lt;- igraph::graph_from_data_frame(edges_gr, directed = FALSE)
+
+# the tidygraph package gives us a really simple way to work with 
+gr_tidy &lt;- igraph::simplify(gr) |&gt; # remove the A-&gt;B/B-&gt;A duplication
+  tidygraph::as_tbl_graph()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Back to our undirected graph (1/2)
+
+
+```r
+gr_tidy
+```
+
+```
+## # A tbl_graph: 6 nodes and 7 edges
+## #
+## # An undirected simple graph with 1 component
+## #
+## # Node Data: 6 × 1 (active)
+##   name 
+##   &lt;chr&gt;
+## 1 A    
+## 2 B    
+## 3 C    
+## 4 E    
+## 5 D    
+## 6 F    
+## #
+## # Edge Data: 7 × 2
+##    from    to
+##   &lt;int&gt; &lt;int&gt;
+## 1     1     2
+## 2     1     4
+## 3     1     5
+## # … with 4 more rows
+```
+---
+class: left, middle, rstudio-logo
+
+## Centrality of our undirected graph (2/2)
+
+Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
+
+
+```r
+c_vals &lt;-
+  gr_tidy |&gt;
+  dplyr::rename(NODE = name) |&gt;
+  dplyr::mutate(
+    DEGREE_CENT = tidygraph::centrality_degree(),
+    BTWN_CENT = tidygraph::centrality_betweenness(),
+    CLOSE_CENT = tidygraph::centrality_closeness()
+  ) |&gt;
+  kbl() |&gt;
+  kable_minimal()
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Centrality of our undirected graph (2/2)
+
+Now we can use convenient `tidyverse` functions and create a quick table of centrality values for each node.
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; NODE &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; DEGREE_CENT &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; BTWN_CENT &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; CLOSE_CENT &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1428571 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; B &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1250000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; C &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0909091 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; E &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1111111 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; D &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1250000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; F &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0769231 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Cliques (1/2)
+
+Cliques are subsets of vertices in an undirected graph whose induced subgraph is complete (has an edge density of 1). Cliques can help us identify tightly connected groups of people.
+
+How many cliques are in our network?
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-19-1.png" width="400" height="300" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo
+
+## Cliques (2/2)
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-20-1.png" width="400" height="400" style="float:left; padding-right:40px" style="display: block; margin: auto;" /&gt;
+
+
+```r
+# Size of the largest clique
+clique_num(d1)
+```
+
+```
+## [1] 3
+```
+
+```r
+# Number of cliques between size 2 and 3
+length(cliques(d1, min = 2, max = 3))
+```
+
+```
+## [1] 9
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Community detection
+
+Network communities are "hidden" subsets that exist within a network.  Through community detection methods, we can sometimes uncover interesting similarities between nodes that we wouldn't have otherwise noticed.  
+
+---
+class: left, middle, rstudio-logo
+
+## Louvain algorithm (1/2)
+
+One commonly used community detection algorithm is the Louvain algorithm, which partitions the graph into subsets of vertices by trying to maximize the *modularity* of the graph. Modularity measures how dense the connections are within subsets of vertices in a graph by comparing the density to that which would be expected by a random graph.  Modularity ranges from -0.5 to 1 and any positive value indicates the vertices inside the subgroups are more densely connected than would be expected by chance.
+
+
+
+
+```r
+# find Louvain communities
+communities &lt;- cluster_louvain(sf_gr)
+
+# assign as a vertex property
+V(sf_gr)$community &lt;- membership(communities)
+
+# How large are they?
+sizes(communities)
+```
+
+```
+## Community sizes
+##  1  2  3  4  5  6  7  8  9 10 
+## 39  3 40 37 26 20  8 29  3  3
+```
+
+---
+class: left, middle, rstudio-logo
+
+## Louvain algorithm (2/2)
+
+
+```r
+set.seed(123)
+ggraph(sf_gr, layout = "fr") +
+  geom_edge_link(color =  "grey") +
+  geom_node_point(aes(color = as.factor(community)),
+                  show.legend = FALSE) +
+  theme_void()
+```
+
+&lt;img src="6-graph_metrics_files/figure-html/unnamed-chunk-24-1.png" width="400" height="400" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity
+
+Homophily is the tendency for similar people to be connected to each other, i.e., "birds of a feather flock together". When people share common traits, it is sometimes easier to form relationships. Examples include
+
+- education
+- political beliefs
+- social class
+- hobbies
+- age
+- gender
+
+We can measure homophily in a network using assortativity.
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity for nominal data
+
+For undirected graphs:
+
+$$
+`\begin{equation}
+r = \frac{\sum_{i}e_{ii} - \sum_{i}a_i^2}{1-\sum_{i}a_i^2}
+\end{equation}`
+$$
+
+where:
+
+- `\(e_{ii}\)` is the fraction of edges between nodes node of type `\(i\)` to one of type `\(i\)`.
+- `\(a_i\)` is the fraction of each type of edge that is connected to a node of type `\(i\)`
+
+Assortativity ranges from -1 to 1, 1 meaning people only connect with people like them, 0 meaning people connect with all sorts of people equally, and -1 meaning people only connect with people unlike them.
+
+---
+class: left, middle, rstudio-logo
+
+## Example
+
+Suppose we want to understand if dog owners tend to be connected to other dog owners, and if non-dog owners tend to be connected to other non-dog owners.
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Dog &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; No dog &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; `\(a_i\)` &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Dog &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.34 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.54 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; No dog &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.26 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.46 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; `\(a_i\)` &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.54 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.46 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+$$
+`\begin{equation}
+r = \frac{(0.34+0.26)-(0.54^2+0.46^2)}{1-(0.54^2+0.46^2)} = 0.195
+\end{equation}`
+$$
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Assortativity for numeric data
+
+$$
+`\begin{equation}
+r = \frac{\sum_{xy}xy(e_{xy}-a_xb_y)}{\sigma_a\sigma_b}
+\end{equation}`
+$$
+
+where:
+
+- `\(e_{xy}\)` is the fraction of edges joining nodes with values `\(x\)` and `\(y\)`
+- `\(a_x\)` is the fraction of edges that start and end at nodes with values of `\(x\)`
+- `\(b_y\)` is the fraction of edges that start and end at nodes with values of `\(y\)`
+- `\(\sigma_a\)` is the standard deviation of the distribution of `\(a_x\)`
+- `\(\sigma_b\)` is the standard deviation of the distribution of `\(b_y\)`
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Using `igraph` to calculate assortativity
+
+Let's use the workfrance edgelist. Suppose we want to know if people tend to work with people in their same department.
+
+
+```r
+url &lt;- "https://ona-book.org/data/workfrance_edgelist.csv"
+workfrance_edgelist &lt;- read.csv(url)
+head(workfrance_edgelist)
+```
+
+```
+##   from  to mins
+## 1    3 159    8
+## 2    3 253   14
+## 3    3 447   17
+## 4    3 498   10
+## 5    3 694    7
+## 6    3 751    7
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Adding relevant feature
+
+We'll need to pull in department in order to add this to the graph we will be creating.
+
+
+```r
+url &lt;- "https://ona-book.org/data/workfrance_vertices.csv"
+workfrance_vertices &lt;- read.csv(url)
+head(workfrance_vertices)
+```
+
+```
+##    id dept
+## 1  89 DCAR
+## 2  97 DCAR
+## 3 118 DCAR
+## 4 220 DCAR
+## 5 378 DCAR
+## 6 656 DCAR
+```
+
+---
+class: left, middle, rstudio-logo, bigfont
+
+## Create graph and calculate assortativity
+
+
+```r
+gr &lt;- workfrance_edgelist[1:2] |&gt;
+  igraph::graph_from_data_frame(
+    directed = F,
+    vertices = workfrance_vertices
+  )
+
+assortativity_nominal(gr, factor(V(gr)$dept))
+```
+
+```
+## [1] 0.684411
+```
+
+---
+class: left, middle, rstudio-logo
+
+# &amp;#127857; Lunchtime!  &amp;#128523; 
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
