@@ -7,15 +7,6 @@ by Keith McNulty + Alex LoPilato + Liz Romero
 
 -----
 
-INSTRUCTIONS FOR INSTRUCTORS: Please insert information about your
-workshop below. Then, add workshop content in the materials folder and
-link to each session’s materials from the schedule below. You are
-welcomed to add more rows to the schedule. We just ask that you take
-breaks at the specified times. Once you are done adding information, you
-can remove these instructions from the README.
-
------
-
 :spiral_calendar: July 25 and 26, 2022  
 :alarm_clock:     09:00 - 17:00  
 :hotel:           \[ADD ROOM\]  
