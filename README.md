@@ -19,13 +19,13 @@ can remove these instructions from the README.
 :spiral_calendar: July 25 and 26, 2022  
 :alarm_clock:     09:00 - 17:00  
 :hotel:           \[ADD ROOM\]  
-:writing_hand:    [rstd.io/conf](http://rstd.io/conf)
+:writing_hand:    [rstd.io/peopleanalytics](http://rstd.io/peopleanalytics)
 
 -----
 
 ## Overview
 
-The course will cover some of the most commonly used methods of analysis and inference when working with data related to people, such as survey data and organizational network data. Among other things, you will learn about:
+The course will cover some of the most commonly used methods of analysis and inference when working with data related to people, such as performance data and organizational network data. Among other things, you will learn about:
 Typical analyses conducted on people data
 Common people-related data types 
 Common hypothesis testing methods
@@ -36,7 +36,11 @@ You will learn by working through code and data examples with instructors and fa
 
 ## Learning objectives
 
-[ADD AN ITEMIZED LIST OF LEARNING OBJECTIVES.]
+To be able to:
+* Understand basic principles of statistical inference and know how to conduct tests of difference in populations based on samples
+* Understand how to conduct and interpret a suite of explanatory modeling techniques which are used to analyze common outcome types in people analytics (continuous, binary, ordinal, time-dependent)
+* Understand how to construct, visualize and analyze organizational or people networks 
+* Use integrated data science documents to execute analyses and explain methods and results based on all the above.
 
 ## Is this course for me?
 
@@ -52,10 +56,9 @@ The course is ideal for someone who is likely to study quantitative social scien
 
 ## Prework
 
-\[ADD INFORMATION YOU WANT LEARNERS TO HAVE / STEPS THEY WANT THEM TO
-COMPLETE PRIOR TO THE WORKSHOP. THIS COULD BE A LINK TO A THREAD ON
-RSTUDIO COMMUNITY, PACKAGE INSTALL INSTRUCTIONS, HOW TO GET AN
-RSTUDIO.CLOUD ACCOUNT, ETC.\]
+* **Essential:**  Register for an RStudio Cloud account at https://rstudio.cloud
+* *Optional:* Obtain a github account at https://github.com to participate in Github discussions
+
 
 ## Schedule
 
