@@ -286,7 +286,7 @@ str(mixed_types_2)
 ```
 
 ```{r}
-# if you add an unknown factor to a factor vector
+# if you add an unknown element to a defined factor vector
 new_faculty <- c(faculty_factor, "George Clooney")
 str(new_faculty)
 ```
