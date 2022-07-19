@@ -320,9 +320,9 @@ class: left, middle, rstudio-logo
 
 Using a dataset on a network of dolphins, you will work through calculating various network metrics
 
-<link>
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 06-Graph_metrics**.
 
-Please work on exercise 1.
+Let's work on **Exercise 1**.
 
 ---
 class: left, middle, rstudio-logo
@@ -429,9 +429,9 @@ class: left, middle, rstudio-logo
 
 Using the same dolphin network dataset, you will work through calculating centrality measures.
 
-<link>
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 06-Graph_metrics**.
 
-Please work on exercise 2.
+Let's work on **Exercise 2**.
 
 
 ---
@@ -499,9 +499,9 @@ class: left, middle, rstudio-logo
 
 Using the dolphin network dataset, you will work through finding a plotting communities.
 
-<link>
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 06-Graph_metrics**.
 
-Please work on exercise 3.
+Let's work on **Exercise 3**.
 
 ---
 class: left, middle, rstudio-logo, bigfont
@@ -636,10 +636,9 @@ class: left, middle, rstudio-logo
 
 Using a dataset related to emails, we will work through calculating an assortativity example.
 
-<link>
+Go to our [RStudio Cloud workspace](https://rstudio.cloud/spaces/230780/join?access_code=7cXJKFU1KUuuZGLwBVQpLG3dIxPUD3jak3ZQmESh) and start **Assignment 06-Graph_metrics**.
 
-Please work on exercise 4.
-
+Let's work on **Exercise 4**.
 ---
 class: left, middle, rstudio-logo
 
