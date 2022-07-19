@@ -606,7 +606,69 @@ summary(simpler_model)$r.squared
 ---
 class: left, middle, rstudio-logo
 
-## Key watchouts
+## Assumption of normality of residuals
+
+Remember that our linear relationship represents the expected mean outcome over many observations of the input variables.  
+
+Individual observations will not precisely match this expected outcome, and so each observation is expected to have some error.  
+
+$$
+\begin{equation}
+y_i = \alpha + \beta_1x_{1i} + ... + \beta_px_{pi} + \epsilon_i
+\end{equation}
+$$
+
+These errors $\epsilon_i$ are known as **residuals**. 
+
+Linear regression assumes that **residuals are normally distributed with a mean of zero**.  This is a necessary assumption for the mathematics of the model to work.  If your data does not have 'normal-looking' residuals, linear regression may not be the best model to use.
+
+---
+class: left, middle, rstudio-logo
+
+## Assumption of normality of residuals (Visual representation)
+
+<center>
+```{r, echo = FALSE, out.height = 400, out.extra='style="float:left; padding:10px"'}
+library(peopleanalyticsdata)
+library(plotly)
+library(MASS)
+
+yr3.seq <- seq(50, 150, by = 10)
+
+test <- data.frame(
+  Yr3 = yr3.seq
+)
+
+model <- lm(Final ~ Yr3, ugtests)
+
+test$meanFinal <- predict(model, test)
+
+test_density <- test |> 
+  dplyr::group_by(Yr3) |> 
+  dplyr::mutate(
+    Value = list(rnorm(1000, mean = meanFinal, sd = summary(model)$sigma))
+  ) |> 
+  tidyr::unnest(Value)
+
+
+den3d <- kde2d(test_density$Yr3, test_density$Value)
+
+plot_ly(x=den3d$x, y=den3d$y, z=den3d$z) |> 
+  add_surface(showscale = FALSE) |> 
+  layout(scene = list(
+    xaxis = list(title = 'Year 3'), 
+    yaxis = list(title = 'Final'),
+    zaxis = list(title = 'Density', showticklabels = FALSE)
+  ))
+
+
+```
+</center>
+
+---
+class: left, middle, rstudio-logo
+
+## Other key watchouts
 
 The following complicating factors can render the results of a linear regression model untrustworthy.  It is advisable to check for these before interpreting your model:
 

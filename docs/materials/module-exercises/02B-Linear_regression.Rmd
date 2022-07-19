@@ -154,10 +154,10 @@ Write below your thoughts on whether any specific disciplines have a significant
 
 ```
 
-## EXTENSION Exercise 6 - Collinearity
+## EXTENSION Exercise 6 - Model diagnostics
 
 ```{r}
-# Determine if the two numerical input variables have a substantial correlation
+# Determine if the two numerical input variables have a significant correlation
 
 ```
 
@@ -167,3 +167,21 @@ Write below your thoughts on whether any specific disciplines have a significant
 
 
 ```
+
+
+```{r}
+# View a density plot of the Median salaries in the data set - what do you observe?
+
+```
+
+
+
+```{r}
+# use the qqnorm() function to determine how the residuals of your model 
+# compare to a normal distribution
+# comment on your observations
+# consider re-running your model to address any concerns you have
+
+
+```
+

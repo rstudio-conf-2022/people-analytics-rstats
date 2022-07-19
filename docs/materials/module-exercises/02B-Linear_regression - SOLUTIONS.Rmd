@@ -194,11 +194,11 @@ summary(model4)
 
 The $p$-value of the F-statistic is very small, indicating high confidence that the model is better than a null model.
 
-## EXTENSION Exercise 6 - Collinearity
+## EXTENSION Exercise 6 - Model diagnostics
 
 ```{r}
-# Determine if the two numerical input variables have a substantial correlation
-cor(graduates$Unemployment_rate, graduates$Total)
+# Determine if the two numerical input variables have a significant correlation
+cor.test(graduates$Unemployment_rate, graduates$Total)
 ```
 
 ```{r}
@@ -210,3 +210,53 @@ mctest::imcdiag(model3, method = "VIF")
 
 ```
 
+
+```{r}
+# View a density plot of the Median salaries in the data set - what do you observe?
+density(graduates$Median_salary) |> 
+  plot(main = "Median Salary Density")
+```
+
+The distribution appears to be somewhat left-skewed due to a tail of high median salaries.
+
+```{r}
+# use the qqnorm() function to determine how the residuals of your model 
+# compare to a normal distribution
+# comment on your observations
+# consider re-running your model to address any concerns you have
+
+qqnorm(model4$residuals)
+
+```
+
+Observations:
+* Linear regression assumes a normal distribution of residuals
+* Therefore we want this to be as close to a straight line as possible
+* Two high median salary outliers appear to be affecting this
+* We could consider removing these outliers to help build a more reliable model
+
+
+
+```{r}
+# remove highest two median salaries
+
+library(dplyr)
+adjusted_graduates <- graduates |> 
+  dplyr::arrange(Median_salary) |> 
+  head(nrow(graduates) - 2)
+
+# rerun model
+model5 <- lm(Median_salary ~ Unemployment_rate + Discipline, 
+             adjusted_graduates)
+
+# test residuals now
+qqnorm(model5$residuals)
+```
+Healthier looking residual distribution.
+
+```{r}
+# view results
+summary(model5)
+```
+
+Overall fit has improved, with similar significant variables, but some changes to coefficients.
