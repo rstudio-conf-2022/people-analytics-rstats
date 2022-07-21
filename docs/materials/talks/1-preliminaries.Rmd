@@ -39,7 +39,7 @@ class: left, middle, rstudio-logo
 
 Here are six facts.  Each one is true for exactly one and only one of your instructors or TAs.  Can you guess who?
 
-1.  First job was a piano teacher.
+1.  Once lived in Sydney, Australia.
 2.  Has a sewing room at home.
 3.  Once worked out in a gym with Justin Bieber.
 4.  Has a dog called Pepper.
