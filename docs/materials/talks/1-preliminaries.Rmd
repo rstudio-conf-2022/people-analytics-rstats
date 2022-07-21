@@ -39,11 +39,11 @@ class: left, middle, rstudio-logo
 
 Here are six facts.  Each one is true for exactly one and only one of your instructors or TAs.  Can you guess who?
 
-1.  Once lived in Holland.
+1.  Once lived in Sydney, Australia.
 2.  Has a sewing room at home.
-3.  Was a professional recorder player.
+3.  Once worked out in a gym with Justin Bieber.
 4.  Has a dog called Pepper.
-5.  Had a baby in the last 3 months.
+5.  Welcomed a baby in the last 3 months.
 6.  Recently moved from Georgia to Florida.
 
 ---
@@ -243,7 +243,7 @@ str(faculty)
 
 ```{r}
 # logical vector
-faculty_has_dog <- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+faculty_has_dog <- c(TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
 str(faculty_has_dog)
 ```
 
@@ -457,6 +457,19 @@ ggplot(ugtests, aes(x = Yr1, y = Final)) +
   geom_point(color = "blue") + 
   labs(x = "Year 1", y = "Final") + 
   theme_minimal()
+```
+
+---
+class: left, middle, rstudio-logo 
+
+## Pairplots
+
+Pairplots are very useful summary plots to understand univariate and bivariate patterns in data, and are often a useful precursor to modeling efforts.  It's important for data types to be well defined for pairplots to work effectively.
+
+```{r, out.height = "300", fig.align = "center"}
+library(GGally)
+
+GGally::ggpairs(ugtests)
 ```
 
 ---

@@ -130,6 +130,13 @@ url <- "https://peopleanalytics-regression-book.org/data/charity_donation.csv"
 
 ```
 
+```{r}
+# EXTENSION: Run a pairplot to see if you can identify interesting patterns
+# in the charity_data dataset.  Remember to consider the data types.
+
+
+```
+
 
 ## Exercise 6 - Documenting in R Markdown
 
