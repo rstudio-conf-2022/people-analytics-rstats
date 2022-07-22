@@ -47,6 +47,7 @@ perf <- read.csv(url)
 
 ```{r}
 # Take a look at the pairs plot. What do you notice?
+# Hint: Use GGally::ggpairs()
 
 ```
 
