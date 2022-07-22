@@ -67,7 +67,7 @@ perf <- read.csv(url)
 ```
 
 ```{r}
-# Add p-alues and odds rations, and view
+# Add p-values and odds ratios, and view
 # What do you notice?
 
 
@@ -92,7 +92,7 @@ Write a sentence on the results of this test.
 ```
 
 ```{r}
-# Add p-alues and odds rations, and view
+# Add p-values and odds ratios, and view
 # What do you notice?
 
 ```
