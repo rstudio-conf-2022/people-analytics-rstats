@@ -41,12 +41,6 @@ distances(dolphin_graph, weights = NULL)["Zig","Fork"]
 
 ```
 
-```{r}
-# How large is the network?
-vcount(dolphin_graph)
-ecount(dolphin_graph)
-```
-
 
 ```{r}
 # Is this a dense network?
@@ -78,7 +72,8 @@ length(cliques(dolphin_graph, min = 3, max = 5))
 ## Exercise 2 - Centrality measures
 
 ```{r}
-# Continuing with our same dolphin graph, which dolphin is an important connector?
+# Continuing with our same dolphin graph, let's calculate centrality metrics.
+# HINT: try using the tidygraph package
 cent <-
   dolphin_graph |>
   tidygraph::as_tbl_graph() |>
@@ -88,7 +83,7 @@ cent <-
     CLOSE_CENT = tidygraph::centrality_closeness()
   )
 
-# SN100 has highest between centrality
+#  Which dolphin is an important connector? (SN100)
 cent %>%
   dplyr::arrange(
     desc(BTWN_CENT)
@@ -100,7 +95,7 @@ cent %>%
     desc(DEGREE_CENT)
   )
 
-# Which dolphin has the most central? (SN100)
+# Which dolphin is the most central? (SN100)
 cent %>%
   dplyr::arrange(
     desc(CLOSE_CENT)
