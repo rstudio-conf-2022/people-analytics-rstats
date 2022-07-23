@@ -28,7 +28,7 @@ class: left, middle, rstudio-logo, bigfont
 
 
 ---
-class: left, middle, rstudio-logo, small
+class: left, middle, rstudio-logo
 
 ## Ideas for future learning
 
@@ -42,7 +42,7 @@ class: left, middle, rstudio-logo, small
 
 
 ---
-class: left, middle, rstudio-logo, small
+class: left, middle, rstudio-logo, bigfont
 
 ## Finally, feedback!
 
