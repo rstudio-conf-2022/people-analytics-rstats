@@ -9,7 +9,7 @@ by Keith McNulty + Alex LoPilato + Liz Romero
 
 :spiral_calendar: July 25 and 26, 2022  
 :alarm_clock:     09:00 - 17:00  
-:hotel:           Chesapeake E 
+:hotel:           Chesapeake E  
 :writing_hand:    [rstd.io/peopleanalytics](http://rstd.io/peopleanalytics)
 
 -----
