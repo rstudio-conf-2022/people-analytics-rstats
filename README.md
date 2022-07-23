@@ -38,9 +38,9 @@ To be able to:
 
 This course will be valuable to you if: 
  
-- You currently work or intend to work in a people-related discipline 
+- You currently work or intend to work in a people-related discipline. 
 
-- You have a basic working knowledge of R and RStudio, 
+- You have a basic working knowledge of R and RStudio. 
 
 - You are interested in learning applied statistical methods that are commonly used to understand and draw conclusions about the skills, behaviors and attitudes of people and groups.  
  
