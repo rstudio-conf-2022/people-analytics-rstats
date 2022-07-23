@@ -47,7 +47,8 @@ class: left, middle, rstudio-logo
 3.  **Lactation room options:**
   - National Harbor 9 (8am-5pm, Mon-Thurs)
   - Dedicated room behind hotel reception
-4.  [Code of Conduct and COVID policies](https://www.rstudio.com/conference/2022/2022-conf-code-of-conduct/).  Please review carefully.  In particular:
+4.  Participants who do not wish to be photographed have **red lanyards**, please note everyone's lanyard colors before taking a photo and respect their choices.
+5.  [Code of Conduct and COVID policies](https://www.rstudio.com/conference/2022/2022-conf-code-of-conduct/).  Please review carefully.  In particular:
   - You must wear a mask covering your all of your nose and mouth at all times in public spaces, including workshops.
   - You can report Code of Conduct violations in person, by email, or by phone. Please see the policy linked above for contact information.
 
