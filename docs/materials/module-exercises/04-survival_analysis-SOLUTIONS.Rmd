@@ -95,11 +95,73 @@ surv_object <- survival::Surv(
 
 ```{r}
 # Use survival::survfit() to estimate survival probabilities using the Kaplan Meier estimator for the entire sample
+# Save the survfit output into an object called km_all
+
 # How many months after hiring would you expect 50% of the sample to remain at the firm? (e.g. the median survival time)
 # How many months after hiring would you expect 75% of the sample to remain at the firm?
 
 km_all <- survival::survfit(surv_object ~ 1)
 summary(km_all)
+```
+
+```{r}
+# Look at the structure of km_all using str()
+str(km_all)
+```
+
+```{r}
+# Using km_all, create a new data frame called km_calc which contains the following variables from km_all:
+# time, n.risk, n.censor, n.event, and surv 
+
+km_calc <- 
+  tibble::tibble(
+    time = km_all$time,
+    n.risk = km_all$n.risk,
+    n.censor = km_all$n.censor,
+    n.event = km_all$n.event,
+    survival = km_all$surv
+  )
+
+```
+
+```{r}
+# Using km_calc, determine the following:
+# How many turnovers occurred in the dataset?
+sum(km_calc$n.event)
+
+# How many censored observations are in the dataset?
+sum(km_calc$n.censor)
+
+# At what time point do the first censored observations appear? 
+min(which(km_calc$n.censor != 0))
+
+# Subtract n.risk at time point 2 from n.risk at time point 1.
+km_calc$n.risk[1] - km_calc$n.risk[2]
+# Why did n.risk decrease from time point 1 to time point 2?
+# n.risk at time point 2 = n.risk at time point 1 - n.events at time point 1 - n.censor at time point 1
+
+# Subtract n.risk at time point 56 from time point 55.
+km_calc$n.risk[55] - km_calc$n.risk[56] 
+# Why did n.risk decrease from time point 55 to time point 56?
+# n.risk at time point 56 = n.risk at time point 55 - n.events at time point 55 - n.censor at time point 55
+
+
+```
+
+
+```{r}
+# The formula to calculate the survival probabilities using the KM estimator is: 
+# survival(t - 1) * (1 - (n.event[t] / n.risk[t])) 
+# That is, the survival probability at time t is equal to the survival probability at time t-1 multiplied by 1 - (number of events at 
+# time t / number of individuals at risk at time t).
+
+# Using the formula above, manual calculate the survival probabilities and save them as variable in km_calc as surv_calc. Take a moment to think about how censored observations are used in the calculation as well.
+km_calc <- 
+  km_calc |>
+  dplyr::mutate(
+    surv_calc_1 = (1 - n.event / n.risk),
+    surv_calc = cumprod(surv_calc_1)
+  )
 ```
 
 Median: 47 months
@@ -129,25 +191,58 @@ Median: 44 months
 survminer::ggsurvplot(km_ref)
 ```
 
+```{r}
+# Using the survfit function, estimate the survival probabilities for the interaction between REFERRAL and NUMBER_JOBS variables in 
+# surv_data. Then plot the survival curve using ggsurvplot and provide an interpretation of the curves. Does their appear to be an
+# interaction?
+# 
+# HINT: You don't need to create a new variable!  
+
+km_ref_job <- survival::survfit(surv_object ~ REFERRAL + NUMBER_JOBS, data = surv_data)
+survminer::ggsurvplot(km_ref_job)
+```
+
 ## Exercise 3 - Fit a cox proportional hazards model to your data. 
 
 ```{r}
-# Estimate a cox proportional hazards model. Decide what predictors should be included. 
-mod <- survival::coxph(
-  surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
-    INTPER_RATE + PRIOR_EXP + HIRE_REC,
+# Estimate a cox proportional hazards model. Include all of the main effects and the interactions between INTPER_RATE and PROG_EXER_RATE as well as HIRE_REC and REFERRAL. 
+
+# HINT: An interaction variable is created by multiplying Variable 1 with Variable 2 (Variable 1 * Variable 2).
+
+mod_1 <- survival::coxph(
+  surv_object ~ NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC*REFERRAL + INTPER_RATE*PROG_EXER_RATE,
   data = surv_data
 )
 ```
 
 ```{r}
 # View the coefficient estimates and standard errors of the model
-summary(mod)
+summary(mod_1)
 ```
 
 ```{r}
-# Test the proportional hazard assumption and determine if any variables violate it. If they do decide if you should drop them from the model.
-survival::cox.zph(mod)
+# Estimate a cox proportional hazards model that only includes the main effects (no interactions).
+mod_2 <- survival::coxph(
+  surv_object ~ NUMBER_JOBS + PROG_EXER_RATE + 
+    INTPER_RATE + PRIOR_EXP + HIRE_REC + REFERRAL,
+  data = surv_data
+)
+```
+
+```{r}
+# View the coefficient estimates and standard errors for the main effects model. 
+summary(mod_2)
+```
+
+```{r}
+# Compare the model you fit above to a model that only includes the main effects (no interactions). Use the anova() function to determine if the model with interactions fits your data significantly better than the model with main effects only. If you are unsure of how to use the anova() function, then view the help documentation on it ?anova.coxph or exercise solutions.  
+anova(mod_1, mod_2)
+```
+
+```{r}
+# Based on the model comparison above, decide if you should choose the more complicated interaction model or the less complicated main effects model. Using the model you decided on, test the proportional hazard assumption and determine if any variables violate it. If they do decide if you should drop them from the model.
+survival::cox.zph(mod_2)
 
 mod <- survival::coxph(
   surv_object ~ REFERRAL + NUMBER_JOBS + PROG_EXER_RATE + 
@@ -193,6 +288,7 @@ new_data <- data.frame(REFERRAL = c("No", "Yes"),
 # With your new data frame and your estimated Cox regression model, use the function: survival::survfit() to create predicted survival probabilities from your model and new data frame. 
 # Using summary(), explore these new probabilities. 
 predicted_surv_prob <- survival::survfit(mod, newdata = new_data)
+summary(predicted_surv_prob)
 ```
 
 ```{r}
