@@ -137,6 +137,20 @@ ggplot(data = charity_data, aes(x = gender, y = total_donations)) +
 
 ```
 
+```{r}
+# EXTENSION: Run a pairplot to see if you can identify interesting patterns
+# in the charity_data dataset.  Remember to consider the data types.
+library(GGally)
+
+charity_data <- charity_data |> 
+  dplyr::mutate(
+    across(c("recent_donation", "gender", "reside"), as.factor)
+  )
+
+GGally::ggpairs(charity_data)
+```
+
+
 ## Exercise 6 - Documenting in R Markdown
 
 ```{r}

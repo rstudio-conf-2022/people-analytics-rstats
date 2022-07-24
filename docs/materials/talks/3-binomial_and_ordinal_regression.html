@@ -25,10 +25,11 @@ class: center, middle, inverse, title-slide
 
 ---
 
+class: left, middle, rstudio-logo, bigfont
+
   
 
 
-class: left, middle, rstudio-logo, bigfont
 
 ## Aim of this module
 
@@ -39,9 +40,12 @@ class: left, middle, rstudio-logo, bigfont
 ---
 class: left, middle, rstudio-logo
 
-## Reminder on model types
+# Binomial logistic regression modeling
 
-Next up, we'll focus on how to model data with a binary outcome variable.
+---
+class: left, middle, rstudio-logo
+
+## Binary outcome variable
 
 &lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
@@ -73,11 +77,6 @@ Next up, we'll focus on how to model data with a binary outcome variable.
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-
----
-class: left, middle, rstudio-logo
-
-# Binomial logistic regression modeling
 
 ---
 class: left, middle, rstudio-logo
@@ -171,7 +170,7 @@ This dataset is from an experiment run by Columbia University students in New Yo
 
 ```r
 # get data
-url &lt;- "https://raw.githubusercontent.com/keithmcnulty/speed_dating/master/speed_data_data.csv"
+url &lt;- "https://peopleanalytics-regression-book.org/data/speed_dating.csv"
 speed_dating &lt;- read.csv(url)
 
 # select only some elements for this training
@@ -201,9 +200,30 @@ The individuals were given a series of surveys to complete as part of the experi
 * `gender` is the gender of the individual: female is 0 and male is 1
 * `goal` is a categorical variable with a code for different goals of the individual in attending (eg 'seemed like a fun night out', or 'looking for a serious relationship').
 
-In this example we are going to look purely at the speed date level and not consider the fact that several speed dates may involve the same individual.  We will add in that element in a future session when we look at *mixed models*.
+In this example we are going to look purely at the speed date level and not consider the fact that several speed dates may involve the same individual.  We have 8,378 rows of data.
 
 We are aiming to model the decision `dec` against the ratings `attr`, `intel` and `prob`.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Get to know the dataset
+
+It is important to spend a little bit of time exploring your data to understand anything that you should consider when building your model.  Are there a lot of NA values?  Are variables too highly correlated?
+
+
+```r
+colSums(is.na(speed_dating))
+```
+
+```
+## gender   goal    dec   attr  intel   prob 
+##      0     79      0    202    296    309
+```
+
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
 
 ---
 
@@ -294,7 +314,7 @@ class: left, middle, rstudio-logo
 
 Increases in odds have a diminishing effect on probability as the original probability increases.  So it is important to know the difference between the two.  Here is a graph showing the impact of a 10% increase in odds on the probability of an event, depending on the original probability.
 
-&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -460,7 +480,7 @@ class: left, middle, rstudio-logo
 
 The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is the same for all category cutoffs.
 
-&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---

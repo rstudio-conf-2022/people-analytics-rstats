@@ -37,11 +37,6 @@ dolphin_edgelist <- read.csv(url)
 
 ```
 
-```{r}
-# How large is the network?
-
-```
-
 
 ```{r}
 # Is this a dense network?
@@ -73,20 +68,21 @@ dolphin_edgelist <- read.csv(url)
 ## Exercise 2 - Centrality measures
 
 ```{r}
-# Continuing with our same dolphin graph, which dolphin is an important connector?
+# Continuing with our same dolphin graph, let's calculate centrality metrics.
+# HINT: try using the tidygraph package
 
-# SN100 has highest between centrality
-
+# Which dolphin is an important connector?
 
 # Which dolphin has the most connections? 
 
-# Which dolphin has the most central? 
+# Which dolphin is the most central? 
 
 
 ```
 
 ```{r}
 # plot the dolphin graph and locate our highly central dolphins to see if these results make intuitive sense
+# HINT: create a node property to help you identify the dolphins of interest in a plot
 
 
 ```

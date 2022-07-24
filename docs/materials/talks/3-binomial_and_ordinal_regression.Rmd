@@ -10,6 +10,8 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+class: left, middle, rstudio-logo, bigfont
+
   
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
@@ -18,7 +20,6 @@ library(ggplot2)
 library(MASS)
 ```
 
-class: left, middle, rstudio-logo, bigfont
 
 ## Aim of this module
 
@@ -29,9 +30,12 @@ class: left, middle, rstudio-logo, bigfont
 ---
 class: left, middle, rstudio-logo
 
-## Reminder on model types
+# Binomial logistic regression modeling
 
-Next up, we'll focus on how to model data with a binary outcome variable.
+---
+class: left, middle, rstudio-logo
+
+## Binary outcome variable
 
 ```{r, echo = FALSE}
 library(kableExtra)
@@ -57,11 +61,6 @@ kbl(d) |>
   kable_minimal() |> 
   row_spec(2, background = "lightblue")
 ```
-
----
-class: left, middle, rstudio-logo
-
-# Binomial logistic regression modeling
 
 ---
 class: left, middle, rstudio-logo
@@ -189,7 +188,7 @@ This dataset is from an experiment run by Columbia University students in New Yo
 
 ```{r}
 # get data
-url <- "https://raw.githubusercontent.com/keithmcnulty/speed_dating/master/speed_data_data.csv"
+url <- "https://peopleanalytics-regression-book.org/data/speed_dating.csv"
 speed_dating <- read.csv(url)
 
 # select only some elements for this training
@@ -209,9 +208,26 @@ The individuals were given a series of surveys to complete as part of the experi
 * `gender` is the gender of the individual: female is 0 and male is 1
 * `goal` is a categorical variable with a code for different goals of the individual in attending (eg 'seemed like a fun night out', or 'looking for a serious relationship').
 
-In this example we are going to look purely at the speed date level and not consider the fact that several speed dates may involve the same individual.  We will add in that element in a future session when we look at *mixed models*.
+In this example we are going to look purely at the speed date level and not consider the fact that several speed dates may involve the same individual.  We have 8,378 rows of data.
 
 We are aiming to model the decision `dec` against the ratings `attr`, `intel` and `prob`.
+
+---
+
+class: left, middle, rstudio-logo
+
+## Get to know the dataset
+
+It is important to spend a little bit of time exploring your data to understand anything that you should consider when building your model.  Are there a lot of NA values?  Are variables too highly correlated?
+
+```{r}
+colSums(is.na(speed_dating))
+```
+
+```{r, fig.height = 4, echo = FALSE, fig.align = "center"}
+GGally::ggpairs(speed_dating)
+```
+
 
 ---
 

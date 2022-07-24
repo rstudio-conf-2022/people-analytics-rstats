@@ -22,6 +22,17 @@ class: center, middle, inverse, title-slide
 
 class: left, middle, rstudio-logo, bigfont
 
+## First things first
+
+* WiFi: `conf22`
+* WiFi Password: `together!`
+* Did you register for an RStudio Cloud account? https://rstudio.cloud
+* Our starting point: https://rstd.io/peopleanalytics
+
+
+---
+class: left, middle, rstudio-logo, bigfont
+
 ## Good morning and welcome!
 
 What we hope you can say at the end of this 2-day workshop: 
@@ -30,11 +41,26 @@ What we hope you can say at the end of this 2-day workshop:
 &amp;#127881; You've had fun  
 &amp;#128075; You've met some interesting people who work on similar things to you
 
+---
+class: left, middle, rstudio-logo 
+
+## Important information
+
+1.  **Gender-neutral bathrooms:** river side of the Potomac Ballroom
+2.  **Meditation room:**  Potomac Dressing Room (8am-5pm, Mon-Thurs)
+3.  **Lactation room options:**
+  - National Harbor 9 (8am-5pm, Mon-Thurs)
+  - Dedicated room behind hotel reception
+4.  Participants who do not wish to be photographed have **red lanyards**, please note everyone's lanyard colors before taking a photo and respect their choices.
+5.  [Code of Conduct and COVID policies](https://www.rstudio.com/conference/2022/2022-conf-code-of-conduct/).  Please review carefully.  In particular:
+  - You must wear a mask covering your all of your nose and mouth at all times in public spaces, including workshops.
+  - You can report Code of Conduct violations in person, by email, or by phone. Please see the policy linked above for contact information.
 
 ---
 class: left, middle, rstudio-logo 
 
 # About this workshop
+
 
 ---
 class: left, middle, rstudio-logo 
@@ -43,11 +69,11 @@ class: left, middle, rstudio-logo
 
 Here are six facts.  Each one is true for exactly one and only one of your instructors or TAs.  Can you guess who?
 
-1.  Once lived in Holland.
+1.  Once lived in Sydney, Australia.
 2.  Has a sewing room at home.
-3.  Was a professional recorder player.
+3.  Once worked out in a gym with Justin Bieber.
 4.  Has a dog called Pepper.
-5.  Had a baby in the last 3 months.
+5.  Welcomed a baby in the last 3 months.
 6.  Recently moved from Georgia to Florida.
 
 ---
@@ -171,7 +197,7 @@ class: left, middle, rstudio-logo, reallybigfont
 ---
 class: left, middle, rstudio-logo, reallybigfont 
 
-## How to get help on exercises/assignments
+## How to get help
 
 &lt;table&gt;
   &lt;tr&gt;
@@ -278,12 +304,12 @@ str(faculty)
 
 ```r
 # logical vector
-faculty_has_dog &lt;- c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+faculty_has_dog &lt;- c(TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
 str(faculty_has_dog)
 ```
 
 ```
-##  logi [1:6] FALSE FALSE FALSE TRUE TRUE TRUE
+##  logi [1:6] TRUE FALSE TRUE TRUE TRUE TRUE
 ```
 
 ---
@@ -346,7 +372,7 @@ str(mixed_types_2)
 
 
 ```r
-# if you add an unknown factor to a factor vector
+# if you add an unknown element to a defined factor vector
 new_faculty &lt;- c(faculty_factor, "George Clooney")
 str(new_faculty)
 ```
@@ -428,9 +454,9 @@ Dataframes are named lists of vectors of the same length.  They are the most pop
 
 ```
 ##   faculty has_dog
-## 1    Alex   FALSE
+## 1    Alex    TRUE
 ## 2   Jiena   FALSE
-## 3  Jordan   FALSE
+## 3  Jordan    TRUE
 ## 4   Keith    TRUE
 ## 5     Liz    TRUE
 ## 6  Rachel    TRUE
@@ -443,7 +469,7 @@ str(faculty_info)
 ```
 ## 'data.frame':	6 obs. of  2 variables:
 ##  $ faculty: Factor w/ 6 levels "Alex","Jiena",..: 1 2 3 4 5 6
-##  $ has_dog: logi  FALSE FALSE FALSE TRUE TRUE TRUE
+##  $ has_dog: logi  TRUE FALSE TRUE TRUE TRUE TRUE
 ```
 
 ---
@@ -601,6 +627,22 @@ ggplot(ugtests, aes(x = Yr1, y = Final)) +
 ```
 
 &lt;img src="1-preliminaries_files/figure-html/unnamed-chunk-22-1.png" height="300" style="display: block; margin: auto;" /&gt;
+
+---
+class: left, middle, rstudio-logo 
+
+## Pairplots
+
+Pairplots are very useful summary plots to understand univariate and bivariate patterns in data, and are often a useful precursor to modeling efforts.  It's important for data types to be well defined for pairplots to work effectively.
+
+
+```r
+library(GGally)
+
+GGally::ggpairs(ugtests)
+```
+
+&lt;img src="1-preliminaries_files/figure-html/unnamed-chunk-23-1.png" height="300" style="display: block; margin: auto;" /&gt;
 
 ---
 class: left, middle, rstudio-logo 

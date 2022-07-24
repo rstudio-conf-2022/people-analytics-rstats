@@ -77,7 +77,7 @@ summary(model)$coefficients
 ```
 
 ```{r}
-# Add p-alues and odds rations, and view
+# Add p-values and odds ratios, and view
 # What do you notice?
 coefficients <- summary(model)$coefficients
 # calculate p-values
@@ -116,7 +116,7 @@ summary(model2)
 ```
 
 ```{r}
-# Add p-alues and odds rations, and view
+# Add p-values and odds ratios, and view
 # What do you notice?
 coefficients <- summary(model2)$coefficients
 # calculate p-values

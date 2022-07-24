@@ -9,7 +9,7 @@ by Keith McNulty + Alex LoPilato + Liz Romero
 
 :spiral_calendar: July 25 and 26, 2022  
 :alarm_clock:     09:00 - 17:00  
-:hotel:           \[ADD ROOM\]  
+:hotel:           Chesapeake E  
 :writing_hand:    [rstd.io/peopleanalytics](http://rstd.io/peopleanalytics)
 
 -----
@@ -38,9 +38,9 @@ To be able to:
 
 This course will be valuable to you if: 
  
-- You currently work or intend to work in a people-related discipline 
+- You currently work or intend to work in a people-related discipline. 
 
-- You have a basic working knowledge of R and RStudio, 
+- You have a basic working knowledge of R and RStudio. 
 
 - You are interested in learning applied statistical methods that are commonly used to understand and draw conclusions about the skills, behaviors and attitudes of people and groups.  
  
@@ -93,8 +93,8 @@ The course is ideal for someone who is likely to study quantitative social scien
 |               | - Option A - [US Grocery Chain Procurement Staff Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7A-Project_US_Grocery_Purchasing_Network.html#1) | |
 |               | - Option B - [US Senate Twitter Interaction Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7B-Project_US_Senate_Twitter_Network.html#1) | |
 | 15:00 - 15:30 | *Coffee break*   | |
-| 15:30 - 17:00 | Hands-on Project II        | |
-|               | [Grocery Performance Evaluations](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/8-Project_Grocery_Evaluations.html#1) | |
+| 15:30 - 16:45 | Hands-on Project II - [Grocery Performance Evaluations](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/8-Project_Grocery_Evaluations.html#1)        | |
+| 16:45 - 17:00 | [Wrap-up](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/9-Wrapping_up.html)        | |
 
 ## Instructors
 

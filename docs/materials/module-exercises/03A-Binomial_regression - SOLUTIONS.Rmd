@@ -60,6 +60,7 @@ recruiting$int3 <- ordered(recruiting$int3,
 ```{r}
 # get to the know the data a bit.  what is the split of hired/not hired,
 # do you notice differences between the interviewers, etc
+# Hint: summary(), GGally::ggpairs() are good first steps
 summary(recruiting)
 GGally::ggpairs(recruiting)
 ```
