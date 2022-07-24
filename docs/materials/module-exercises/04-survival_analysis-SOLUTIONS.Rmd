@@ -100,7 +100,7 @@ surv_object <- survival::Surv(
 # How many months after hiring would you expect 50% of the sample to remain at the firm? (e.g. the median survival time)
 # How many months after hiring would you expect 75% of the sample to remain at the firm?
 
-km_all <- survival::survfit(surv_object ~ 1)
+km_all <- survival::survfit(surv_object ~ 1, data = surv_data)
 summary(km_all)
 ```
 
@@ -168,7 +168,7 @@ Median: 47 months
 75: 24 months
 ```{r}
 # Use survminer::ggsurvplot() to plot the overall survival function.
-survminer::ggsurvplot(km_all)
+survminer::ggsurvplot(fit = km_all)
 ```
 
 ```{r}
