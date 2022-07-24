@@ -13,15 +13,9 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-.title[
 # Explanatory Methods II
-]
-.subtitle[
 ## Binomial Logistic Regression and Ordinal Regression
-]
-.author[
 ### <b>rstudio::</b>conf(2022)
-]
 
 ---
 
@@ -61,7 +55,7 @@ class: left, middle, rstudio-logo
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Binary scale (Yes/No) &lt;/td&gt;
-   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Binary logistic regression &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: lightblue !important;"&gt; Binomial logistic regression &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; Nominal category scale (eg A, B, C) &lt;/td&gt;
@@ -165,7 +159,7 @@ class: left, middle, rstudio-logo
 
 ## The speed dating dataset
 
-This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this dataset only includes participants who identify as Male and Female and partners were formed only as Male-Female pairings.
+This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this experiment only included participants who identified as Male or Female and partners were formed only as Male-Female pairings.
 
 
 ```r
@@ -441,7 +435,7 @@ Ordinal data is a type of categorical data that is both discrete and ordered, e.
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; Binary scale (Yes/No) &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; Binary logistic regression &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binomial logistic regression &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; Nominal category scale (eg A, B, C) &lt;/td&gt;
@@ -478,7 +472,7 @@ class: left, middle, rstudio-logo
 
 ## Proportional Odds Assumption
 
-The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is the same for all category cutoffs.
+The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is approximately the same for all category cutoffs.
 
 &lt;img src="3-binomial_and_ordinal_regression_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
@@ -550,11 +544,11 @@ str(managers)
 
 class: left, middle, rstudio-logo
 
-## Convert to logical datatypes
+## Convert to factor datatypes
 
 
 ```r
-# performance is ordinal
+# performance is ordered factor
 managers$performance_group &lt;- ordered(managers$performance_group,
                                       levels = c("Bottom","Middle","Top"))
 # a Y/N flag is a binary factor
@@ -666,7 +660,7 @@ We interpret our coefficients similarly to how we interpret in a binary model.
 class: left, middle, rstudio-logo
 
 ## Diagnostics
-We can use Psuedo `\(R^2\)`, just like with our binary model to assess model fit.
+We can use Pseudo `\(R^2\)`, just like with our binary model to assess model fit.
 
 ```r
 DescTools::PseudoR2(
@@ -710,9 +704,9 @@ Please work on  **Exercises 1-3**.
 
 class: left, middle, rstudio-logo
 
-# Verifying the proportional odds assumption
+## Verifying the proportional odds assumption
 
-Make two binary models...
+Make two binomial models...
 
 
 ```r
@@ -738,7 +732,7 @@ high_mod &lt;- glm(
 
 class: left, middle, rstudio-logo
 
-# Verifying the proportional odds assumption
+## Verifying the proportional odds assumption
 
 ...and compare the model results.  Using our best judgement, "small" differences mean we can feel confident that the proportional odds assumption has been met.
 
@@ -754,19 +748,19 @@ class: left, middle, rstudio-logo
 ```
 ##                middlehigh          high         diff
 ## (Intercept)    3.30025975 -2.656607e+01 -29.86632828
-## test_score     0.00415042 -7.963046e-17  -0.00415042
-## group_size     0.07844190 -4.340105e-15  -0.07844190
-## yrs_employed  -0.84044257  4.898815e-15   0.84044257
-## concern_flagY -0.31164157 -2.224531e-14   0.31164157
+## test_score     0.00415042 -1.109849e-16  -0.00415042
+## group_size     0.07844190 -5.306566e-15  -0.07844190
+## yrs_employed  -0.84044257  8.571284e-15   0.84044257
+## concern_flagY -0.31164157 -2.545811e-14   0.31164157
 ```
 
 ---
 
 class: left, middle, rstudio-logo
 
-# Verifying proportional odds assumption, method 2
+## Verifying proportional odds assumption, method 2
 
-Another option is to use the Brant-Wald test, which compares the proportional odds model to an approximated generalized ordinal logistic regression model using a chi-squared test. A low p-value can indicate that the coefficinet does not satisfy the proportional odds assumption.
+Another option is to use the Brant-Wald test, which compares the proportional odds model to an approximated generalized ordinal logistic regression model using a chi-squared test. A low p-value can indicate that the coefficient does not satisfy the proportional odds assumption.
 
 
 ```r
@@ -852,19 +846,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
-// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
-// screen reader (see PR #262)
-(function(d) {
-  let res = {};
-  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
-    const t = tr.querySelector('td:nth-child(2)').innerText;
-    tr.querySelectorAll('td:first-child .key').forEach(key => {
-      const k = key.innerText;
-      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
-    });
-  });
-  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
-})(document);
 (function() {
   "use strict"
   // Replace <script> tags in slides area to make them executable

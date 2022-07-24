@@ -50,7 +50,7 @@ d <- data.frame(
   ),
   Model = c(
     "Linear regression",
-    "Binary logistic regression",
+    "Binomial logistic regression",
     "Multinomial logistic regression",
     "Ordinal logistic regression",
     "Survival/proportional hazard regression"
@@ -184,7 +184,7 @@ class: left, middle, rstudio-logo
 
 ## The speed dating dataset
 
-This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this dataset only includes participants who identify as Male and Female and partners were formed only as Male-Female pairings.
+This dataset is from an experiment run by Columbia University students in New York, where they collected information from speed dating sessions.  Note: this experiment only included participants who identified as Male or Female and partners were formed only as Male-Female pairings.
 
 ```{r}
 # get data
@@ -407,7 +407,7 @@ d <- data.frame(
   ),
   Model = c(
     "Linear regression",
-    "Binary logistic regression",
+    "Binomial logistic regression",
     "Multinomial logistic regression",
     "Ordinal logistic regression",
     "Survival/proportional hazard regression"
@@ -439,7 +439,7 @@ class: left, middle, rstudio-logo
 
 ## Proportional Odds Assumption
 
-The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is the same for all category cutoffs.
+The proportional odds assumption states that no input variable has a disproportionate effect on a specific level of the outcome variable.  This means that the slope of the logistic function is approximately the same for all category cutoffs.
 
 ```{r, echo = FALSE, fig.height = 4, fig.align = "center"}
 p1 <- 
@@ -512,10 +512,10 @@ str(managers)
 
 class: left, middle, rstudio-logo
 
-## Convert to logical datatypes
+## Convert to factor datatypes
 
 ```{r}
-# performance is ordinal
+# performance is ordered factor
 managers$performance_group <- ordered(managers$performance_group,
                                       levels = c("Bottom","Middle","Top"))
 # a Y/N flag is a binary factor
@@ -587,7 +587,7 @@ odds_ratio <- exp(coefficients[ ,"Value"])
 class: left, middle, rstudio-logo
 
 ## Diagnostics
-We can use Psuedo $R^2$, just like with our binary model to assess model fit.
+We can use Pseudo $R^2$, just like with our binary model to assess model fit.
 ```{r}
 DescTools::PseudoR2(
   manager_mod, 
@@ -616,9 +616,9 @@ Please work on  **Exercises 1-3**.
 
 class: left, middle, rstudio-logo
 
-# Verifying the proportional odds assumption
+## Verifying the proportional odds assumption
 
-Make two binary models...
+Make two binomial models...
 
 ```{r}
 # convert performance group into 2 binary variables
@@ -643,7 +643,7 @@ high_mod <- glm(
 
 class: left, middle, rstudio-logo
 
-# Verifying the proportional odds assumption
+## Verifying the proportional odds assumption
 
 ...and compare the model results.  Using our best judgement, "small" differences mean we can feel confident that the proportional odds assumption has been met.
 ```{r}
@@ -659,9 +659,9 @@ class: left, middle, rstudio-logo
 
 class: left, middle, rstudio-logo
 
-# Verifying proportional odds assumption, method 2
+## Verifying proportional odds assumption, method 2
 
-Another option is to use the Brant-Wald test, which compares the proportional odds model to an approximated generalized ordinal logistic regression model using a chi-squared test. A low p-value can indicate that the coefficinet does not satisfy the proportional odds assumption.
+Another option is to use the Brant-Wald test, which compares the proportional odds model to an approximated generalized ordinal logistic regression model using a chi-squared test. A low p-value can indicate that the coefficient does not satisfy the proportional odds assumption.
 
 ```{r}
 library(brant)
