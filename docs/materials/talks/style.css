@@ -366,12 +366,12 @@ midd-blockquote {
   clear: both;
 }
 
-.red {
-  background-color: red;
+.pink {
+  background-color: #ffc0cb;
 }
 
-.green {
-  background-color: green;
+.lightblue {
+  background-color: #add8e6;
 }
 
 .blue {

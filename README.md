@@ -66,7 +66,7 @@ The course is ideal for someone who is likely to study quantitative social scien
 |               | - Statistical inference and hypothesis testing   | |
 |               | - Linear regression | |
 | 12:30 - 13:30 | *Lunch break*    | |
-| 13:30 - 15:00 | [Explanatory Methods II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/3-binomial_and_ordinal_regression.html) | Liz Romero |
+| 13:30 - 15:00 | [Explanatory Methods II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/3-binomial_and_ordinal_regression.html) | Jordan Sparks |
 |               | - Binomial logistic regression | |
 |               | - Ordinal regression | |
 | 15:00 - 15:30 | *Coffee break*   | |
@@ -83,18 +83,18 @@ The course is ideal for someone who is likely to study quantitative social scien
 |               | - Working with graphs in R  | |
 |               | - Visualizing graphs in R | |
 | 10:30 - 11:00 | *Coffee break*   | |
-| 11:00 - 12:30 | [Network Analysis II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/6-graph_metrics.html)       | Liz Romero/Alex Lo Pilato |
+| 11:00 - 12:30 | [Network Analysis II](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/6-graph_metrics.html)       | Rachel Ramsay |
 |               | - Paths and distance  | |
 |               | - Vertex importance and centrality | |
 |               | - Community detection  | |
 |               | - Assortativity and Similarity | |
 | 12:30 - 13:30 | *Lunch break*    | |
-| 13:30 - 15:00 | Hands-on Project I | |
+| 13:30 - 15:00 | Hands-on Project I | Jiena McLellan |
 |               | - Option A - [US Grocery Chain Procurement Staff Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7A-Project_US_Grocery_Purchasing_Network.html#1) | |
 |               | - Option B - [US Senate Twitter Interaction Network](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/7B-Project_US_Senate_Twitter_Network.html#1) | |
 | 15:00 - 15:30 | *Coffee break*   | |
-| 15:30 - 16:45 | Hands-on Project II - [Grocery Performance Evaluations](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/8-Project_Grocery_Evaluations.html#1)        | |
-| 16:45 - 17:00 | [Wrap-up](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/9-Wrapping_up.html)        | |
+| 15:30 - 16:45 | Hands-on Project II - [Grocery Performance Evaluations](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/8-Project_Grocery_Evaluations.html#1)        | Jiena McLellan |
+| 16:45 - 17:00 | [Wrap-up](https://rstudio-conf-2022.github.io/people-analytics-rstats/materials/talks/9-Wrapping_up.html) | Keith McNulty |
 
 ## Instructors
 

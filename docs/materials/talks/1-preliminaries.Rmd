@@ -197,11 +197,11 @@ class: left, middle, rstudio-logo, reallybigfont
 
 <table>
   <tr>
-    <td class='box green'></td>
+    <td class='box lightblue'></td>
     <td valign="middle">&#129395; I'm finished - all good!</td>
   </tr>
   <tr>
-    <td class='box red'></td>
+    <td class='box pink'></td>
     <td valign="middle">&#128533; I could use some help!</td>
   </tr>
 </table>
