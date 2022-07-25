@@ -158,20 +158,22 @@ class: left, middle, rstudio-logo
 
 ## What is censoring?
 
-Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly. 
+Censoring occurs when we have some information about an individuals event time, but we do not know the time exactly.   
 
 There are two types of censoring: 
   - Right Censoring occurs when an individual's true event time is greater than their observed time.
   - Left Censoring occurs when an individual's true event time is less than their observed time. 
+
+All of the models we will talk about today assume independent censoring, which means censored data are no different than non-censored data conditional on a set of covariates. 
 
 ---
 class: left, middle, rstudio-logo
 
 ## Do we have censored data?
 
-  - We have employees in our data who have not yet left the company. 
+We have employees in our data who have not yet left the company. 
 
-  - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be greater than their observed time or <b>right censoring</b>.
+This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be greater than their observed time or <b>right censoring</b>.
 
 ---
 class: left, middle, rstudio-logo
@@ -607,9 +609,10 @@ Mixed-Effect Regression (MER) models as a more flexible class of generalized lin
 
 The advantage they have over GLMs (both simple and multiple) is that they allow you to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
 
-Common designs that lead to dependent residuals: 
-  - Clustered Data
-  - Crossed Data
+Common designs in People Analytics that can lead to dependent residuals: 
+  - Employees clustered in offices
+  - Employees clustered in work groups / teams
+  - Employees clustered in a performance evaluator
 
 ---
 class: left, middle, rstudio-logo
