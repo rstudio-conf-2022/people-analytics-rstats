@@ -59,7 +59,7 @@ What People Analytic questions can survival analysis help answer?
 
 --
 
-  - When will an employee leave the firm? 
+  - When will an employee leave the company? 
   
 --
 
@@ -87,11 +87,11 @@ class: left, middle, rstudio-logo
 
 ## Our Working Example
 
-You are a data scientist working in a People Analytics team at a large tech firm. You have been asked to understand if any of the hiring data the firm collects on its entry level software engineers is predictive of turnover later on. You have access to the firm's Human Resource Information System, which includes:
+You are a data scientist working in a People Analytics team at a large tech company. You have been asked to understand if any of the hiring data the company collects on its entry level software engineers is predictive of turnover later on. You have access to the company's Human Resource Information System, which includes:
 
   - `HIRE_DATE`: The month and year an employee was hired
-  - `TURNOVER_DATE`: The month and year an employee left the firm 
-  - `TURNOVER`: Indicates if an employee left the firm
+  - `TURNOVER_DATE`: The month and year an employee left the company 
+  - `TURNOVER`: Indicates if an employee left the company
   - `REFERRAL`: Employee was referred for hire by an existing employee
   - `PROG_EXER_RATE`: Performance on pre-employment programming exercise
   - `INTPER_RATE`: Score on an interpersonal personality scale
@@ -137,7 +137,7 @@ Events must be:
   - <b>Mutually exclusive</b>
   - <b>Exhaustive</b> 
 
-In our example, the event is <b>employee turnover</b>, which meets the above criteria as an employee is either employed at a given firm or not.
+In our example, the event is <b>employee turnover</b>, which meets the above criteria as an employee is either employed at a given company or not.
 
 ---
 class: left, middle, rstudio-logo
@@ -169,7 +169,7 @@ class: left, middle, rstudio-logo
 
 ## Do we have censored data?
 
-  - We have employees in our data who have not yet left the firm. 
+  - We have employees in our data who have not yet left the company. 
 
   - This does not mean that they will not leave later on (maybe in another month, two, or a year), it just means that their true event time will be greater than their observed time or <b>right censoring</b>.
 
@@ -394,7 +394,7 @@ survminer::ggsurvplot(
   pval = TRUE,
   conf.int = TRUE,
   xlab = "Months since Hire",
-  ylab = "Probability of Staying at the Firm"
+  ylab = "Probability of Staying at the company"
 )
 ```
 
@@ -608,7 +608,7 @@ Mixed-Effect Regression (MER) models as a more flexible class of generalized lin
 The advantage they have over GLMs (both simple and multiple) is that they allow you to directly model dependencies among your model residuals that arise due to the design characteristics of your data.  
 
 Common designs that lead to dependent residuals: 
-  - Clustered Data (Our focus today)
+  - Clustered Data
   - Crossed Data
 
 ---
@@ -650,7 +650,13 @@ class: left, middle, rstudio-logo
 
 ## Multinomial Logistic Regression Models: A Conceptual Understanding
 
-Your firm offers three different health insurance plans (A, B, and C) and would like to understand what motivates an employee to choose one plan over another. To answer this question, you could use multinomial logistic regression, which allows you to fit a single model that estimates the effects of one or more predictors on choosing B over A (reference category) and C over A (reference category).
+Your company offers three different health insurance plans (A, B, and C) and would like to understand what motivates an employee to choose one plan over another. To answer this question, you could use multinomial logistic regression, which allows you to fit a single model that estimates the effects of one or more predictors on choosing B over A (reference category) and C over A (reference category).
 
 $$\ln(\frac{P(y = B)}{P(y = A)}) = X\beta$$
 $$\ln(\frac{P(y = C)}{P(y = A)}) = X\alpha$$
+
+---
+
+class: left, middle, rstudio-logo
+
+# &#128564; R&R Time!  See you tomorrow! 	&#128719;
