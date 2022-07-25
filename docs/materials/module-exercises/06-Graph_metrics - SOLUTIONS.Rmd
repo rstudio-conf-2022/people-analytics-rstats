@@ -104,6 +104,8 @@ cent %>%
 ```
 
 ```{r}
+library(ggraph)
+
 # plot the dolphin graph and locate Grin and SN100 to see if these results make intuitive sense
 V(dolphin_graph)$highcent <- ifelse(V(dolphin_graph)$name %in% c("SN100","Grin"),1,0)
 

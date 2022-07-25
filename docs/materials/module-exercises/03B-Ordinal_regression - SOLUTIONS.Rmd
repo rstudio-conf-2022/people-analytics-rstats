@@ -62,6 +62,7 @@ GGally::ggpairs(perf)
 ```{r}
 # Run a simple ordinal logistic regression model to understand sales influence
 # on rating, saving your model using a name of your choice
+library(MASS)
 model <- polr(formula = rating ~ sales, data = perf)
 model
 ```
