@@ -182,7 +182,8 @@ friends_edgelist <- read.csv(url)
 ```{r}
 # which two characters interact most?
 friends_edgelist |>
-  dplyr::arrange(desc(weight))
+  dplyr::arrange(desc(weight)) |> 
+  head()
 
 # is this a connected network?
 friends_graph <-
