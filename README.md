@@ -16,7 +16,7 @@ by Keith McNulty + Alex LoPilato + Liz Romero
 
 ## Overview
 
-The course will cover some of the most commonly used methods of analysis and inference when working with data related to people, such as performance data and organizational network data. Among other things, you will learn about:
+The course took place at the RStudio Conference on July 25th-26th 2002.  It covered some of the most commonly used methods of analysis and inference when working with data related to people, such as performance data and organizational network data. Among other things, you will learn about:
 * Typical explanatory analyses conducted on people data
 * Common people-related data types 
 * Common hypothesis testing methods
